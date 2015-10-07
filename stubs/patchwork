@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import argparse
+import sys
+import os
+import os.path
+import SimpleXMLRPCServer
+
+TEST_MBOX = 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [1/7] foo\nFrom: Dino Dinosaurus <dino@example.com>\nX-Patchwork-Id: 12345\nMessage-Id: <11111@example.com>\nTo: list@example.com\nDate: Thu,  10 Feb 2011 15:23:31 +0300\n\nFoo commit log. Ignore this text\n\nSigned-off-by: Dino Dinosaurus <dino@example.com>\n\n---\nFIXME: add the patch here\n'
+
+datadir = None
+
+class PatchworkStub():
+      def state_list(self, search_str='', max_count=0):
+            return [{'id': 1, 'name': 'New'}, {'id': 2, 'name': 'Under Review'}, {'id': 3, 'name': 'Accepted'}, {'id': 4, 'name': 'Rejected'}, {'id': 5, 'name': 'RFC'}, {'id': 6, 'name': 'Not Applicable'}, {'id': 7, 'name': 'Changes Requested'}, {'id': 8, 'name': 'Awaiting Upstream'}, {'id': 9, 'name': 'Superseded'}, {'id': 10, 'name': 'Deferred'}]
+
+      def project_list(self, search_str='', max_count=0):
+            return [{'linkname': 'stub-test', 'id': 15, 'name': 'Linux Wireless Mailing List'}]
+
+      def person_list(self, search_str='', max_count=0):
+            return [{'email': 'test@example.com', 'user': 'test', 'name': 'Timo Testi', 'id': 7477}, {'email': 'test2@example.com', 'user': 'test', 'name': 'Timo Testi', 'id': 30052}, {'email': 'test3@example.com', 'user': 'test', 'name': 'Timo Testi', 'id': 118371}]
+
+      def patch_list(self, filter={}):
+            return [{'project_id': 15, 'name': 'cfg80211-wext: export symbols only when needed', 'commit_ref': '', 'msgid': '<1420549253-4658-1-git-send-email-johannes@sipsolutions.net>', 'submitter_id': 272, 'project': 'Linux Wireless Mailing List', 'submitter': 'Johannes Berg <johannes@sipsolutions.net>', 'state': 'Under Review', 'delegate': 'jmberg', 'date': '2015-01-06 13:00:53', 'state_id': 2, 'filename': 'cfg80211-wext-export-symbols-only-when-needed.patch', 'delegate_id': 90, 'id': 5573521}, {'project_id': 15, 'name': '[1/7] ath9k: Fix descriptors for keep-alive frame', 'commit_ref': '', 'msgid': '<1423111964-19626-2-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:38', 'state_id': 2, 'filename': '1-7-ath9k-Fix-descriptors-for-keep-alive-frame.patch', 'delegate_id': 25621, 'id': 5780931}, {'project_id': 15, 'name': '[2/7] ath9k: Set keep awake timer', 'commit_ref': '', 'msgid': '<1423111964-19626-3-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:39', 'state_id': 2, 'filename': '2-7-ath9k-Set-keep-awake-timer.patch', 'delegate_id': 25621, 'id': 5780951}, {'project_id': 15, 'name': '[3/7] ath9k: Add new MCI states', 'commit_ref': '', 'msgid': '<1423111964-19626-4-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:40', 'state_id': 2, 'filename': '3-7-ath9k-Add-new-MCI-states.patch', 'delegate_id': 25621, 'id': 5780941}, {'project_id': 15, 'name': '[4/7] ath9k: Check MCI PowerSave state', 'commit_ref': '', 'msgid': '<1423111964-19626-5-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:41', 'state_id': 2, 'filename': '4-7-ath9k-Check-MCI-PowerSave-state.patch', 'delegate_id': 25621, 'id': 5780961}, {'project_id': 15, 'name': '[5/7] ath9k: Handle additional patterns on wakeup', 'commit_ref': '', 'msgid': '<1423111964-19626-6-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:42', 'state_id': 2, 'filename': '5-7-ath9k-Handle-additional-patterns-on-wakeup.patch', 'delegate_id': 25621, 'id': 5780981}, {'project_id': 15, 'name': '[6/7] ath9k: Clear additional WoW events', 'commit_ref': '', 'msgid': '<1423111964-19626-7-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:43', 'state_id': 2, 'filename': '6-7-ath9k-Clear-additional-WoW-events.patch', 'delegate_id': 25621, 'id': 5780991}, {'project_id': 15, 'name': '[7/7] ath9k: Restart TSF2 timers on wakeup', 'commit_ref': '', 'msgid': '<1423111964-19626-8-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:44', 'state_id': 2, 'filename': '7-7-ath9k-Restart-TSF2-timers-on-wakeup.patch', 'delegate_id': 25621, 'id': 5780971}, {'project_id': 15, 'name': 'brcmfmac: use msecs_to_jiffies for time conversion', 'commit_ref': '', 'msgid': '<1423218405-17624-1-git-send-email-hofrat@osadl.org>', 'submitter_id': 122021, 'project': 'Linux Wireless Mailing List', 'submitter': 'Nicholas Mc Guire <hofrat@osadl.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-06 10:26:45', 'state_id': 2, 'filename': 'brcmfmac-use-msecs_to_jiffies-for-time-conversion.patch', 'delegate_id': 25621, 'id': 5789321}, {'project_id': 15, 'name': 'brcm80211: drop unreachable else case', 'commit_ref': '', 'msgid': '<1423229210-7313-1-git-send-email-hofrat@osadl.org>', 'submitter_id': 122021, 'project': 'Linux Wireless Mailing List', 'submitter': 'Nicholas Mc Guire <hofrat@osadl.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-06 13:26:50', 'state_id': 2, 'filename': 'brcm80211-drop-unreachable-else-case.patch', 'delegate_id': 25621, 'id': 5791761}, {'project_id': 15, 'name': 'ath9k_htc: Add new USB ID', 'commit_ref': '', 'msgid': '<1423336207-4385-1-git-send-email-leon.nardella@gmail.com>', 'submitter_id': 122631, 'project': 'Linux Wireless Mailing List', 'submitter': 'Leon Nardella <leon.nardella@gmail.com>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-07 19:10:07', 'state_id': 2, 'filename': 'ath9k_htc-Add-new-USB-ID.patch', 'delegate_id': 25621, 'id': 5796491}]
+
+      def patch_get_mbox(self, patch_id):
+            return TEST_MBOX
+
+      def patch_set(user, patch_id, params):
+            return True
+            
+      def run(self):
+            self.server.serve_forever()
+
+      def __init__(self):
+            self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", 8000),
+                                                                logRequests=False,
+                                                                requestHandler=SimpleXMLRPCServer.SimpleXMLRPCRequestHandler)
+            self.server.register_introspection_functions()
+            self.server.register_instance(self)
+
+def main():
+      global datadir
+
+      if 'STUB_PATCHWORK_DATADIR' in os.environ:
+            datadir = os.environ['STUB_PATCHWORK_DATADIR']
+      else:
+            datadir = '.'
+
+      parser = argparse.ArgumentParser(description='patchwork-stub', prog='')
+
+      parser.add_argument('--version', action='store_true')
+
+      args = parser.parse_args()
+
+      if args.version:
+            print 'stub-patchwork'
+            print 'STUB_PATCHWORK_DATADIR=%s' % datadir
+            sys.exit(0)
+
+      try:
+            stub = PatchworkStub()
+            stub.run()
+      except Exception as e:
+            print 'Failed to start PatchworkStub RPC server: %s' % e
+            sys.exit(1)
+
+if __name__ == "__main__":
+      main()

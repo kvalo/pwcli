@@ -1,0 +1,67 @@
+Connecting to http://localhost:8000/
+User          : test ([7477, 30052, 118371])
+Project       : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 10
+Review        : 10
+Upstream      : 10
+Total         : 30
+test-branch@data > list
+list
+[  0] 5780931 [1/7] ath9k: Fix descriptors for keep-alive frame
+[  1] 5780951 [2/7] ath9k: Set keep awake timer
+[  2] 5780941 [3/7] ath9k: Add new MCI states
+[  3] 5780961 [4/7] ath9k: Check MCI PowerSave state
+[  4] 5780981 [5/7] ath9k: Handle additional patterns on wakeup
+[  5] 5780991 [6/7] ath9k: Clear additional WoW events
+[  6] 5780971 [7/7] ath9k: Restart TSF2 timers on wakeup
+[  7] 5789321 brcmfmac: use msecs_to_jiffies for time conversion
+[  8] 5791761 brcm80211: drop unreachable else case
+[  9] 5796491 ath9k_htc: Add new USB ID
+test-branch@data > commit 0
+commit 0
+Retrieving patches (1/1)
+============================================================
+[1/7] ath9k: Fix descriptors for keep-alive frame
+
+Foo commit log. Ignore this text
+
+Signed-off-by: Dino Dinosaurus <dino@example.com>
+---
+ 0 files changed
+============================================================
+[1/1] Commit/Edit/Skip/Abort? c
+c
+============================================================
+1 patches applied:
+
+0000000 IMPLEMENT ME
+
+Update state in patchwork? [y/N] y
+y
+============================================================
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Thanks, applied to data.git.
+
+Timo Testi
+
+============================================================
+Envelope From: Timo Testi <test@example.com>
+Envelope To: ['Dino Dinosaurus <dino@example.com>']
+Send/Edit/Abort? s
+s
+smtpd: test@example.com -> dino@example.com
+test-branch@data > quit

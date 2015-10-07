@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+echo runnint unit tests
+cd unittests
+./run
+
+echo
+echo running cmdtests
+cd ../cmdtests
+./run
+
+echo
+echo running stubs tests
+cd ../stubs/tests
+./run
+
+figlet -c -- ---- OK ----

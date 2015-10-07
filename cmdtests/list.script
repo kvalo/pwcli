@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import pexpect
+import sys
+import os
+
+PROMPT = 'test-branch@data >'
+def main():
+   os.chdir('..')
+   child = pexpect.spawn('./run_stub')
+   child.logfile = sys.stdout
+   child.expect(PROMPT)
+   child.sendline('list')
+   child.expect(PROMPT)
+   child.sendline('commit 0')
+   child.expect('\[1/1\] Commit/Edit/Skip/Abort\?')
+   child.sendline('c')
+   child.expect('Update state in patchwork\? \[y/N\]')
+   child.sendline('y')
+   child.expect('Send/Edit/Abort\?')
+   child.sendline('s')
+
+   child.expect(PROMPT)
+   child.sendline('quit')
+
+if __name__ == "__main__":
+   main()

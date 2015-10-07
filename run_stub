@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import os
+import os.path
+import sys
+import subprocess
+import time
+
+SMTP_PORT = 5870
+
+def main():
+      srcdir = os.getcwd()
+      stubsdir = os.path.join(srcdir, 'stubs')
+
+      os.chdir(os.path.join(stubsdir, 'data'))
+
+      os.environ['GIT_DIR'] = 'git'
+      os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
+
+      p = subprocess.Popen(['git', '--version', 'branch'], stdout=subprocess.PIPE)
+      (stdout, stderr) = p.communicate()
+
+      git_version = stdout.splitlines()[0]
+
+      if git_version != 'stub-git':
+            print 'Not running git-stub: %s' % git_version
+            sys.exit(1)
+
+      patchwork = subprocess.Popen([os.path.join(stubsdir, 'patchwork')])
+
+      # wait some time to make sure that the stub started
+      time.sleep(0.2)
+
+      if patchwork.poll() != None:
+            print 'Failed to start patchwork stub: %d' % patchwork.returncode
+            sys.exit(1)
+
+      smtpd = subprocess.Popen([os.path.join(stubsdir, 'smtpd'), '--port=%d' % SMTP_PORT])
+
+      # wait some time to make sure that the stub started
+      time.sleep(0.2)
+
+      if smtpd.poll() != None:
+            print 'Failed to start smtpd stub: %d' % smtpd.returncode
+            sys.exit(1)
+
+      pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
+                               stdin=sys.stdin, stdout=sys.stdout,
+                               stderr=sys.stderr)
+      pwcli.wait()
+
+      patchwork.terminate()
+      smtpd.terminate()
+
+if __name__ == "__main__":
+      main()

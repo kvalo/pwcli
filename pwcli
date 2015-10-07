@@ -1,0 +1,945 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import xmlrpclib
+import base64
+import logging
+import sys
+import subprocess
+import readline
+import argparse
+import os
+import ConfigParser
+import email
+import email.mime.text
+import smtplib
+
+PWCLI_EDIT_FILE = '.pwcli-edit'
+
+DEFAULT_EDITOR = 'nano'
+
+# global variables
+logger = logging.getLogger('pwcli')
+
+LOG_SEPARATOR = '\n---\n'
+
+def utf8(buf):
+   return unicode(buf).encode('utf-8')
+
+def clean(buf):
+    buf = buf.translate(None, '\n\t')
+    buf = buf.strip()
+    return buf
+
+# parses a string like '1-3,5' and returns the indexes in a list [1, 2, 3, 5]
+def parse_list(entries):
+
+   ids = []
+
+   for entry in entries:
+      (start_str, sep, end_str) = entry.partition('-')
+
+      if not start_str.isdigit:
+         print 'Not a digit: %s' % (start_str)
+         return []
+
+      start = int(start_str)
+
+      if sep != '-':
+         # entry is just one value
+         ids.append(start)
+         continue
+
+      # entry is a region
+
+      if not end_str.isdigit:
+         print 'Not a digit: %s' % (end_str)
+         return []
+
+      end = int(end_str)
+
+      # when we say 0-5 we also want the index 5, not just 0-4
+      end += 1
+
+      ids += range(start, end)
+
+   ids = sorted(ids)
+
+   # remove duplicate entries (didn't find any clever way to do this)
+   #
+   # remember to copy the list as you cannot modify the list you are
+   # currently iterating!
+   prev = None
+   for val in list(ids):
+      if val == prev:
+         ids.remove(val)
+         continue
+
+      prev = val
+
+   return ids
+
+class GitError(Exception):
+
+   def __str__(self):
+      return self.msg
+
+   def __init__(self, msg):
+      self.msg = msg
+
+class Git():
+
+   def log_oneline(self, max_count):
+      cmd = ['git', 'log', '--oneline', '--reverse',
+             '--max-count', str(max_count)]
+      output = subprocess.check_output(cmd)
+      output = output.strip()
+
+      return output
+
+   def get_config(self, config):
+      cmd = ['git', 'config', '--get', config]
+
+      try:
+         output = subprocess.check_output(cmd)
+      except subprocess.CalledProcessError as e:
+         logger.debug(e)
+         return None
+
+      return output.strip()
+
+   def get_branch(self):
+      cmd = ['git', 'branch']
+      output = subprocess.check_output(cmd)
+
+      # the current branch is prefixed with '*'
+      for line in output.splitlines():
+         tokens = line.split()
+         if tokens[0] == '*' and len(tokens) > 1:
+            return tokens[1]
+
+      return None
+
+   def am(self, mbox):
+      cmd = ['git', 'am', '-s', '-3']
+
+      if self.dry_run:
+            self.output('Dry-run: %s' % str(cmd))
+            return
+
+      p = subprocess.Popen(cmd, stdin = subprocess.PIPE)
+      p.communicate(mbox)
+
+      ret = p.returncode
+      logger.debug('%s returned: %s' % (cmd, ret))
+
+      if ret != 0:
+         abort_cmd = ['git', 'am', '--abort']
+         logger.debug('Aborting git am: %s' % abort_cmd)
+         subprocess.call(abort_cmd)
+
+         clean_cmd = ['git', 'checkout', '-f']
+         logger.debug('Cleaning working tree: %s' % clean_cmd)
+         subprocess.call(clean_cmd)
+
+         raise GitError('%s failed: %s' % (cmd, ret))
+
+   def __init__(self, dry_run, output):
+      self.dry_run = dry_run
+      self.output = output
+
+class Patch():
+
+   def get_name(self):
+      return self.attributes['name']
+
+   def get_id(self):
+      return self.attributes['id']
+
+   def get_delegate(self):
+      return self.attributes['delegate']
+
+   def get_state_id(self):
+      return self.attributes['state_id']
+
+   def get_state_name(self):
+      return self.attributes['state']
+
+   def set_state_name(self, state_name):
+      if self.dry_run:
+         logger.debug('dry-run: %s().set_state_name(%s)' % (self, state_name))
+         return
+
+      state_id = self.pw.get_state_id(state_name)
+      
+      params = {}
+      params['state'] = state_id
+      self.pw.rpc.patch_set(self.get_id(), params)
+
+      self.attributes['state'] = state_name
+      self.attributes['state_id'] = state_id
+
+      logger.debug('%s state changed to %s' % (self.get_id(), state_id))
+
+   def get_mbox(self):
+      if self.mbox == None:
+         logger.debug('patch_get_mbox(%s)' % self.get_id())
+         self.mbox = self.pw.rpc.patch_get_mbox(self.get_id())
+         logger.debug(repr(self.mbox))
+
+      return utf8(self.mbox)
+
+   def set_mbox(self, mbox):
+      if self.dry_run:
+         logger.debug('dry-run: %s().set_mbox(%s)' % (self, mbox))
+         return
+
+      logger.debug('%s: set_mbox(): %s' % (self, repr(mbox)))
+      self.mbox = mbox
+
+      # need to also update the name from mbox
+      msg = self.get_email()
+      self.attributes['name'] = msg['Subject']
+
+   def get_diffstat(self):
+      p = subprocess.Popen(['diffstat', '-p1'], stdout=subprocess.PIPE,
+                           stdin=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+
+      diffstat = p.communicate(input=self.get_mbox())[0]
+      diffstat = diffstat.rstrip()
+
+      return diffstat
+
+   def get_email(self):
+      return email.message_from_string(self.get_mbox())
+
+   def get_reply_msg(self, from_name, from_email):
+      msg = self.get_email()
+
+      (log, sep, patch) = msg.get_payload().partition(LOG_SEPARATOR)
+
+      # create body
+      quote = []
+
+      # FIXME: add 'Foo wrote:'
+
+      quote.append('')
+
+      for line in log.splitlines():
+         quote.append('> %s' % line)
+
+      quote.append('')
+
+      body = '\n'.join(quote)
+
+      logger.debug('body=%s', repr(body))
+
+      # FIXME: should use utf-8
+      reply = email.mime.text.MIMEText(body, _charset='us-ascii')
+
+      # create cc list
+      persons = []
+
+      if 'To' in msg:
+         persons += msg['To'].split(',')
+
+      cc = []
+      if 'Cc' in msg:
+        persons += msg['Cc'].split(',')
+
+        for person in persons:
+           person = clean(person)
+
+           # don't add my email in cc field
+           if person.count(from_email) > 0:
+              continue
+
+           cc.append(person)
+
+      from_hdr = '%s <%s>' % (from_name, from_email)
+      subject_hdr = 'Re: %s' % clean(msg['Subject'])
+      to_hdr = clean(msg['From'])
+      cc_hdr = ', '.join(cc)
+
+      reply['Subject'] = subject_hdr
+      reply['From'] = from_hdr
+      reply['In-Reply-To'] = msg['Message-Id']
+      reply['To'] = to_hdr
+
+      if len(cc_hdr) > 0:
+         reply['Cc'] = cc_hdr
+
+      logger.debug('%s().get_reply_msg(): %s', self, repr(quote))
+
+      return reply
+
+   def get_log(self):
+      msg = self.get_email()
+      payload = msg.get_payload()
+
+      (log, sep, patch) = payload.partition(LOG_SEPARATOR)
+
+      return log.strip()
+
+   def __str__(self):
+       return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
+
+   def __init__(self, pw, attributes, dry_run):
+      self.pw = pw
+      self.attributes = attributes
+      self.dry_run = dry_run
+
+      self.mbox = None
+
+class Project():
+   def get_patches(self, state='Under Review', username=None):
+      results = []
+
+      filters = {}
+      filters['project_id'] = self.id
+
+      if state != None:
+         filters['state_id'] = self.pw.get_state_id(state)
+
+      logger.debug('%s().get_patches(filters=%s)' % (self, repr(filters)))
+      patches = self.pw.rpc.patch_list(filters)
+      logger.debug(repr(patches))
+
+      for p in patches:
+         patch = Patch(self.pw, p, self.dry_run)
+
+         if username != None and patch.get_delegate() != username:
+            continue
+
+         results.append(patch)
+         logger.debug('added patch %s' % patch)
+
+      return results
+
+   def __str__(self):
+       return 'Project(name=%s, id=%s)' % (self.name, self.id)
+
+   def __init__(self, name, pw, dry_run):
+      self.name = name
+      self.id = None
+      self.pw = pw
+      self.dry_run = dry_run
+
+      logger.debug('project_list(%s, %d)' % (self.name, 0))
+      projects = pw.rpc.project_list(self.name, 0)
+      logger.debug(repr(projects))
+
+      logger.debug('projects: %s' % projects)
+
+      for project in projects:
+         if project['linkname'] == self.name:
+            self.id = project['id']
+
+      if self.id == None:
+         raise Exception('No project id found for %s' % self.name)
+
+      logger.debug(self)
+
+class AuthTransport(xmlrpclib.SafeTransport):
+   def send_auth(self, connection):
+      creds = base64.encodestring('%s:%s' % (self.username,
+                                             self.password)).strip()
+      auth_string = 'Basic ' + creds
+      connection.putheader('Authorization', auth_string)
+
+   def send_host(self, connection, host):
+      xmlrpclib.Transport.send_host(self, connection, host)
+
+      if self.username != None and self.password != None:
+         self.send_auth(connection)
+
+   def make_connection(self, host):
+      if self.https:
+         return xmlrpclib.SafeTransport.make_connection(self, host)
+      else:
+         return xmlrpclib.Transport.make_connection(self, host)
+
+   def __init__(self, username = None, password = None, https = False):
+      xmlrpclib.SafeTransport.__init__(self)
+
+      self.username = username
+      self.password = password
+      self.https = https
+
+class Patchwork():
+   def update_state_list(self):
+      logger.debug('patch_state_list()')
+      self.states = self.rpc.state_list('', 0)
+      logger.debug(repr(self.states))
+
+   def get_state_id(self, state_name):
+      for state in self.states:
+         if state['name'] == state_name:
+            return state['id']
+
+   def get_user_ids(self, username):
+      persons = self.rpc.person_list(username, 0)
+      logger.debug('%s().get_user_id(%s): %s' % (self, username, repr(persons)))
+
+      ids = []
+
+      for person in persons:
+         if person['user'] == username:
+            ids.append(person['id'])
+
+      return ids
+         
+   def __init__(self, url, username, password):
+      https = url.startswith('https')
+      transport = AuthTransport(username, password, https)
+      self.rpc = xmlrpclib.Server(url, transport = transport)
+
+      logger.debug('connected to %s (username %s)' % (url, username))
+
+      self.update_state_list()
+
+class PWCLI():
+
+   def send_email(self, msg):
+      logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
+
+      # FIXME: check that email configs are set
+
+      while True:
+
+         if 'From' not in msg:
+            self.output('No From header found in the message')
+            return
+
+         if 'To' not in msg:
+            self.output('No To header found in the message')
+            return
+
+         envelope_from = msg['From']
+
+         envelope_to = []
+         for person in msg['To'].split(','):
+            envelope_to.append(clean(person))
+      
+         if 'Cc' in msg:
+            for person in msg['Cc'].split(','):
+               envelope_to.append(clean(person))
+
+         self.output('============================================================')
+         self.output(msg.as_string())
+         self.output('============================================================')
+
+         self.output('Envelope From: %s' % envelope_from)
+         self.output('Envelope To: %s' % envelope_to)
+
+         answer = self.input('Send/Edit/Abort? ')
+         answer = answer.lower()
+
+         if answer == 'a':
+            self.output('Aborted send email')
+            return
+
+         if answer == 'e':
+            buf = self.edit_file(msg.as_string())
+            msg = email.message_from_string(buf)
+            continue
+
+         if answer == 's':
+            # send email
+            break
+
+      logger.debug('sending email %s -> %s: %s' % (envelope_from, envelope_to,
+                                                   repr(str(msg))))
+
+      if self.dry_run:
+         self.output('Dry-run: %s -> %s' % (envelope_from, envelope_to))
+         return
+
+      try:
+         server = smtplib.SMTP(self.smtp_host, self.smtp_port)
+
+         if self.smtp_encryption == 'tls':
+            server.starttls()
+
+         if self.smtp_username != None and self.smtp_password != None:
+            server.login(self.smtp_username, self.smtp_password)
+
+         server.sendmail(envelope_from, envelope_to, msg.as_string())
+         server.quit()
+      except smtplib.SMTPException as e:
+         self.output('Failed to send email via %s: %s' % (self.smtp_host, e))
+         return
+
+      logger.debug('email sent to %s:%s' % (self.smtp_host, self.smtp_port))
+
+   def edit_file(self, buf):
+      f = open(PWCLI_EDIT_FILE, 'w')
+      f.write(buf)
+      f.close()
+
+      subprocess.call([self.editor, PWCLI_EDIT_FILE])
+
+      f = open(PWCLI_EDIT_FILE, 'r')
+      new_buf = f.read()
+      f.close
+
+      os.remove(PWCLI_EDIT_FILE)
+
+      return new_buf
+
+   def show_patch(self, patch):
+      self.output('============================================================')
+      self.output(patch.get_name())
+      self.output('')
+      self.output('%s%s%s' % (patch.get_log(), LOG_SEPARATOR, patch.get_diffstat()))
+      self.output('============================================================')
+
+   def show_info(self):
+      self.print_header('User', '%s (%s)' % (self.username, self.user_ids))
+      self.print_header('Project', self.project.name)
+      self.print_header('Tree', self.tree)
+      self.print_header('Branch', self.git.get_branch())
+
+      new = len(self.project.get_patches('New', self.username))
+      review = len(self.project.get_patches('Under Review', self.username))
+      upstream = len(self.project.get_patches('Awaiting Upstream', self.username))
+      total = new + review + upstream
+
+      self.print_header('New', new)
+      self.print_header('Review', review)
+      self.print_header('Upstream', upstream)
+      self.print_header('Total', total)
+
+   def cmd_help(self, args):
+      logger.debug('cmd_help(args=%s)' % repr(args))
+      self.parser.print_help()
+
+   def cmd_quit(self, args):
+      logger.debug('cmd_quit(args=%s)' % repr(args))
+      sys.exit(0)
+
+   def cmd_list(self, args):
+      logger.debug('cmd_list(args=%s)' % repr(args))
+
+      if args.state == 'review':
+         state = 'Under Review'
+      elif args.state == 'upstream':
+         state = 'Awaiting Upstream'
+      elif args.state == 'new':
+         state = 'New'
+      elif args.state == None:
+         # default
+         state = 'Under Review'
+      else:
+         self.output('Unknown state: %s' % args.state)
+         return
+
+      self.patches = self.project.get_patches(state, self.username)
+
+      index = 0
+      for patch in self.patches:
+         self.output('[%3d] %s %s' % (index, patch.get_id(), patch.get_name()))
+         index += 1
+
+   def cmd_commit(self, args):
+      logger.debug('cmd_commit(args=%s)' % repr(args))
+      indexes = parse_list(args.ids)
+
+      if self.patches == None:
+         self.output('No patches listed, forgot to run list command?')
+         return
+
+      if len(self.patches) == 0:
+         self.output('No patches available, doing nothing.')
+         return
+
+      for index in indexes:
+         if index > len(self.patches):
+            self.output('Patch index %d not found, max %d' %
+                        (index, len(self.patches)))
+            return
+
+      if len(indexes) > 1:
+         for i in indexes:
+            patch = self.patches[i]
+            self.output('[%-3d] %s %s' % (i, patch.get_id(), patch.get_name()))
+
+         self.output('------------------------------------------------------------')
+
+         answer = self.input('Continue? [y/N] ')
+         answer = answer.lower()
+
+         if answer != 'y':
+            return
+
+      # retrieve all mbox files in one for "smoother user experience"
+      j = 1
+      for i in indexes:
+         print '\rRetrieving patches (%d/%d)' % (j, len(indexes)),
+         sys.stdout.flush()
+
+         self.patches[i].get_mbox()
+         j += 1
+
+      print
+
+      num = 1
+      applied = []
+      skipped = []
+      for i in indexes:
+         patch = self.patches[i]
+
+         skip = False
+
+         while True:
+            self.show_patch(patch)
+
+            while True:
+               answer = self.input('[%d/%d] Commit/Edit/Skip/Abort? ' % (num, len(indexes)))
+               answer = answer.lower()
+
+               valid = ['c', 'e', 's', 'a']
+
+               if answer in valid:
+                  break
+
+               self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                          ', '.join(valid)))
+
+            if answer == 'a':
+               self.output('Commit command aborted')
+               return
+
+            if answer == 's':
+               self.output('Skipping patch')
+               skip = True
+               break
+
+            if answer == 'e':
+               mbox = patch.get_mbox()
+               new_mbox = self.edit_file(mbox)
+
+               if mbox != new_mbox:
+                  patch.set_mbox(new_mbox)
+
+               continue
+
+            if answer == 'c':
+               # continue with commit process
+               break
+
+         num += 1
+
+         if skip:
+            skipped.append(patch)
+            continue
+
+         # apply the patch
+         try:
+            self.git.am(patch.get_mbox())
+            applied.append(patch)
+         except GitError as e:
+            self.output('Failed to apply the patch: %s' % e)
+            skipped.append(patch)
+
+      if len(applied) == 0:
+         return
+
+      # show summary in the shell
+      self.output('============================================================')
+      self.output('%d patches applied:' % len(applied))
+      self.output('')
+      self.output(self.git.log_oneline(len(applied)))
+      self.output('')
+
+      if len(skipped) > 0:
+         self.output('%d patches skipped:' % len(skipped))
+         self.output('')
+
+         for patch in skipped:
+            self.output(patch.get_name())
+
+         self.output('')
+
+      while True:
+         answer = self.input('Update state in patchwork? [y/N] ')
+         answer = answer.lower()
+
+         if answer == 'y':
+            for patch in applied:
+               patch.set_state_name('Accepted')
+
+            break
+
+         if answer == 'n' or len(answer) == 0:
+            break
+
+      # send "applied" email
+      patch = applied[0]
+      reply = patch.get_reply_msg(self.fullname, self.email)
+
+      payload = reply.get_payload()
+      tree_name = '%s.git' % self.tree
+
+      payload += '\n'
+
+      if len(applied) == 1:
+         payload += 'Thanks, applied to %s.\n' % tree_name
+      else:
+         payload += 'Thanks, %d patches applied to %s:\n\n' % (len(applied),
+                                                             tree_name)
+         payload += '%s\n' % self.git.log_oneline(len(applied))
+
+         if len(skipped) > 0:
+            payload += '\n%d patches skipped:\n\n' % len(skipped)
+            for patch in skipped:
+               payload += '%s\n' % patch.get_name()
+
+      payload += '\n%s\n' % self.fullname
+
+      reply.set_payload(payload)
+
+      self.send_email(reply)
+
+   def cmd_show(self, args):
+      logger.debug('cmd_show(args=%s)' % repr(args))
+
+      try:
+         i = int(args.id[0])
+      except ValueError as e:
+         self.output('Failed to convert index to integer: %s' % e)
+         return
+
+      patch = self.patches[i]
+      self.show_patch(patch)
+
+   def cmd_reply(self, args):
+      logger.debug('cmd_reply(args=%s)' % repr(args))
+
+      try:
+         i = int(args.id[0])
+      except ValueError as e:
+         self.output('Failed to convert index to integer: %s' % e)
+         return
+
+      if self.patches == None:
+         self.output('No patches listed, forgot to run list command?')
+         return
+
+      if i > len(self.patches):
+         self.output('Patch index %d not found' % i)
+         return
+
+      patch = self.patches[i]
+      reply = patch.get_reply_msg(self.fullname, self.email)
+
+      buf = self.edit_file(reply.as_string())
+
+      reply = email.message_from_string(buf)
+
+      self.send_email(reply)
+
+   def cmd_info(self, args):
+      logger.debug('cmd_info(args=%s)' % repr(args))
+
+      self.show_info()
+
+   def run_shell(self):
+      self.parser = argparse.ArgumentParser(description='pwcli shell', prog='',
+                                    add_help=False)
+   
+      subparsers = self.parser.add_subparsers()
+
+      subparsers.add_parser('help').set_defaults(func=self.cmd_help)
+
+      subparsers.add_parser('quit').set_defaults(func=self.cmd_quit)
+      subparsers.add_parser('q').set_defaults(func=self.cmd_quit)
+
+      parser_list = subparsers.add_parser('list')
+      parser_list.add_argument('state', metavar='STATE', nargs='?',
+                               help='optional patch state (new, review, upstream)')
+      parser_list.set_defaults(func=self.cmd_list)
+
+      parser_commit = subparsers.add_parser('commit')
+      parser_commit.add_argument('ids', metavar='IDs', nargs='+')
+      parser_commit.set_defaults(func=self.cmd_commit)
+
+      parser_show = subparsers.add_parser('show')
+      parser_show.add_argument('id', metavar='ID', nargs=1)
+      parser_show.set_defaults(func=self.cmd_show)
+
+      parser_reply = subparsers.add_parser('reply')
+      parser_reply.add_argument('id', metavar='ID', nargs=1)
+      parser_reply.set_defaults(func=self.cmd_reply)
+
+      subparsers.add_parser('info').set_defaults(func=self.cmd_info)
+
+      while True:
+         prompt = ''
+
+         prompt += '%s@%s ' % (self.git.get_branch(), self.tree)
+
+         if self.dry_run:
+            prompt += '(dry-run)'
+
+         prompt += '> '
+
+         cmd = self.input(prompt)
+
+         # argparse is idiotic and exits if there's a parse error,
+         # workaround it by catching SystemExit. Idea from:
+         #
+         # http://bugs.python.org/issue9938
+         try:
+            args = self.parser.parse_args(cmd.split())
+         except SystemExit:
+            continue
+
+         args.func(args)
+
+   def print_header(self, name, value):
+      fmt = "%- 14s: %s"
+      self.output(fmt % (name, value))
+
+   def output(self, buf):
+      logger.debug('> \'%s\'' % buf)
+      print buf
+
+   def input(self, prompt):
+      logger.debug('> \'%s\'' % prompt)
+      cmd = raw_input(prompt)
+      logger.debug('< \'%s\'' % cmd)
+
+      return cmd
+
+   def __init__(self):
+
+      if 'GIT_DIR' in os.environ:
+         self.git_dir = os.environ['GIT_DIR']
+      else:
+         self.git_dir = '.git'
+
+      self.pwcli_dir = os.path.join(self.git_dir, 'pwcli')
+      self.config_file = os.path.join(self.pwcli_dir, 'config')
+
+      if not os.path.exists(self.pwcli_dir):
+         print '%s does not exist, exiting' % self.pwcli_dir
+         sys.exit(1)
+
+      if not os.path.isdir(self.pwcli_dir):
+         print '%s is not a directory, exiting' % self.pwcli_dir
+         sys.exit(1)
+
+      if os.path.exists(PWCLI_EDIT_FILE):
+         print '%s exists, remove and try again.' % PWCLI_EDIT_FILE
+         sys.exit(1)
+
+      logging.basicConfig(filename=os.path.join(self.pwcli_dir, 'log'),
+                          format='%(asctime)s %(levelname)s: %(message)s')
+
+      parser = argparse.ArgumentParser(description='Patchwork Command-Line Interface')
+      parser.add_argument('-d', '--debug', action='store_true',
+                          help='enable debug messages')
+
+      parser.add_argument('--dry-run', action='store_true',
+                          help='Don\'t modify anything')
+
+      args = parser.parse_args()
+
+      if args.debug:
+         logger.setLevel(logging.DEBUG)
+
+      logger.debug('pwcli args %s)' % repr(args))
+
+      self.dry_run = args.dry_run
+
+      self.config = ConfigParser.RawConfigParser()
+
+      if not os.path.exists(self.config_file):
+         print 'Could not find %s', self.config_file
+         sys.exit(1)
+
+      self.config.read(self.config_file)
+
+      # read settings from pwcli config file
+      self.url = self.config.get('general', 'url')
+      self.username = self.config.get('general', 'username')
+      self.password = self.config.get('general', 'password')
+      self.project_name = self.config.get('general', 'project')
+
+      # read settings from environment variables
+      if 'EDITOR' in os.environ:
+         self.editor = os.environ['EDITOR']
+      else:
+         self.editor = DEFAULT_EDITOR
+
+      # read settings from git
+      self.git = Git(self.dry_run, self.output)
+      self.fullname = self.git.get_config('user.name')
+      self.email = self.git.get_config('user.email')
+      self.smtp_host = self.git.get_config('sendemail.smtpserver')
+      self.smtp_port = self.git.get_config('sendemail.smtpserverport')
+      self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
+      self.smtp_username = self.git.get_config('sendemail.smtpuser')
+      self.smtp_password = self.git.get_config('sendemail.smtppass')
+
+      # print configs to debug log
+      logger.debug('fullname=%s' % self.fullname)
+      logger.debug('email=%s' % self.email)
+      logger.debug('url=%s' % self.url)
+      logger.debug('username=%s' % self.username)
+      logger.debug('project_name=%s' % self.project_name)
+      logger.debug('editor=%s' % self.editor)
+      logger.debug('smtp_host=%s' % self.smtp_host)
+      logger.debug('smtp_port=%s' % self.smtp_port)
+      logger.debug('smtp_encryption=%s' % self.smtp_encryption)
+      logger.debug('smtp_username=%s' % self.smtp_username)
+      
+      self.output('Connecting to %s' % self.url)
+
+      self.pw = Patchwork(self.url, self.username, self.password)
+      self.project = Project(self.project_name, self.pw, self.dry_run)
+      self.user_ids = self.pw.get_user_ids(self.username)
+      self.tree = os.path.basename(os.getcwd())
+
+      self.patches = None
+
+      self.show_info()
+
+def main():
+   pwcli = PWCLI()
+   pwcli.run_shell()
+
+if __name__ == "__main__":
+   main()

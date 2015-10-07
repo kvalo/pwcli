@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import argparse
+import sys
+import os
+import os.path
+
+datadir = None
+
+def cmd_branch(args):
+      f = open(os.path.join(datadir, 'stub-git-branches'), 'r')
+      print f.read()
+      f.close()
+
+def cmd_am(args):
+      if not args.s:
+            # -s switch now used, exit
+            sys.exit(0)
+
+      f = open(os.path.join(datadir, 'stub-git-am-s'), 'w')
+      f.write(sys.stdin.read())
+      f.close()
+
+def cmd_config(args):
+      if not args.get:
+            # for now we only support --get
+            sys.exit(1)
+
+      name = args.get[0]
+
+      configs = {
+            'user.email' :'test@example.com',
+            'user.name' : 'Timo Testi',
+            'sendemail.smtpserver' : 'localhost',
+            'sendemail.smtpserverport' : '5870',
+            }
+
+      if name not in configs:
+            print '%s not found' % name
+            sys.exit(1)
+
+      print configs[name]
+
+def cmd_log(args):
+      if len(args.max_count) > 0:
+            max_count = int(args.max_count[0])
+            for i in range(max_count):
+                  print '0000000 IMPLEMENT ME'
+
+def main():
+      global datadir
+
+      if 'STUB_GIT_DATADIR' in os.environ:
+            datadir = os.environ['STUB_GIT_DATADIR']
+      else:
+            datadir = '.'
+
+      parser = argparse.ArgumentParser(description='git-stub', prog='',
+                                       add_help=False)
+
+      parser.add_argument('--version', action='store_true')
+
+      subparsers = parser.add_subparsers()
+      subparsers.add_parser('branch').set_defaults(func=cmd_branch)
+
+      parser_am = subparsers.add_parser('am')
+      parser_am.add_argument('-s', action='store_true')
+      parser_am.add_argument('-3', action='store_true')
+      parser_am.set_defaults(func=cmd_am)
+
+      parser_config = subparsers.add_parser('config')
+      parser_config.add_argument('--get', nargs=1, action='store')
+      parser_config.set_defaults(func=cmd_config)
+
+      parser_log = subparsers.add_parser('log')
+      parser_log.add_argument('--oneline', action='store_true')
+      parser_log.add_argument('--reverse', action='store_true')
+      parser_log.add_argument('--max-count', nargs=1, action='store')
+      parser_log.set_defaults(func=cmd_log)
+
+      args = parser.parse_args()
+
+      if args.version:
+            # Print a version string so that test scripts can verify
+            # that this really is a stub and not playing with a real
+            # git repo.
+            #
+            # Note: have to be called with 'git --version branch' as I
+            # didn't know how to implement 'git --version' with
+            # argparse
+            print 'stub-git'
+            print 'STUB_GIT_DATADIR=%s' % datadir
+            sys.exit(0)
+
+      args.func(args)
+
+if __name__ == "__main__":
+      main()
