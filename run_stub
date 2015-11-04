@@ -36,11 +36,14 @@ import os.path
 import sys
 import subprocess
 import time
+import tempfile
+import shutil
 
 SMTP_PORT = 5870
 
 def main():
       srcdir = os.getcwd()
+      datadir = None
       stubsdir = os.path.join(srcdir, 'stubs')
 
       os.chdir(os.path.join(stubsdir, 'data'))
@@ -48,6 +51,17 @@ def main():
       os.environ['GIT_DIR'] = 'git'
       os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
 
+      if not 'STUB_PATCHWORK_DATADIR' in os.environ:
+            # FIXME: the env variable is not set create a temporary
+            # directory for patches so that they can be modified on the fly
+            datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
+            patchesdir = os.path.join(datadir, 'patches')
+            shutil.copytree(os.path.join(stubsdir, 'data', 'patches'),
+                            patchesdir)
+            os.environ['STUB_PATCHWORK_DATADIR'] = patchesdir
+
+            print 'using temporary data dir: %s' % (datadir)
+            
       p = subprocess.Popen(['git', '--version', 'branch'], stdout=subprocess.PIPE)
       (stdout, stderr) = p.communicate()
 
@@ -82,6 +96,9 @@ def main():
 
       patchwork.terminate()
       smtpd.terminate()
+
+      if datadir:
+            shutil.rmtree(datadir)
 
 if __name__ == "__main__":
       main()

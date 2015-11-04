@@ -3,9 +3,19 @@
 import pexpect
 import sys
 import os
+import shutil
 
 PROMPT = 'test-branch@data >'
 def main():
+   srcdir = os.environ['SRCDIR']
+   datadir = os.environ['DATADIR']
+   patchesdir = os.path.join(datadir, 'patches')
+   srcpatchesdir = os.path.join(srcdir, '..', 'stubs', 'data', 'patches')
+
+   # create copy of patches
+   shutil.copytree(srcpatchesdir, patchesdir)
+   os.environ['STUB_PATCHWORK_DATADIR'] = patchesdir
+
    os.chdir('..')
    child = pexpect.spawn('./run_stub')
    child.logfile = sys.stdout
@@ -22,6 +32,9 @@ def main():
 
    child.expect(PROMPT)
    child.sendline('quit')
+
+   # cleanup
+   shutil.rmtree(patchesdir)
 
 if __name__ == "__main__":
    main()

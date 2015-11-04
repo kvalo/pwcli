@@ -36,39 +36,226 @@ import sys
 import os
 import os.path
 import SimpleXMLRPCServer
-
-TEST_MBOX = 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [1/7] foo\nFrom: Dino Dinosaurus <dino@example.com>\nX-Patchwork-Id: 12345\nMessage-Id: <11111@example.com>\nTo: list@example.com\nDate: Thu,  10 Feb 2011 15:23:31 +0300\n\nFoo commit log. Ignore this text\n\nSigned-off-by: Dino Dinosaurus <dino@example.com>\n\n---\nFIXME: add the patch here\n'
+import email
+import pprint
 
 datadir = None
 
+STATE_LIST = [
+      {'id': 1, 'name': 'New'},
+      {'id': 2, 'name': 'Under Review'},
+      {'id': 3, 'name': 'Accepted'},
+      {'id': 4, 'name': 'Rejected'},
+      {'id': 5, 'name': 'RFC'},
+      {'id': 6, 'name': 'Not Applicable'},
+      {'id': 7, 'name': 'Changes Requested'},
+      {'id': 8, 'name': 'Awaiting Upstream'},
+      {'id': 9, 'name': 'Superseded'},
+      {'id': 10, 'name': 'Deferred'}]
+
+PROJECT_LIST = [
+      {'linkname': 'stub-test', 'id': 15, 'name': 'Linux Wireless Mailing List'}
+      ]
+
+PERSON_LIST = [
+      {'email': 'test@example.com', 'user': 'test',
+       'name': 'Timo Testi', 'id': 7477 },
+      {'email': 'test2@example.com', 'user': 'test',
+       'name': 'Timo Testi', 'id': 30052},
+      {'email': 'test3@example.com', 'user': 'test',
+       'name': 'Timo Testi', 'id': 118371}
+      ]
+
+class Patch():
+      hdr_map = {
+            'name': 'Subject',
+            'submitter': 'From', 
+            'date': 'Date',
+            'msgid': 'Message-Id',
+            'id': 'X-Patchwork-Id',
+            'submitter_id': 'X-Submitter-Id', 
+            'project': 'X-Project',
+            'project_id': 'X-Project-Id', 
+            'commit_ref': 'X-Commit-Ref', 
+            'state': 'X-State', 
+            'state_id': 'X-State-Id', 
+            'delegate': 'X-Delegate', 
+            'delegate_id': 'X-Delegate-Id', 
+
+            # Note: 'filename' attribute is special and is stored to
+            # self.filename
+            }
+
+      # parameters which have to be integers
+      hdr_integers = ['id', 'submitter_id', 'project_id', 'state_id',
+                      'delegate_id']
+
+      def get_params(self):
+            return self.params
+
+      def get_id(self):
+            return self.params['id']
+
+      def get_mbox(self):
+            return self.msg.as_string()
+
+      def set(self, params):
+            for k in params:
+                  self.params[k] = params[k]
+
+            self.save()
+
+            return True
+
+      def load(self, filename):
+            # file name is special
+            self.filename = filename
+            self.params['filename'] = os.path.basename(self.filename)
+
+            f = open(self.filename)
+            buf = f.read()
+            f.close()
+
+            self.msg = email.message_from_string(buf)
+
+            for attr in self.hdr_map.keys():
+                  hdr = self.hdr_map[attr]
+                  val = self.msg[hdr]
+                  self.params[attr] = val
+
+            for hdr in self.hdr_integers:
+                  self.params[hdr] = int(self.params[hdr])
+
+      def save(self):
+            # update headers in self.msg 
+            for attr in self.hdr_map.keys():
+                  hdr = self.hdr_map[attr]
+                  val = self.params[attr]
+                  self.msg.replace_header(hdr, str(val))
+
+            buf = self.msg.as_string()
+
+            f = open(self.filename, 'w')
+            f.write(buf)
+            f.close()
+
+      def __repr__(self):
+            return 'Patch(%s)' % (pprint.pformat(self.params))
+
+      def __init__(self):
+            self.params = {}
+
+class PatchContainer():
+      def get_patch(self, patch_id):
+            return self.patches[patch_id]
+
+      def get_all_patches_as_params(self):
+            result = []
+
+            for p in self.patches.values():
+                  result.append(p.get_params())
+
+            return result
+
+      def __repr__(self):
+            return 'PatchContainer(%s)' % (self.patches)
+
+      def __init__(self, dirname):
+            self.patches = {}
+
+            if not os.path.isdir(dirname):
+                  print 'directory %s not found' % dirname
+                  return
+
+            for dirpath, dirnames, filenames in os.walk(dirname):
+                  for name in filenames:
+                        # we only use patch files, skip others
+                        if not name.endswith('.patch'):
+                              continue
+
+                        p = Patch()
+                        p.load(os.path.join(dirname, name))
+                        self.patches[p.get_id()] = p
+
 class PatchworkStub():
       def state_list(self, search_str='', max_count=0):
-            return [{'id': 1, 'name': 'New'}, {'id': 2, 'name': 'Under Review'}, {'id': 3, 'name': 'Accepted'}, {'id': 4, 'name': 'Rejected'}, {'id': 5, 'name': 'RFC'}, {'id': 6, 'name': 'Not Applicable'}, {'id': 7, 'name': 'Changes Requested'}, {'id': 8, 'name': 'Awaiting Upstream'}, {'id': 9, 'name': 'Superseded'}, {'id': 10, 'name': 'Deferred'}]
+            return STATE_LIST
 
       def project_list(self, search_str='', max_count=0):
-            return [{'linkname': 'stub-test', 'id': 15, 'name': 'Linux Wireless Mailing List'}]
+            return PROJECT_LIST
 
       def person_list(self, search_str='', max_count=0):
-            return [{'email': 'test@example.com', 'user': 'test', 'name': 'Timo Testi', 'id': 7477}, {'email': 'test2@example.com', 'user': 'test', 'name': 'Timo Testi', 'id': 30052}, {'email': 'test3@example.com', 'user': 'test', 'name': 'Timo Testi', 'id': 118371}]
+            return PERSON_LIST
+
+      def _matches_filter(self, patch, filter):
+            for f in filter:
+                  if patch[f] != filter[f]:
+                        return False
+
+            return True
 
       def patch_list(self, filter={}):
-            return [{'project_id': 15, 'name': 'cfg80211-wext: export symbols only when needed', 'commit_ref': '', 'msgid': '<1420549253-4658-1-git-send-email-johannes@sipsolutions.net>', 'submitter_id': 272, 'project': 'Linux Wireless Mailing List', 'submitter': 'Johannes Berg <johannes@sipsolutions.net>', 'state': 'Under Review', 'delegate': 'jmberg', 'date': '2015-01-06 13:00:53', 'state_id': 2, 'filename': 'cfg80211-wext-export-symbols-only-when-needed.patch', 'delegate_id': 90, 'id': 5573521}, {'project_id': 15, 'name': '[1/7] ath9k: Fix descriptors for keep-alive frame', 'commit_ref': '', 'msgid': '<1423111964-19626-2-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:38', 'state_id': 2, 'filename': '1-7-ath9k-Fix-descriptors-for-keep-alive-frame.patch', 'delegate_id': 25621, 'id': 5780931}, {'project_id': 15, 'name': '[2/7] ath9k: Set keep awake timer', 'commit_ref': '', 'msgid': '<1423111964-19626-3-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:39', 'state_id': 2, 'filename': '2-7-ath9k-Set-keep-awake-timer.patch', 'delegate_id': 25621, 'id': 5780951}, {'project_id': 15, 'name': '[3/7] ath9k: Add new MCI states', 'commit_ref': '', 'msgid': '<1423111964-19626-4-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:40', 'state_id': 2, 'filename': '3-7-ath9k-Add-new-MCI-states.patch', 'delegate_id': 25621, 'id': 5780941}, {'project_id': 15, 'name': '[4/7] ath9k: Check MCI PowerSave state', 'commit_ref': '', 'msgid': '<1423111964-19626-5-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:41', 'state_id': 2, 'filename': '4-7-ath9k-Check-MCI-PowerSave-state.patch', 'delegate_id': 25621, 'id': 5780961}, {'project_id': 15, 'name': '[5/7] ath9k: Handle additional patterns on wakeup', 'commit_ref': '', 'msgid': '<1423111964-19626-6-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:42', 'state_id': 2, 'filename': '5-7-ath9k-Handle-additional-patterns-on-wakeup.patch', 'delegate_id': 25621, 'id': 5780981}, {'project_id': 15, 'name': '[6/7] ath9k: Clear additional WoW events', 'commit_ref': '', 'msgid': '<1423111964-19626-7-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:43', 'state_id': 2, 'filename': '6-7-ath9k-Clear-additional-WoW-events.patch', 'delegate_id': 25621, 'id': 5780991}, {'project_id': 15, 'name': '[7/7] ath9k: Restart TSF2 timers on wakeup', 'commit_ref': '', 'msgid': '<1423111964-19626-8-git-send-email-sujith@msujith.org>', 'submitter_id': 52961, 'project': 'Linux Wireless Mailing List', 'submitter': 'Sujith Manoharan <sujith@msujith.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-05 04:52:44', 'state_id': 2, 'filename': '7-7-ath9k-Restart-TSF2-timers-on-wakeup.patch', 'delegate_id': 25621, 'id': 5780971}, {'project_id': 15, 'name': 'brcmfmac: use msecs_to_jiffies for time conversion', 'commit_ref': '', 'msgid': '<1423218405-17624-1-git-send-email-hofrat@osadl.org>', 'submitter_id': 122021, 'project': 'Linux Wireless Mailing List', 'submitter': 'Nicholas Mc Guire <hofrat@osadl.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-06 10:26:45', 'state_id': 2, 'filename': 'brcmfmac-use-msecs_to_jiffies-for-time-conversion.patch', 'delegate_id': 25621, 'id': 5789321}, {'project_id': 15, 'name': 'brcm80211: drop unreachable else case', 'commit_ref': '', 'msgid': '<1423229210-7313-1-git-send-email-hofrat@osadl.org>', 'submitter_id': 122021, 'project': 'Linux Wireless Mailing List', 'submitter': 'Nicholas Mc Guire <hofrat@osadl.org>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-06 13:26:50', 'state_id': 2, 'filename': 'brcm80211-drop-unreachable-else-case.patch', 'delegate_id': 25621, 'id': 5791761}, {'project_id': 15, 'name': 'ath9k_htc: Add new USB ID', 'commit_ref': '', 'msgid': '<1423336207-4385-1-git-send-email-leon.nardella@gmail.com>', 'submitter_id': 122631, 'project': 'Linux Wireless Mailing List', 'submitter': 'Leon Nardella <leon.nardella@gmail.com>', 'state': 'Under Review', 'delegate': 'test', 'date': '2015-02-07 19:10:07', 'state_id': 2, 'filename': 'ath9k_htc-Add-new-USB-ID.patch', 'delegate_id': 25621, 'id': 5796491}]
+            result = []
+            params = self.container.get_all_patches_as_params()
+
+            for p in params:
+                  if not self._matches_filter(p, filter):
+                        break
+
+                  result.append(p)
+
+            return result
 
       def patch_get_mbox(self, patch_id):
-            return TEST_MBOX
+            patch = self.container.get_patch(patch_id)
+            return patch.get_mbox()
 
-      def patch_set(user, patch_id, params):
+      def patch_set(self, patch_id, params):
+            patch = self.container.get_patch(patch_id)
+            patch.set(params)
+
             return True
             
       def run(self):
             self.server.serve_forever()
 
-      def __init__(self):
+      def __init__(self, patchesdir):
+            self.patchesdir = patchesdir
+            self.container = PatchContainer(self.patchesdir)
+
             self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", 8000),
                                                                 logRequests=False,
                                                                 requestHandler=SimpleXMLRPCServer.SimpleXMLRPCRequestHandler)
             self.server.register_introspection_functions()
             self.server.register_instance(self)
+
+def run_test_load_patches(args):
+      container = PatchContainer(datadir)
+      pprint.pprint(container.get_all_patches_as_params())
+
+def run_test_set_state(args):
+      container = PatchContainer(datadir)
+      patch = container.get_patch(1002)
+
+      patch.set({'state_id': 3})
+      print patch
+
+def run_test_get_mbox(args):
+      container = PatchContainer(datadir)
+      patch = container.get_patch(1001)
+
+      print patch.get_mbox()
+
+def run_test(args):
+      test = args.test[0]
+      if test == 'load-patches':
+            run_test_load_patches(args)
+      elif test == 'set-state':
+            run_test_set_state(args)
+      elif test == 'get-mbox':
+            run_test_get_mbox(args)
+      else:
+            print 'unknown test: %s', test
 
 def main():
       global datadir
@@ -81,6 +268,7 @@ def main():
       parser = argparse.ArgumentParser(description='patchwork-stub', prog='')
 
       parser.add_argument('--version', action='store_true')
+      parser.add_argument('--test', nargs=1)
 
       args = parser.parse_args()
 
@@ -89,8 +277,12 @@ def main():
             print 'STUB_PATCHWORK_DATADIR=%s' % datadir
             sys.exit(0)
 
+      if args.test:
+            run_test(args)
+            sys.exit(0)
+
       try:
-            stub = PatchworkStub()
+            stub = PatchworkStub(datadir)
             stub.run()
       except Exception as e:
             print 'Failed to start PatchworkStub RPC server: %s' % e
