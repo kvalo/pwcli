@@ -39,7 +39,6 @@ import asyncore
 import sys
 
 DEFAULT_PORT = 4321
-SMTPDDIR = 'smtpddir'
 
 datadir = None
 
@@ -47,8 +46,8 @@ class FakeSMTPServer(smtpd.SMTPServer):
       def process_message(self, peer, mailfrom, rcpttos, data):
             print 'smtpd: %s -> %s' % (mailfrom, ', '.join(rcpttos))
 
-            if os.path.isdir(SMTPDDIR):
-                  f = open(os.path.join(SMTPDDIR, str(self.count)), 'w')
+            if os.path.isdir(datadir):
+                  f = open(os.path.join(datadir, str(self.count)), 'w')
                   f.write('%s -> %s\n' % (mailfrom, ', '.join(rcpttos)))
                   f.write(data)
                   f.close
@@ -64,10 +63,10 @@ def run(args):
       else:
             port = DEFAULT_PORT
 
-      if os.path.isdir(SMTPDDIR):
-            files = len(os.listdir(SMTPDDIR))
+      if os.path.isdir(datadir):
+            files = len(os.listdir(datadir))
             if files > 0:
-                  print '%s directory is not empty: %d' % (SMTPDDIR, files)
+                  print '%s directory is not empty: %d' % (datadir, files)
                   sys.exit(1)
 
       server = FakeSMTPServer(('127.0.0.1', port), None)
@@ -76,8 +75,8 @@ def run(args):
 def main():
       global datadir
 
-      if 'STUB_GIT_DATADIR' in os.environ:
-            datadir = os.environ['STUB_GIT_DATADIR']
+      if 'STUB_SMTPD_DATADIR' in os.environ:
+            datadir = os.environ['STUB_SMTPD_DATADIR']
       else:
             datadir = '.'
 

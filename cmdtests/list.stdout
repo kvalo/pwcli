@@ -58,3 +58,23 @@ Send/Edit/Abort? s
 s
 smtpd: test@example.com -> dino@example.com
 test-branch@data > quit
+mails: ['0']
+smtpddir/0:
+test@example.com -> dino@example.com
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Thanks, applied to data.git.
+
+Timo Testi

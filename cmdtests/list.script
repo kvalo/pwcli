@@ -11,6 +11,7 @@ def main():
    datadir = os.environ['DATADIR']
    patchesdir = os.path.join(datadir, 'patches')
    gitdir = os.path.join(datadir, 'git')
+   smtpddir = os.path.join(datadir, 'smtpd')
    srcpatchesdir = os.path.join(srcdir, '..', 'stubs', 'data', 'patches')
    srcgitdir = os.path.join(srcdir, '..', 'stubs', 'data', 'git')
 
@@ -22,6 +23,10 @@ def main():
    shutil.copytree(srcgitdir, gitdir)
    os.environ['STUB_GIT_DATADIR'] = gitdir
 
+   # setup directory for smtpd
+   os.mkdir(smtpddir)
+   os.environ['STUB_SMTPD_DATADIR'] = smtpddir
+   
    os.chdir('..')
    child = pexpect.spawn('./run_stub')
    child.logfile = sys.stdout
@@ -39,8 +44,19 @@ def main():
    child.expect(PROMPT)
    child.sendline('quit')
 
+   # check what mails smtpd received
+   print 'mails: %s' % os.listdir(smtpddir)
+
+   # cat smtpddir/0
+   mail0 = os.path.join(smtpddir, '0')
+   f = open(mail0, 'r')
+   print 'smtpddir/0:'
+   print f.read()
+   f.close()
+
    # cleanup
    shutil.rmtree(patchesdir)
+   shutil.rmtree(smtpddir)
 
 if __name__ == "__main__":
    main()

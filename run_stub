@@ -122,6 +122,12 @@ def main():
                             gitdir)
             os.environ['STUB_GIT_DATADIR'] = gitdir
 
+      if not 'STUB_SMTPD_DATADIR' in os.environ:
+            create_datadir()
+            smtpddir = os.path.join(datadir, 'smtpd')
+            os.mkdir(smtpddir)
+            os.environ['STUB_SMTPD_DATADIR'] = smtpddir
+
       run(srcdir=srcdir, stubsdir=stubsdir)
 
       if datadir:
