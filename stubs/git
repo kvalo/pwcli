@@ -35,11 +35,23 @@ import argparse
 import sys
 import os
 import os.path
+import ConfigParser
+import hashlib
+import email
+import re
 
-datadir = None
+gitdir = None
+
+# stub repository directory layout, location defined in
+# STUB_GIT_DATADIR:
+#
+# objects/commits - list of commits, head commit last
+# objects/<commitid> - commit object, patch in ascii format
+# branches - list of branches, same as output from git-branch
+# config - config file, almost same format as in real git but using ConfigParser
 
 def cmd_branch(args):
-      f = open(os.path.join(datadir, 'stub-git-branches'), 'r')
+      f = open(os.path.join(gitdir, 'branches'), 'r')
       print f.read()
       f.close()
 
@@ -48,8 +60,21 @@ def cmd_am(args):
             # -s switch now used, exit
             sys.exit(0)
 
-      f = open(os.path.join(datadir, 'stub-git-am-s'), 'w')
-      f.write(sys.stdin.read())
+      objectsdir = os.path.join(gitdir, 'objects')
+      commitsfile = os.path.join(objectsdir, 'commits')
+
+      if not os.path.isdir(objectsdir):
+            os.mkdir(objectsdir)
+
+      buf = sys.stdin.read()
+      sha1sum = hashlib.sha1(buf).hexdigest()
+
+      f = open(commitsfile, 'a')
+      f.write(sha1sum + '\n')
+      f.close()
+
+      f = open(os.path.join(objectsdir, sha1sum), 'w')
+      f.write(buf)
       f.close()
 
 def cmd_config(args):
@@ -57,34 +82,63 @@ def cmd_config(args):
             # for now we only support --get
             sys.exit(1)
 
-      name = args.get[0]
+      names = args.get[0].split('.')
+      section = names[0]
+      name = names[1]
 
-      configs = {
-            'user.email' :'test@example.com',
-            'user.name' : 'Timo Testi',
-            'sendemail.smtpserver' : 'localhost',
-            'sendemail.smtpserverport' : '5870',
-            }
+      config = ConfigParser.RawConfigParser()
+      config.read(os.path.join(gitdir, 'config'))
 
-      if name not in configs:
+      if not config.has_option(section, name):
             print '%s not found' % name
             sys.exit(1)
 
-      print configs[name]
+      print config.get(section, name)
+
+def get_commit_subject(commit):
+      objectsdir = os.path.join(gitdir, 'objects')
+
+      f = open(os.path.join(objectsdir, commit), 'r')
+      buf = f.read()
+      f.close()
+
+      msg = email.message_from_string(buf)
+
+      subject = msg['Subject']
+
+      # remove all '[foo]' tags
+      subject = re.sub('\[.*\]', '', subject)
+      subject = subject.strip()
+
+      return subject
 
 def cmd_log(args):
+      # FIXME: only support --oneline and --max-count for now
+
+      objectsdir = os.path.join(gitdir, 'objects')
+      commitsfile = os.path.join(objectsdir, 'commits')
+
+      f = open(commitsfile, 'r')
+      buf = f.read()
+      f.close()
+
+      commits = buf.splitlines()
+
       if len(args.max_count) > 0:
             max_count = int(args.max_count[0])
             for i in range(max_count):
-                  print '0000000 IMPLEMENT ME'
+                  commit = commits[i]
+                  subject = get_commit_subject(commit)
+
+                  print '%.12s %s' % (commit, subject)
 
 def main():
-      global datadir
+      global gitdir
 
       if 'STUB_GIT_DATADIR' in os.environ:
-            datadir = os.environ['STUB_GIT_DATADIR']
+            gitdir = os.environ['STUB_GIT_DATADIR']
       else:
-            datadir = '.'
+            gitdir = '.'
 
       parser = argparse.ArgumentParser(description='git-stub', prog='',
                                        add_help=False)
@@ -120,7 +174,7 @@ def main():
             # didn't know how to implement 'git --version' with
             # argparse
             print 'stub-git'
-            print 'STUB_GIT_DATADIR=%s' % datadir
+            print 'STUB_GIT_DATADIR=%s' % gitdir
             sys.exit(0)
 
       args.func(args)

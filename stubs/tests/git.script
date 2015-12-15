@@ -62,6 +62,10 @@ def main():
       # create and populate fake git repository for the stub
       shutil.copytree(os.path.join(stubsdir, 'data', 'git'), gitdir)
 
+      # hack to enable automatic flushing so that printouts are not
+      # out of order
+      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
       output = subprocess.check_output([stub_git, '--version', 'branch'])
       output = output.strip()
       git_version = output.splitlines()[0]
@@ -72,17 +76,19 @@ def main():
             print 'Not using stub-git: %s' % (git_version)
             sys.exit(1)
 
-      # check branch
+      print 'check branch'
+      sys.stdout.flush()
       subprocess.call([stub_git, 'branch'])
+      print
 
-      # test configs
+      print 'check configs'
       subprocess.call([stub_git, 'config', '--get', 'user.email'])
       subprocess.call([stub_git, 'config', '--get', 'user.name'])
       subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserver'])
       subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserverport'])
+      print
 
-      # add patches
-
+      print 'add patches'
       f = open(os.path.join(patchesdir, 'test-1.patch'), 'r')
       buf = f.read()
       f.close()
@@ -90,11 +96,11 @@ def main():
       git_am(stub_git, buf)
 
       # verify patch
-      f = open(os.path.join(gitdir, 'stub-git-am-s'), 'r')
-      if buf != f.read():
-            print 'test-1.patch not correct'
-            sys.exit(2)
-      f.close()
+      # f = open(os.path.join(gitdir, 'stub-git-am-s'), 'r')
+      # if buf != f.read():
+      #       print 'test-1.patch not correct'
+      #       sys.exit(2)
+      # f.close()
 
       f = open(os.path.join(patchesdir, 'test-2.patch'), 'r')
       buf = f.read()
@@ -102,15 +108,22 @@ def main():
 
       git_am(stub_git, buf)
 
-      # verify patch
-      f = open(os.path.join(gitdir, 'stub-git-am-s'), 'r')
-      if buf != f.read():
+      # verify
+      f = open(os.path.join(gitdir, 'objects', 'commits'), 'r')
+      commits = f.read().splitlines()
+      print commits
+      f.close()
+      f = open(os.path.join(gitdir, 'objects', commits[-1]))
+      buf2 = f.read()
+      if buf != buf2:
             print 'test-2.patch not correct'
             sys.exit(2)
       f.close()
+      print
 
-      # check log
+      print 'test git log'
       subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
+      print
 
       # cleanup
       shutil.rmtree(gitdir)

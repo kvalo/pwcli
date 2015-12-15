@@ -37,6 +37,7 @@ import tempfile
 import os
 import shutil
 import logging
+import hashlib
 
 from pwcli import Git
 
@@ -62,7 +63,7 @@ class TestGit(unittest.TestCase):
         shutil.rmtree(self.datadir)
 
     def test_get_branch(self):
-        f = open(os.path.join(self.datadir, 'stub-git-branches'), 'w')
+        f = open(os.path.join(self.datadir, 'branches'), 'w')
         f.write('  aaa\n')
         f.write('  bbb\n')
         f.write('* foo\n')
@@ -76,10 +77,12 @@ class TestGit(unittest.TestCase):
 
     def test_am(self):
         mbox = 'dummy mbox file'
+        sha1sum = hashlib.sha1(mbox).hexdigest()
+
         git = Git(False, self.dummy_output)
         git.am(mbox)
 
-        f = open(os.path.join(self.datadir, 'stub-git-am-s'), 'r')
+        f = open(os.path.join(self.datadir, 'objects', sha1sum), 'r')
         self.assertEquals(f.read(), mbox)
         f.close()
 

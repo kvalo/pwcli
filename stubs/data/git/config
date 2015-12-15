@@ -1,0 +1,7 @@
+[user]
+email = test@example.com
+name = Timo Testi
+
+[sendemail]
+smtpserver = localhost
+smtpserverport = 5870
