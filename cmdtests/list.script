@@ -10,11 +10,17 @@ def main():
    srcdir = os.environ['SRCDIR']
    datadir = os.environ['DATADIR']
    patchesdir = os.path.join(datadir, 'patches')
+   gitdir = os.path.join(datadir, 'git')
    srcpatchesdir = os.path.join(srcdir, '..', 'stubs', 'data', 'patches')
+   srcgitdir = os.path.join(srcdir, '..', 'stubs', 'data', 'git')
 
    # create copy of patches
    shutil.copytree(srcpatchesdir, patchesdir)
    os.environ['STUB_PATCHWORK_DATADIR'] = patchesdir
+
+   # create fake git repo
+   shutil.copytree(srcgitdir, gitdir)
+   os.environ['STUB_GIT_DATADIR'] = gitdir
 
    os.chdir('..')
    child = pexpect.spawn('./run_stub')

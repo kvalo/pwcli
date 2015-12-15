@@ -115,6 +115,13 @@ def main():
                             patchworkdir)
             os.environ['STUB_PATCHWORK_DATADIR'] = patchworkdir
 
+      if not 'STUB_GIT_DATADIR' in os.environ:
+            create_datadir()
+            gitdir = os.path.join(datadir, 'git')
+            shutil.copytree(os.path.join(stubsdir, 'data', 'git'),
+                            gitdir)
+            os.environ['STUB_GIT_DATADIR'] = gitdir
+
       run(srcdir=srcdir, stubsdir=stubsdir)
 
       if datadir:
