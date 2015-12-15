@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import os
+import os.path
+import sys
+import subprocess
+import time
+import shutil
+
+def git_am(stub_git, buf):
+      cmd = [stub_git, 'am', '-s']
+
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                           stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+
+      (stdoutdata, stderrdata) = p.communicate(input=buf)
+
+def main():
+      srcdir = os.environ['SRCDIR']
+      datadir = os.environ['DATADIR']
+      stubsdir = os.path.join(srcdir, '..')
+      stubsdatadir = os.path.join(stubsdir, 'data')
+      patchesdir = os.path.join(stubsdatadir, 'patches')
+      gitdir = os.path.join(datadir, 'git')
+      stub_git = os.path.join(stubsdir, 'git')
+
+      os.environ['STUB_GIT_DATADIR'] = gitdir
+
+      os.chdir(datadir)
+
+      # create and populate fake git repository for the stub
+      shutil.copytree(os.path.join(stubsdir, 'data', 'git'), gitdir)
+
+      output = subprocess.check_output([stub_git, '--version', 'branch'])
+      output = output.strip()
+      git_version = output.splitlines()[0]
+
+      print 'git version: %s\n' % (git_version)
+
+      if git_version != 'stub-git':
+            print 'Not using stub-git: %s' % (git_version)
+            sys.exit(1)
+
+      # check branch
+      subprocess.call([stub_git, 'branch'])
+
+      # test configs
+      subprocess.call([stub_git, 'config', '--get', 'user.email'])
+      subprocess.call([stub_git, 'config', '--get', 'user.name'])
+      subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserver'])
+      subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserverport'])
+
+      # add patches
+
+      f = open(os.path.join(patchesdir, 'test-1.patch'), 'r')
+      buf = f.read()
+      f.close()
+
+      git_am(stub_git, buf)
+
+      # verify patch
+      f = open(os.path.join(gitdir, 'stub-git-am-s'), 'r')
+      if buf != f.read():
+            print 'test-1.patch not correct'
+            sys.exit(2)
+      f.close()
+
+      f = open(os.path.join(patchesdir, 'test-2.patch'), 'r')
+      buf = f.read()
+      f.close()
+
+      git_am(stub_git, buf)
+
+      # verify patch
+      f = open(os.path.join(gitdir, 'stub-git-am-s'), 'r')
+      if buf != f.read():
+            print 'test-2.patch not correct'
+            sys.exit(2)
+      f.close()
+
+      # check log
+      subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
+
+      # cleanup
+      shutil.rmtree(gitdir)
+
+if __name__ == "__main__":
+      main()
