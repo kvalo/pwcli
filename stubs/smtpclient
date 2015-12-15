@@ -38,8 +38,6 @@ import email
 import email.mime.text
 import sys
 
-datadir = None
-
 DEFAULT_PORT=4321
 
 def run(args):
@@ -64,13 +62,6 @@ def run(args):
         sys.exit(1)
 
 def main():
-      global datadir
-
-      if 'STUB_GIT_DATADIR' in os.environ:
-            datadir = os.environ['STUB_GIT_DATADIR']
-      else:
-            datadir = '.'
-
       parser = argparse.ArgumentParser(description='smtpd-stub')
 
       parser.add_argument('--port', action='store')
