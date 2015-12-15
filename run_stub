@@ -55,22 +55,7 @@ def create_datadir():
       datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
       print 'using temporary data dir: %s' % (datadir)
 
-def main():
-      srcdir = os.getcwd()
-      stubsdir = os.path.join(srcdir, 'stubs')
-
-      os.chdir(os.path.join(stubsdir, 'data'))
-
-      os.environ['GIT_DIR'] = 'git'
-      os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
-
-      if not 'STUB_PATCHWORK_DATADIR' in os.environ:
-            create_datadir()
-            patchworkdir = os.path.join(datadir, 'patchwork')
-            shutil.copytree(os.path.join(stubsdir, 'data', 'patches'),
-                            patchworkdir)
-            os.environ['STUB_PATCHWORK_DATADIR'] = patchworkdir
-            
+def run(srcdir, stubsdir):
       p = subprocess.Popen(['git', '--version', 'branch'], stdout=subprocess.PIPE)
       (stdout, stderr) = p.communicate()
 
@@ -105,6 +90,24 @@ def main():
 
       patchwork.terminate()
       smtpd.terminate()
+
+def main():
+      srcdir = os.getcwd()
+      stubsdir = os.path.join(srcdir, 'stubs')
+
+      os.chdir(os.path.join(stubsdir, 'data'))
+
+      os.environ['GIT_DIR'] = 'git'
+      os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
+
+      if not 'STUB_PATCHWORK_DATADIR' in os.environ:
+            create_datadir()
+            patchworkdir = os.path.join(datadir, 'patchwork')
+            shutil.copytree(os.path.join(stubsdir, 'data', 'patches'),
+                            patchworkdir)
+            os.environ['STUB_PATCHWORK_DATADIR'] = patchworkdir
+
+      run(srcdir=srcdir, stubsdir=stubsdir)
 
       if datadir:
             shutil.rmtree(datadir)
