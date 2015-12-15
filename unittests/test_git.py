@@ -59,10 +59,7 @@ class TestGit(unittest.TestCase):
             return
 
     def tearDown(self):
-        if True:
-            shutil.rmtree(self.datadir)
-        else:
-            print self.datadir
+        shutil.rmtree(self.datadir)
 
     def test_get_branch(self):
         f = open(os.path.join(self.datadir, 'stub-git-branches'), 'w')
