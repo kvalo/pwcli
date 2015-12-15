@@ -38,6 +38,7 @@ import subprocess
 import time
 import tempfile
 import shutil
+import argparse
 
 SMTP_PORT = 5870
 
@@ -92,6 +93,13 @@ def run(srcdir, stubsdir):
       smtpd.terminate()
 
 def main():
+      parser = argparse.ArgumentParser(description='run_stub')
+
+      parser.add_argument('--keep', action='store_true',
+                          help='Keep the temporary datadir for debugging')
+
+      args = parser.parse_args()
+
       srcdir = os.getcwd()
       stubsdir = os.path.join(srcdir, 'stubs')
 
@@ -110,7 +118,10 @@ def main():
       run(srcdir=srcdir, stubsdir=stubsdir)
 
       if datadir:
-            shutil.rmtree(datadir)
+            if not args.keep:
+                  shutil.rmtree(datadir)
+            else:
+                  print 'Keeping temporary datadir %s' % (datadir)
 
 if __name__ == "__main__":
       main()
