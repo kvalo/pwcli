@@ -41,9 +41,22 @@ import shutil
 
 SMTP_PORT = 5870
 
+datadir = None
+
+# Create a temporary directory for data files so that they can be
+# modified on the fly. With cmdtest tests we should not be using this
+# directory.
+def create_datadir():
+      global datadir
+
+      if datadir != None:
+            return
+
+      datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
+      print 'using temporary data dir: %s' % (datadir)
+
 def main():
       srcdir = os.getcwd()
-      datadir = None
       stubsdir = os.path.join(srcdir, 'stubs')
 
       os.chdir(os.path.join(stubsdir, 'data'))
@@ -52,15 +65,11 @@ def main():
       os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
 
       if not 'STUB_PATCHWORK_DATADIR' in os.environ:
-            # FIXME: the env variable is not set create a temporary
-            # directory for patches so that they can be modified on the fly
-            datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
-            patchesdir = os.path.join(datadir, 'patches')
+            create_datadir()
+            patchworkdir = os.path.join(datadir, 'patchwork')
             shutil.copytree(os.path.join(stubsdir, 'data', 'patches'),
-                            patchesdir)
-            os.environ['STUB_PATCHWORK_DATADIR'] = patchesdir
-
-            print 'using temporary data dir: %s' % (datadir)
+                            patchworkdir)
+            os.environ['STUB_PATCHWORK_DATADIR'] = patchworkdir
             
       p = subprocess.Popen(['git', '--version', 'branch'], stdout=subprocess.PIPE)
       (stdout, stderr) = p.communicate()
