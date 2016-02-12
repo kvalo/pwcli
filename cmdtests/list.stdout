@@ -6,7 +6,8 @@ Branch        : test-branch
 New           : 0
 Review        : 2
 Upstream      : 0
-Total         : 2
+Deferred      : 1
+Total         : 3
 test-branch@data > list
 list
 [  0] 1001 [1/7] foo: test 1

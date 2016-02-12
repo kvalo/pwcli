@@ -534,11 +534,13 @@ class PWCLI():
       new = len(self.project.get_patches('New', self.username))
       review = len(self.project.get_patches('Under Review', self.username))
       upstream = len(self.project.get_patches('Awaiting Upstream', self.username))
-      total = new + review + upstream
+      deferred = len(self.project.get_patches('Deferred', self.username))
+      total = new + review + upstream + deferred
 
       self.print_header('New', new)
       self.print_header('Review', review)
       self.print_header('Upstream', upstream)
+      self.print_header('Deferred', deferred)
       self.print_header('Total', total)
 
    def cmd_help(self, args):
