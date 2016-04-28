@@ -534,10 +534,15 @@ class PWCLI():
       self.print_header('Tree', self.tree)
       self.print_header('Branch', self.git.get_branch())
 
-      new = len(self.project.get_patches('New', self.username))
-      review = len(self.project.get_patches('Under Review', self.username))
-      upstream = len(self.project.get_patches('Awaiting Upstream', self.username))
-      deferred = len(self.project.get_patches('Deferred', self.username))
+      if self.default_filter_delegated:
+         username = self.username
+      else:
+         username = None
+
+      new = len(self.project.get_patches('New', username))
+      review = len(self.project.get_patches('Under Review', username))
+      upstream = len(self.project.get_patches('Awaiting Upstream', username))
+      deferred = len(self.project.get_patches('Deferred', username))
       total = new + review + upstream + deferred
 
       self.print_header('New', new)
@@ -570,7 +575,12 @@ class PWCLI():
          self.output('Unknown state: %s' % args.state)
          return
 
-      self.patches = self.project.get_patches(state, self.username)
+      if self.default_filter_delegated:
+         username = self.username
+      else:
+         username = None
+
+      self.patches = self.project.get_patches(state, username)
 
       index = 0
       for patch in self.patches:
@@ -902,6 +912,16 @@ class PWCLI():
       self.username = self.config.get('general', 'username')
       self.password = self.config.get('general', 'password')
       self.project_name = self.config.get('general', 'project')
+
+      # FIXME: ConfigParser supports providing defaults as a dict, use
+      # those instead. Also maybe it's better to use self.config
+      # directly and get rid of self.foo properties?
+
+      if self.config.has_option('general', 'default_filter_delegated'):
+         self.default_filter_delegated = self.config.getboolean('general',
+                                                                'default_filter_delegated')
+      else:
+         self.default_filter_delegated = True
 
       # read settings from environment variables
       if 'EDITOR' in os.environ:
