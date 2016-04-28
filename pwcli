@@ -761,6 +761,45 @@ class PWCLI():
       patch = self.patches[i]
       self.show_patch(patch)
 
+   def cmd_review(self, args):
+      logger.debug('cmd_commit(args=%r)' % args)
+      indexes = parse_list(args.ids)
+
+      if self.patches == None:
+         self.output('No patches listed, forgot to run list command?')
+         return
+
+      if len(self.patches) == 0:
+         self.output('No patches available, doing nothing.')
+         return
+
+      for index in indexes:
+         if index > len(self.patches):
+            self.output('Patch index %d not found, max %d' %
+                        (index, len(self.patches)))
+            return
+
+      selected_patches = []
+
+      for i in indexes:
+         selected_patches.append(self.patches[i])
+
+      for patch in selected_patches:
+         self.output('[%-3d] %s %s' % (i, patch.get_id(), patch.get_name()))
+
+      self.output('------------------------------------------------------------')
+
+      answer = self.input('Set to %d patch(es) to Under Review state? [y/N] ' % len(selected_patches))
+      answer = answer.lower()
+
+      if answer != 'y':
+         return
+
+      for patch in selected_patches:
+         patch.set_state_name('Under Review')
+
+      self.output('%d patches set to Under Review' % len(selected_patches))
+
    def cmd_reply(self, args):
       logger.debug('cmd_reply(args=%s)' % repr(args))
 
@@ -811,6 +850,10 @@ class PWCLI():
       parser_commit = subparsers.add_parser('commit')
       parser_commit.add_argument('ids', metavar='IDs', nargs='+')
       parser_commit.set_defaults(func=self.cmd_commit)
+
+      parser_review = subparsers.add_parser('review')
+      parser_review.add_argument('ids', metavar='IDs', nargs='+')
+      parser_review.set_defaults(func=self.cmd_review)
 
       parser_show = subparsers.add_parser('show')
       parser_show.add_argument('id', metavar='ID', nargs=1)
