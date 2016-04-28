@@ -34,6 +34,7 @@
 import unittest
 import mock
 import email
+import re
 
 import pwcli
 
@@ -47,7 +48,7 @@ FAKE_ATTRIBUTES = {
 
 TEST_MBOX = 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [1/7] foo\nFrom: Dino Dinosaurus <dino@example.com>\nX-Patchwork-Id: 12345\nMessage-Id: <11111@example.com>\nTo: list@example.com\nDate: Thu,  10 Feb 2011 15:23:31 +0300\n\nFoo commit log. Ignore this text\n\nSigned-off-by: Dino Dinosaurus <dino@example.com>\n\n---\nFIXME: add the patch here\n'
 
-class TestGit(unittest.TestCase):
+class TestPatch(unittest.TestCase):
     @mock.patch('pwcli.PWCLI')
     def test_attributes(self, pw):
         attributes = FAKE_ATTRIBUTES
@@ -77,6 +78,47 @@ class TestGit(unittest.TestCase):
         self.assertEqual(reply['To'], 'Dino Dinosaurus <dino@example.com>')
         self.assertFalse('Cc' in reply)
         self.assertEqual(reply['Subject'], 'Re: [1/7] foo')
+
+    def test_get_mbox_for_stgit(self):
+        attributes = FAKE_ATTRIBUTES
+        patch = pwcli.Patch(None, attributes, False)
+
+        patch.get_mbox = mock.Mock(return_value=TEST_MBOX)
+
+        mbox = patch.get_mbox_for_stgit()
+        msg = email.message_from_string(mbox)
+
+        # Check that the first line matches mbox format
+        #
+        # It would be nice to mock datetime.datetime so that we would
+        # not have to skip the date from the first line but I didn't
+        # figure out how to do that, without a library like freezegun.
+        firstline = mbox.splitlines()[0]
+        self.assertTrue(firstline.startswith('From nobody '))
+
+        self.assertEqual(msg['Subject'], 'foo')
+
+        # check that Patchwork-Id is set
+        id_line = r'\nPatchwork-Id: %s\n' % (attributes['id'])
+        search = re.search(id_line, msg.get_payload())
+        self.assertTrue(search != None)
+
+    def test_clean_subject(self):
+        attributes = FAKE_ATTRIBUTES
+        patch = pwcli.Patch(None, attributes, False)
+
+        c = patch.clean_subject
+
+        self.assertEqual(c('[] One two three four'), 'One two three four')
+        self.assertEqual(c('[1/100] One two three four'), 'One two three four')
+        self.assertEqual(c('[PATCH 1/100] One two three four'),
+                         'One two three four')
+        self.assertEqual(c('[PATCH RFC 14/14] foo: bar koo'), 'foo: bar koo')
+        self.assertEqual(c('[RFC] [PATCH 14/99]   foo: bar koo'), 'foo: bar koo')
+        self.assertEqual(c('bar: use array[]'), 'bar: use array[]')
+        self.assertEqual(c('[PATCH] bar: use array[]'), 'bar: use array[]')
+        self.assertEqual(c('[] [A] [B] [   PATCH 1/100000  ] bar: use [] in array[]'),
+                         'bar: use [] in array[]')
 
 if __name__ == '__main__':
     unittest.main()

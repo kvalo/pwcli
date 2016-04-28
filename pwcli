@@ -44,6 +44,7 @@ import email
 import email.mime.text
 import smtplib
 import pprint
+import re
 
 PWCLI_EDIT_FILE = '.pwcli-edit'
 
@@ -121,6 +122,30 @@ class GitError(Exception):
    def __init__(self, msg):
       self.msg = msg
 
+class Stg():
+
+   def import_patch(self, mbox):
+      cmd = ['stg', 'import', '--mbox', '--sign']
+
+      if self.dry_run:
+            self.output('Dry-run: %s' % str(cmd))
+            return
+
+      logger.debug('stg.import_patch(): %s' % (mbox))
+
+      p = subprocess.Popen(cmd, stdin = subprocess.PIPE)
+      p.communicate(mbox)
+
+      ret = p.returncode
+      logger.debug('%s returned: %s' % (cmd, ret))
+
+      if ret != 0:
+         raise GitError('%s failed: %s' % (cmd, ret))
+
+   def __init__(self, dry_run, output):
+      self.dry_run = dry_run
+      self.output = output
+
 class Git():
 
    def log_oneline(self, max_count):
@@ -153,6 +178,10 @@ class Git():
             return tokens[1]
 
       return None
+
+   def checkout(self, branch):
+      cmd = ['git', 'checkout', branch]
+      subprocess.check_output(cmd)
 
    def am(self, mbox):
       cmd = ['git', 'am', '-s', '-3']
@@ -222,6 +251,31 @@ class Patch():
          logger.debug(repr(self.mbox))
 
       return utf8(self.mbox)
+
+   # removes all extra '[ ]' tags _before_ the actual title
+   def clean_subject(self, subject):
+      # Note: '.*?' is a non-greedy version of '.*'
+
+      return re.sub(r'^\s*(\[.*?\]\s*)*', '', subject)
+
+   def get_mbox_for_stgit(self):
+      msg = self.get_email()
+
+      payload = msg.get_payload()
+
+      # add Patchwork-Id with s/^---\n/Patchwork-Id: 1001\n---\n
+      id_line = 'Patchwork-Id: %s\n---\n' % (self.get_id())
+      payload = re.sub(r'\n---\n', id_line, payload)
+      msg.set_payload(payload)
+
+      subject = self.clean_subject(msg['Subject'])
+      msg.replace_header('Subject', subject)
+
+      # Add a From header with unixfrom so that this is valid mbox
+      # format, strangely patchwork doesn't add it.
+      mbox = msg.as_string(unixfrom=True)
+
+      return mbox
 
    def set_mbox(self, mbox):
       if self.dry_run:
@@ -784,8 +838,20 @@ class PWCLI():
       for i in indexes:
          selected_patches.append(self.patches[i])
 
+      # retrieve all mbox files in one for "smoother user experience"
+      i = 1
       for patch in selected_patches:
-         self.output('[%-3d] %s %s' % (i, patch.get_id(), patch.get_name()))
+         print '\rRetrieving patches (%d/%d)' % (i, len(selected_patches)),
+         sys.stdout.flush()
+
+         patch.get_mbox()
+         i += 1
+
+      # force a newline so that new text starts from it's own line
+      self.output('')
+
+      for patch in selected_patches:
+         self.output('%s %s' % (patch.get_id(), patch.get_name()))
 
       self.output('------------------------------------------------------------')
 
@@ -795,10 +861,31 @@ class PWCLI():
       if answer != 'y':
          return
 
-      for patch in selected_patches:
+      applied = []
+      skipped = []
+      if self.pending_mode == 'stgit':
+         # git checkout self.pending_branch
+         self.git.checkout(self.pending_branch)
+         
+         for patch in selected_patches:
+            # stg import --sign
+            # FIXME: catch GitError
+            try:
+               self.stg.import_patch(patch.get_mbox_for_stgit())
+               applied.append(patch)
+            except GitError as e:
+               self.output('Failed to apply patch: %s' % e)
+               skipped.append(patch)
+
+      else:
+         # stgit disabled, no need to apply any patches
+         applied = selected_patches
+
+      for patch in applied:
          patch.set_state_name('Under Review')
 
-      self.output('%d patches set to Under Review' % len(selected_patches))
+      # FIXME: print summary of applied and skipped patches (with totals)
+      self.output('%d patches set to Under Review, %d skipped' % (len(applied), len(skipped)))
 
    def cmd_reply(self, args):
       logger.debug('cmd_reply(args=%s)' % repr(args))
@@ -968,14 +1055,45 @@ class PWCLI():
       else:
          self.default_filter_delegated = True
 
+      pending_modes = ['disabled', 'stgit']
+
+      # defaults
+      self.pending_mode = 'disabled'
+      self.pending_branch = None
+      self.main_branch = None
+
+      if self.config.has_option('general', 'pending_mode'):
+         self.pending_mode = self.config.get('general', 'pending_mode').lower()
+
+      if self.pending_mode not in pending_modes:
+         self.output('Invalid stgit.mode "%s"' % self.pending_mode)
+         sys.exit(1)
+
+      if self.config.has_option('general', 'pending_branch'):
+         self.pending_branch = self.config.get('general', 'pending_branch').lower()
+
+      if self.config.has_option('general', 'main_branch'):
+         self.main_branch = self.config.get('general', 'main_branch').lower()
+
+      if self.pending_mode == 'stgit':
+         if self.pending_branch == None:
+            self.output('general.pending_branch not set')
+            sys.exit(1)
+
+         if self.main_branch == None:
+            self.output('general.main_branch not set')
+            sys.exit(1)
+
       # read settings from environment variables
       if 'EDITOR' in os.environ:
          self.editor = os.environ['EDITOR']
       else:
          self.editor = DEFAULT_EDITOR
 
-      # read settings from git
       self.git = Git(self.dry_run, self.output)
+      self.stg = Stg(self.dry_run, self.output)
+
+      # read settings from git
       self.fullname = self.git.get_config('user.name')
       self.email = self.git.get_config('user.email')
       self.smtp_host = self.git.get_config('sendemail.smtpserver')
