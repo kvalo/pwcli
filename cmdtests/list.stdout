@@ -3,11 +3,11 @@ User          : test ([7477, 30052, 118371])
 Project       : stub-test
 Tree          : data
 Branch        : test-branch
-New           : 0
+New           : 1
 Review        : 2
 Upstream      : 0
 Deferred      : 1
-Total         : 3
+Total         : 4
 test-branch@data > list
 list
 [  0] 1001 [1/7] foo: test 1
