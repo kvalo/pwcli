@@ -568,6 +568,8 @@ class PWCLI():
          state = 'Awaiting Upstream'
       elif args.state == 'new':
          state = 'New'
+      elif args.state == 'deferred':
+         state = 'Deferred'
       elif args.state == None:
          # default
          state = 'Under Review'
