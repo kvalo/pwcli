@@ -12,8 +12,8 @@ cd ../cmdtests
 ./run
 
 echo
-echo running stubs tests
-cd ../stubs/tests
+echo running stubs cmdtests
+cd ../stubs/cmdtests
 ./run
 
 figlet -c -- ---- OK ----
