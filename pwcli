@@ -43,6 +43,7 @@ import ConfigParser
 import email
 import email.mime.text
 import smtplib
+import pprint
 
 PWCLI_EDIT_FILE = '.pwcli-edit'
 
@@ -60,6 +61,9 @@ def clean(buf):
     buf = buf.translate(None, '\n\t')
     buf = buf.strip()
     return buf
+
+def pretty(obj):
+   return pprint.pformat(obj, indent=4)
 
 # parses a string like '1-3,5' and returns the indexes in a list [1, 2, 3, 5]
 def parse_list(entries):
@@ -334,7 +338,7 @@ class Project():
 
       logger.debug('%s().get_patches(filters=%s)' % (self, repr(filters)))
       patches = self.pw.rpc.patch_list(filters)
-      logger.debug(repr(patches))
+      logger.debug('patches:\n%s' % pretty(patches))
 
       for p in patches:
          patch = Patch(self.pw, p, self.dry_run)
@@ -358,9 +362,8 @@ class Project():
 
       logger.debug('project_list(%s, %d)' % (self.name, 0))
       projects = pw.rpc.project_list(self.name, 0)
-      logger.debug(repr(projects))
 
-      logger.debug('projects: %s' % projects)
+      logger.debug('projects: %s' % pretty(projects))
 
       for project in projects:
          if project['linkname'] == self.name:
@@ -410,7 +413,7 @@ class Patchwork():
 
    def get_user_ids(self, username):
       persons = self.rpc.person_list(username, 0)
-      logger.debug('%s().get_user_id(%s): %s' % (self, username, repr(persons)))
+      logger.debug('%s().get_user_id(%s):\n%s' % (self, username, pretty(persons)))
 
       ids = []
 
