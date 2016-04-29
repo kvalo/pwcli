@@ -278,6 +278,22 @@ class Patch():
 
       logger.debug('%s state changed to %s' % (self.get_id(), state_id))
 
+   def get_commit_ref(self):
+      return self.attributes['commit_ref']
+
+   def set_commit_ref(self, commit_ref):
+      if self.dry_run:
+         logger.debug('dry-run: %s().set_commit_ref(%s)' % (self, commit_ref))
+         return
+
+      params = {}
+      params['commit_ref'] = commit_ref
+      self.pw.rpc.patch_set(self.get_id(), params)
+
+      self.attributes['commit_ref'] = commit_ref
+
+      logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
+
    def get_mbox(self):
       if self.mbox == None:
          logger.debug('patch_get_mbox(%s)' % self.get_id())
@@ -679,6 +695,13 @@ class PWCLI():
 
          patch = self.project.get_patch(c['patchwork_id'])
 
+         # Set commit_ref so that we can use it when commiting the
+         # patch. This is actually stored to the server as well, even
+         # though it's not really needed in the server at this stage.
+         # This round trip also slows down the execution but I don't
+         # worry about speed right now.
+         patch.set_commit_ref(c['commit_id'])
+
          self.patches.append(patch)
 
       index = 0
@@ -822,6 +845,10 @@ class PWCLI():
          try:
             self.git.am(patch.get_mbox())
             applied.append(patch)
+
+            # FIXME: Retrieve the commit id and set commit_ref so that
+            # the commit id is visible in the web interface and it's
+            # possible to find the patchwork id based on commit id.
          except GitError as e:
             self.output('Failed to apply the patch: %s' % e)
             skipped.append(patch)
