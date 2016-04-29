@@ -142,6 +142,40 @@ class Stg():
       if ret != 0:
          raise GitError('%s failed: %s' % (cmd, ret))
 
+   def get_series(self):
+      cmd = ['stg', 'series', '--noprefix', '--all']
+
+      output = subprocess.check_output(cmd)
+      output = output.strip()
+
+      result = output.splitlines()
+
+      logger.debug('stg.get_series(): %s', result)
+      return result
+
+   def get_commit(self, patchname):
+      result = {}
+      cmd = ['stg', 'show', patchname]
+
+      output = subprocess.check_output(cmd)
+      output = output.strip()
+
+      match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
+      if match == None:
+         self.output('Commit id not found from patch: %s' % patchname)
+         return None
+
+      result['commit_id'] = match.group(1)
+
+      match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', output, re.MULTILINE)
+      if match == None:
+         self.output('Patchwork id not found from patch: %s' % patchname)
+         return None
+
+      result['patchwork_id'] = match.group(1)
+
+      return result
+
    def __init__(self, dry_run, output):
       self.dry_run = dry_run
       self.output = output
@@ -381,16 +415,10 @@ class Patch():
       self.mbox = None
 
 class Project():
-   def get_patches(self, state='Under Review', username=None):
+   def _get_patches(self, filters, username=None):
       results = []
 
-      filters = {}
-      filters['project_id'] = self.id
-
-      if state != None:
-         filters['state_id'] = self.pw.get_state_id(state)
-
-      logger.debug('%s().get_patches(filters=%s)' % (self, repr(filters)))
+      logger.debug('%s()._get_patches(filters=%s)' % (self, repr(filters)))
       patches = self.pw.rpc.patch_list(filters)
       logger.debug('patches:\n%s' % pretty(patches))
 
@@ -404,6 +432,30 @@ class Project():
          logger.debug('added patch %s' % patch)
 
       return results
+
+   def get_patches(self, state='Under Review', username=None):
+      filters = {}
+      filters['project_id'] = self.id
+
+      if state != None:
+         filters['state_id'] = self.pw.get_state_id(state)
+
+      return self._get_patches(filters, username)
+
+   def get_patch(self, patchwork_id):
+      filters = {}
+      filters['id'] = patchwork_id
+
+      results = self._get_patches(filters)
+
+      if len(results) > 1:
+         self.output('Multiple patches found with same patchwork id %s' % (patchwork_id))
+         return None
+      elif len(results) == 0:
+         self.output('patchwork id %s not found' % (patchwork_id))
+         return None
+
+      return results[0]
 
    def __str__(self):
        return 'Project(name=%s, id=%s)' % (self.name, self.id)
@@ -613,8 +665,38 @@ class PWCLI():
       logger.debug('cmd_quit(args=%s)' % repr(args))
       sys.exit(0)
 
+   def cmd_list_stgit_review(self):
+      stg_series = self.stg.get_series()
+      self.patches = []
+
+      # FIXME: add "progress bar" as patches are retrieved from the
+      # server and can take sometime
+      for stg_commit_name in stg_series:
+         c = self.stg.get_commit(stg_commit_name)
+
+         if c == None:
+            continue
+
+         patch = self.project.get_patch(c['patchwork_id'])
+
+         self.patches.append(patch)
+
+      index = 0
+      for patch in self.patches:
+         self.output('[%3d] %s %s' % (index, patch.get_id(), patch.get_name()))
+         index += 1
+
+      # FIXME: Sanity check that the patches match with what is in
+      # patchwork in review state. If there are differences that
+      # should be printed.
+
    def cmd_list(self, args):
       logger.debug('cmd_list(args=%s)' % repr(args))
+
+      # special handling if stgit is used
+      if self.pending_mode == 'stgit' and args.state == 'review':
+         self.cmd_list_stgit_review()
+         return
 
       if args.state == 'review':
          state = 'Under Review'
