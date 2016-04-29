@@ -213,6 +213,24 @@ class Git():
 
       return None
 
+   # removes a line matching filter from the commit in HEAD
+   def filter_msg(self, filter_string):
+      sed_cmd = 'sed -e "/%s/d"' % (filter_string)
+
+      # --force switch is to work around error "Cannot create a new backup.
+      # --A previous backup already exists in refs/original/"
+
+      cmd = ['git', 'filter-branch', '--force', '--msg-filter', sed_cmd, 'HEAD^..HEAD']
+
+      subprocess.check_output(cmd)
+
+   def cherry_pick(self, commit_id):
+      cmd = ['git', 'cherry-pick', commit_id]
+      subprocess.check_output(cmd)
+
+      # FIXME: if the cherry-pick fails (conflicts or whatnot) we
+      # should run git cherry-pick --abort to cleanup
+
    def checkout(self, branch):
       cmd = ['git', 'checkout', branch]
       subprocess.check_output(cmd)
@@ -682,8 +700,11 @@ class PWCLI():
       sys.exit(0)
 
    def cmd_list_stgit_review(self):
-      stg_series = self.stg.get_series()
       self.patches = []
+
+      self.git.checkout(self.pending_branch)
+
+      stg_series = self.stg.get_series()
 
       # FIXME: add "progress bar" as patches are retrieved from the
       # server and can take sometime
@@ -788,7 +809,11 @@ class PWCLI():
          self.patches[i].get_mbox()
          j += 1
 
+      # FIXME: should be self.output('')
       print
+
+      if self.pending_mode == 'stgit':
+         self.git.checkout(self.main_branch)
 
       num = 1
       applied = []
@@ -799,6 +824,8 @@ class PWCLI():
          skip = False
 
          while True:
+            # FIXME: in stgit mode we should show the commit log from
+            # pending branch
             self.show_patch(patch)
 
             while True:
@@ -843,7 +870,25 @@ class PWCLI():
 
          # apply the patch
          try:
-            self.git.am(patch.get_mbox())
+            if self.pending_mode == 'stgit':
+               # FIXME: add sanity check that the patch really is in
+               # review state. Also applies to main ('non-pending')
+               # mode?
+
+               # The pwcli commit command always requires the list
+               # command to be run first, which always sets the
+               # commit_ref (in stgit mode) so we can assume that the
+               # patch has correct commit_ref set.
+               self.git.cherry_pick(patch.get_commit_ref())
+
+               # FIXME: remove Patchwork-Id from the commit log
+               # git commit --amend --file=-
+               # better:
+               # git filter-branch --msg-filter 'sed -e "//d"' HEAD^..HEAD
+               self.git.filter_msg('^Patchwork-Id:')
+            else:
+               self.git.am(patch.get_mbox())
+
             applied.append(patch)
 
             # FIXME: Retrieve the commit id and set commit_ref so that
