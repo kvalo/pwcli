@@ -684,8 +684,11 @@ class PWCLI():
       else:
          username = None
 
-      # FIXME: in stgit mode we should get the count from the pending branch
-      review = len(self.project.get_patches('Under Review', username))
+      # in stgit mode we should get the count from the pending branch
+      if self.pending_mode == 'stgit':
+         review = len(self.get_pending_branch_patches())
+      else:
+         review = len(self.project.get_patches('Under Review', username))
 
       new = len(self.project.get_patches('New', username))
       upstream = len(self.project.get_patches('Awaiting Upstream', username))
@@ -698,16 +701,8 @@ class PWCLI():
       self.print_header('Deferred', deferred)
       self.print_header('Total', total)
 
-   def cmd_help(self, args):
-      logger.debug('cmd_help(args=%s)' % repr(args))
-      self.parser.print_help()
-
-   def cmd_quit(self, args):
-      logger.debug('cmd_quit(args=%s)' % repr(args))
-      sys.exit(0)
-
-   def cmd_list_stgit_review(self):
-      self.patches = []
+   def get_pending_branch_patches(self):
+      patches = []
 
       self.git.checkout(self.pending_branch)
 
@@ -730,7 +725,20 @@ class PWCLI():
          # worry about speed right now.
          patch.set_commit_ref(c['commit_id'])
 
-         self.patches.append(patch)
+         patches.append(patch)
+
+      return patches
+
+   def cmd_help(self, args):
+      logger.debug('cmd_help(args=%s)' % repr(args))
+      self.parser.print_help()
+
+   def cmd_quit(self, args):
+      logger.debug('cmd_quit(args=%s)' % repr(args))
+      sys.exit(0)
+
+   def cmd_list_stgit_review(self):
+      self.patches = self.get_pending_branch_patches()
 
       index = 0
       for patch in self.patches:
