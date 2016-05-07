@@ -737,25 +737,8 @@ class PWCLI():
       logger.debug('cmd_quit(args=%s)' % repr(args))
       sys.exit(0)
 
-   def cmd_list_stgit_review(self):
-      self.patches = self.get_pending_branch_patches()
-
-      index = 0
-      for patch in self.patches:
-         self.output('[%3d] %s %s' % (index, patch.get_id(), patch.get_name()))
-         index += 1
-
-      # FIXME: Sanity check that the patches match with what is in
-      # patchwork in review state. If there are differences that
-      # should be printed.
-
    def cmd_list(self, args):
       logger.debug('cmd_list(args=%s)' % repr(args))
-
-      # special handling if stgit is used
-      if self.pending_mode == 'stgit' and args.state == 'review':
-         self.cmd_list_stgit_review()
-         return
 
       if args.state == 'review':
          state = 'Under Review'
@@ -777,7 +760,10 @@ class PWCLI():
       else:
          username = None
 
-      self.patches = self.project.get_patches(state, username)
+      if self.pending_mode == 'stgit' and state == 'Under Review':
+         self.patches = self.get_pending_branch_patches()
+      else:
+         self.patches = self.project.get_patches(state, username)
 
       index = 0
       for patch in self.patches:
