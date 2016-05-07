@@ -670,17 +670,24 @@ class PWCLI():
 
    def show_info(self):
       self.print_header('User', '%s (%s)' % (self.username, self.user_ids))
-      self.print_header('Project', self.project.name)
+      self.print_header('Projects', ' '.join(self.project_names))
       self.print_header('Tree', self.tree)
-      self.print_header('Branch', self.git.get_branch())
+
+      if self.pending_mode == 'stgit':
+         self.print_header('Main branch', self.main_branch)
+         self.print_header('Pending branch', self.pending_branch)
+      else:
+         self.print_header('Branch', self.git.get_branch())
 
       if self.default_filter_delegated:
          username = self.username
       else:
          username = None
 
-      new = len(self.project.get_patches('New', username))
+      # FIXME: in stgit mode we should get the count from the pending branch
       review = len(self.project.get_patches('Under Review', username))
+
+      new = len(self.project.get_patches('New', username))
       upstream = len(self.project.get_patches('Awaiting Upstream', username))
       deferred = len(self.project.get_patches('Deferred', username))
       total = new + review + upstream + deferred
@@ -1072,6 +1079,34 @@ class PWCLI():
 
       self.show_info()
 
+   def cmd_project(self, args):
+      logger.debug('cmd_project(args=%r)' % repr(args))
+
+      if args.index == None:
+         self.output('Projects:')
+         i = 0
+         for project in self.projects:
+            if self.project == project:
+               selected = '*'
+            else:
+               selected = ' '
+
+            self.output('%s %d: %s' % (selected, i, project.name))
+
+            i += 1
+
+         return
+
+      try:
+         index = int(args.index)
+      except ValueError as e:
+         self.output('Failed to convert index to integer: %s' % e)
+         return
+
+      self.project = self.projects[index]
+
+      self.output('Switched to project: %s' % (self.project.name))
+
    def run_shell(self):
       self.parser = argparse.ArgumentParser(description='pwcli shell', prog='',
                                     add_help=False)
@@ -1103,6 +1138,10 @@ class PWCLI():
       parser_reply = subparsers.add_parser('reply')
       parser_reply.add_argument('id', metavar='ID', nargs=1)
       parser_reply.set_defaults(func=self.cmd_reply)
+
+      parser_project = subparsers.add_parser('project')
+      parser_project.add_argument('index', metavar='INDEX', nargs='?')
+      parser_project.set_defaults(func=self.cmd_project)
 
       subparsers.add_parser('info').set_defaults(func=self.cmd_info)
 
@@ -1197,7 +1236,9 @@ class PWCLI():
       self.url = self.config.get('general', 'url')
       self.username = self.config.get('general', 'username')
       self.password = self.config.get('general', 'password')
-      self.project_name = self.config.get('general', 'project')
+      self.project_names = self.config.get('general', 'project')
+
+      self.project_names = self.project_names.split()
 
       # FIXME: ConfigParser supports providing defaults as a dict, use
       # those instead. Also maybe it's better to use self.config
@@ -1261,7 +1302,7 @@ class PWCLI():
       logger.debug('email=%s' % self.email)
       logger.debug('url=%s' % self.url)
       logger.debug('username=%s' % self.username)
-      logger.debug('project_name=%s' % self.project_name)
+      logger.debug('project_name=%s' % self.project_names)
       logger.debug('editor=%s' % self.editor)
       logger.debug('smtp_host=%s' % self.smtp_host)
       logger.debug('smtp_port=%s' % self.smtp_port)
@@ -1271,7 +1312,14 @@ class PWCLI():
       self.output('Connecting to %s' % self.url)
 
       self.pw = Patchwork(self.url, self.username, self.password)
-      self.project = Project(self.project_name, self.pw, self.dry_run)
+
+      self.projects = []
+      for project_name in self.project_names:
+         self.projects.append(Project(project_name, self.pw, self.dry_run))
+
+      # select the first project as initial project
+      self.project = self.projects[0]
+
       self.user_ids = self.pw.get_user_ids(self.username)
       self.tree = os.path.basename(os.getcwd())
 

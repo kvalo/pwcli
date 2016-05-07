@@ -1,6 +1,6 @@
 Connecting to http://localhost:8000/
 User          : test ([7477, 30052, 118371])
-Project       : stub-test
+Projects      : stub-test
 Tree          : data
 Branch        : test-branch
 New           : 1
