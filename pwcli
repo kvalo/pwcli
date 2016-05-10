@@ -949,20 +949,7 @@ class PWCLI():
 
          self.output('')
 
-      while True:
-         answer = self.input('Update state in patchwork? [y/N] ')
-         answer = answer.lower()
-
-         if answer == 'y':
-            for patch in applied:
-               patch.set_state_name('Accepted')
-
-            break
-
-         if answer == 'n' or len(answer) == 0:
-            break
-
-      # send "applied" email
+      # create the "Thanks, applied" email
       patch = applied[0]
       reply = patch.get_reply_msg(self.fullname, self.email)
 
@@ -993,7 +980,64 @@ class PWCLI():
 
       reply.set_payload(payload)
 
-      self.send_email(reply)
+      while True:
+
+         while True:
+            choices = 'Accept/request Changes/Reject/Show mail/Edit mail/aBort? '
+            answer = self.input(choices)
+            answer = answer.lower()
+
+            valid = ['a', 'c', 'r', 's', 'e', 'b']
+
+            if answer in valid:
+               break
+
+            self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                       ', '.join(valid)))
+
+         if answer == 'a':
+            # Accept
+            for patch in applied:
+               patch.set_state_name('Accepted')
+
+            # FIXME: what to do with skipped patches?
+            self.output('%d patches accepted, %d skipped' % (len(applied),
+                                                             len(skipped)))
+
+            self.send_email(reply)
+
+            self.output('Email sent')
+
+            break
+
+         if answer == 'c':
+            # request Changes
+
+            # sets all patches to 'Changes Requested' and creates an
+            # email requesting changes (send_email(edit=True))
+            self.output('FIXME: implement')
+
+         if answer == 'r':
+            # Reject
+            # sets all patches to 'Rejected' and creates an
+            # email stating the reason (send_email(edit=True))
+            self.output('FIXME: implement')
+
+         if answer == 's':
+            # Show mail
+            self.output(reply.as_string())
+
+         if answer == 'e':
+            # Edit mail
+            buf = self.edit_file(reply.as_string())
+
+            # FIXME: check if the mail is malformed
+            reply = email.message_from_string(buf)
+
+         if answer == 'b':
+            # aBort
+            self.output('Aborted commit command')
+            return
 
    def cmd_show(self, args):
       logger.debug('cmd_show(args=%s)' % repr(args))

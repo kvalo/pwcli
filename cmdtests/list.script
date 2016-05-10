@@ -39,8 +39,8 @@ def main():
    child.sendline('commit 1')
    child.expect('commit All/commit Individually/aBort\?')
    child.sendline('a')
-   child.expect('Update state in patchwork\? \[y/N\]')
-   child.sendline('y')
+   child.expect('Accept/request Changes/Reject/Show mail/Edit mail/aBort?')
+   child.sendline('a')
    child.expect('Send/Edit/Abort\?')
    child.sendline('s')
 

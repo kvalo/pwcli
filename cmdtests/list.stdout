@@ -25,8 +25,9 @@ a
 
 fb409caeb2ec foo: test 1
 
-Update state in patchwork? [y/N] y
-y
+Accept/request Changes/Reject/Show mail/Edit mail/aBort? a
+a
+1 patches accepted, 0 skipped
 ============================================================
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
@@ -54,6 +55,7 @@ Envelope To: ['Dino Dinosaurus <dino@example.com>']
 Send/Edit/Abort? s
 s
 smtpd: test@example.com -> dino@example.com
+Email sent
 test-branch@data > quit
 mails: ['0']
 smtpddir/0:
