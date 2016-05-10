@@ -437,6 +437,11 @@ class Patch():
 
       return reply
 
+   def get_email_signature(self):
+      signature = '-- \nSent by pwcli\n'
+
+      return signature
+
    def get_log(self):
       msg = self.get_email()
       payload = msg.get_payload()
@@ -1010,7 +1015,7 @@ class PWCLI():
          for patch in skipped:
             payload += '%s\n' % patch.get_name()
 
-      payload += '\n%s\n' % self.fullname
+      payload += '\n%s\n' % patch.get_email_signature()
 
       reply.set_payload(payload)
 
@@ -1176,6 +1181,10 @@ class PWCLI():
 
       patch = self.patches[i - 1]
       reply = patch.get_reply_msg(self.fullname, self.email)
+
+      payload = reply.get_payload()
+      payload += '\n%s\n' % (patch.get_email_signature())
+      reply.set_payload(payload)
 
       reply = self.edit_email(reply)
 
