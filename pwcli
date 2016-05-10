@@ -378,9 +378,16 @@ class Patch():
       # create body
       quote = []
 
-      # FIXME: add 'Foo wrote:'
+      (name, address) = email.utils.parseaddr(msg['From'])
+      if len(name) > 0 and len(address) > 0:
+         who = '%s <%s>' % (name, address)
+      elif len(address) > 0:
+         who = address
+      else:
+         who = None
 
-      quote.append('')
+      if who:
+         quote.append('%s wrote:' % (who))
 
       for line in log.splitlines():
          quote.append('> %s' % line)
