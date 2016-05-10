@@ -28,7 +28,10 @@ def main():
    os.environ['STUB_SMTPD_DATADIR'] = smtpddir
    
    os.chdir('..')
-   child = pexpect.spawn('./run_stub')
+
+   # use short timeout so that failures don't take too long to detect
+   child = pexpect.spawn('./run_stub', timeout=3)
+
    child.logfile = sys.stdout
    child.expect(PROMPT)
    child.sendline('list')
