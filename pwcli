@@ -775,6 +775,7 @@ class PWCLI():
    def cmd_commit(self, args):
       logger.debug('cmd_commit(args=%s)' % repr(args))
       indexes = parse_list(args.ids)
+      selected = []
 
       if self.patches == None:
          self.output('No patches listed, forgot to run list command?')
@@ -784,6 +785,7 @@ class PWCLI():
          self.output('No patches available, doing nothing.')
          return
 
+      # sanity check and populate selected[]
       for index in indexes:
          if index - 1 > len(self.patches):
             self.output('Patch index %d not found, max %d' %
@@ -794,9 +796,11 @@ class PWCLI():
             self.output('Invalid patch list index: %d %d' % (index))
             return
 
-      if len(indexes) > 1:
+         patch = self.patches[index - 1]
+         selected.append(patch)
+
+      if len(selected) > 1:
          for i in indexes:
-            patch = self.patches[i - 1]
             self.output('[%-3d] %s %s' % (i, patch.get_id(), patch.get_name()))
 
          self.output('------------------------------------------------------------')
@@ -809,11 +813,11 @@ class PWCLI():
 
       # retrieve all mbox files in one for "smoother user experience"
       j = 1
-      for i in indexes:
-         print '\rRetrieving patches (%d/%d)' % (j, len(indexes)),
+      for patch in selected:
+         print '\rRetrieving patches (%d/%d)' % (j, len(selected)),
          sys.stdout.flush()
 
-         self.patches[i - 1].get_mbox()
+         patch.get_mbox()
          j += 1
 
       # FIXME: should be self.output('')
@@ -825,9 +829,7 @@ class PWCLI():
       num = 1
       applied = []
       skipped = []
-      for i in indexes:
-         patch = self.patches[i - 1]
-
+      for patch in selected:
          skip = False
 
          while True:
@@ -836,7 +838,8 @@ class PWCLI():
             self.show_patch(patch)
 
             while True:
-               answer = self.input('[%d/%d] Commit/Edit/Skip/Abort? ' % (num, len(indexes)))
+               answer = self.input('[%d/%d] Commit/Edit/Skip/Abort? ' % (num,
+                                                                         len(selected)))
                answer = answer.lower()
 
                valid = ['c', 'e', 's', 'a']
