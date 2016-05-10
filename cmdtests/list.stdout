@@ -28,32 +28,6 @@ fb409caeb2ec foo: test 1
 Accept/request Changes/Reject/Show mail/Edit mail/aBort? a
 a
 1 patches accepted, 0 skipped
-============================================================
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [1/7] foo: test 1
-From: Timo Testi <test@example.com>
-In-Reply-To: <11111@example.com>
-To: Dino Dinosaurus <dino@example.com>
-
-
-> 
-> Foo commit log. Ignore this text
-> 
-> Signed-off-by: Dino Dinosaurus <dino@example.com>
-
-Thanks, 1 patch applied to data.git:
-
-fb409caeb2ec foo: test 1
-
-Timo Testi
-
-============================================================
-Envelope From: Timo Testi <test@example.com>
-Envelope To: ['Dino Dinosaurus <dino@example.com>']
-Send/Edit/Abort? s
-s
 smtpd: test@example.com -> dino@example.com
 Email sent
 test-branch@data > quit

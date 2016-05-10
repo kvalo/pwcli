@@ -574,7 +574,7 @@ class Patchwork():
 
 class PWCLI():
 
-   def send_email(self, msg):
+   def send_email(self, msg, edit_email=True):
       logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
 
       # FIXME: check that email configs are set
@@ -598,6 +598,10 @@ class PWCLI():
          if 'Cc' in msg:
             for person in msg['Cc'].split(','):
                envelope_to.append(clean(person))
+
+         if not edit_email:
+            # no need to edit mail, just send it
+            break
 
          self.output('============================================================')
          self.output(msg.as_string())
@@ -1000,11 +1004,16 @@ class PWCLI():
             for patch in applied:
                patch.set_state_name('Accepted')
 
-            # FIXME: what to do with skipped patches?
             self.output('%d patches accepted, %d skipped' % (len(applied),
                                                              len(skipped)))
 
-            self.send_email(reply)
+            edit_email = True
+
+            if len(skipped) == 0:
+               # as there were no problems no need edit email
+               edit_email = False
+
+            self.send_email(reply, edit_email=edit_email)
 
             self.output('Email sent')
 

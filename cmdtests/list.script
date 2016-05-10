@@ -41,8 +41,6 @@ def main():
    child.sendline('a')
    child.expect('Accept/request Changes/Reject/Show mail/Edit mail/aBort?')
    child.sendline('a')
-   child.expect('Send/Edit/Abort\?')
-   child.sendline('s')
 
    child.expect(PROMPT)
    child.sendline('quit')
