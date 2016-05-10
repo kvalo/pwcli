@@ -1302,6 +1302,13 @@ class PWCLI():
       logger.debug('smtp_port=%s' % self.smtp_port)
       logger.debug('smtp_encryption=%s' % self.smtp_encryption)
       logger.debug('smtp_username=%s' % self.smtp_username)
+
+      if self.smtp_password != None:
+         passwd = '<hidden>'
+      else:
+         passwd = '<not set>'
+
+      logger.debug('smtp_password=%s' % passwd)
       
       self.output('Connecting to %s' % self.url)
 
