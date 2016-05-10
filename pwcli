@@ -669,7 +669,9 @@ class PWCLI():
       self.output('============================================================')
 
    def show_info(self):
-      self.print_header('User', '%s (%s)' % (self.username, self.user_ids))
+      user_ids = ', '.join(str(v) for v in self.user_ids)
+
+      self.print_header('User', '%s (%s)' % (self.username, user_ids))
       self.print_header('Projects', ' '.join(self.project_names))
       self.print_header('Tree', self.tree)
 
