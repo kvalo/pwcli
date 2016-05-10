@@ -312,6 +312,9 @@ class Patch():
 
       logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
 
+   def get_url(self):
+      return '%s%s/' % (self.pw.patch_url, self.get_id())
+
    def get_mbox(self):
       if self.mbox == None:
          logger.debug('patch_get_mbox(%s)' % self.get_id())
@@ -438,7 +441,7 @@ class Patch():
       return reply
 
    def get_email_signature(self):
-      signature = '-- \nSent by pwcli\n'
+      signature = '-- \nSent by pwcli\n%s\n' % (self.get_url())
 
       return signature
 
@@ -576,6 +579,8 @@ class Patchwork():
       return ids
          
    def __init__(self, url, username, password):
+      self.xmlrpc_url = url
+      self.patch_url = url.replace('/xmlrpc/', '/patch/')
       https = url.startswith('https')
       transport = AuthTransport(username, password, https)
       self.rpc = xmlrpclib.Server(url, transport = transport)
