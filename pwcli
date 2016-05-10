@@ -799,18 +799,6 @@ class PWCLI():
          patch = self.patches[index - 1]
          selected.append(patch)
 
-      if len(selected) > 1:
-         for i in indexes:
-            self.output('[%-3d] %s %s' % (i, patch.get_id(), patch.get_name()))
-
-         self.output('------------------------------------------------------------')
-
-         answer = self.input('Continue? [y/N] ')
-         answer = answer.lower()
-
-         if answer != 'y':
-            return
-
       # retrieve all mbox files in one for "smoother user experience"
       j = 1
       for patch in selected:
@@ -820,8 +808,39 @@ class PWCLI():
          patch.get_mbox()
          j += 1
 
-      # FIXME: should be self.output('')
-      print
+      # newline to clear the "progress bar"
+      self.output('')
+
+      for patch in selected:
+         self.output('%s %s' % (patch.get_id(), patch.get_name()))
+
+      self.output('------------------------------------------------------------')
+      self.output('%d patches' % len(selected))
+
+      while True:
+         answer = self.input('commit All/commit Individually/aBort? ')
+         answer = answer.lower()
+
+         valid = ['a', 'i', 'b']
+
+         if answer in valid:
+            break
+
+         self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                       ', '.join(valid)))
+
+      if answer == 'a':
+         # commit All
+         commit_individually = False
+
+      if answer == 'i':
+         # commit Individually
+         commit_individually = True
+
+      if answer == 'b':
+         # aBort
+         self.output('Aborted commit command')
+         return
 
       if self.pending_mode == 'stgit':
          self.git.checkout(self.main_branch)
@@ -832,10 +851,12 @@ class PWCLI():
       for patch in selected:
          skip = False
 
-         while True:
+         while commit_individually:
             # FIXME: in stgit mode we should show the commit log from
             # pending branch
             self.show_patch(patch)
+
+            answer = None
 
             while True:
                answer = self.input('[%d/%d] Commit/Edit/Skip/Abort? ' % (num,
@@ -908,6 +929,7 @@ class PWCLI():
             self.output('Failed to apply the patch: %s' % e)
             skipped.append(patch)
 
+      # FIXME: should also summary if none of the patches were applied
       if len(applied) == 0:
          return
 
