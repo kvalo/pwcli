@@ -973,7 +973,7 @@ class PWCLI():
       self.show_patch(patch)
 
    def cmd_review(self, args):
-      logger.debug('cmd_commit(args=%r)' % args)
+      logger.debug('cmd_review(args=%r)' % args)
       indexes = parse_list(args.ids)
 
       if self.patches == None:
