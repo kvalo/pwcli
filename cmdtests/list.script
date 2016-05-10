@@ -33,7 +33,7 @@ def main():
    child.expect(PROMPT)
    child.sendline('list')
    child.expect(PROMPT)
-   child.sendline('commit 0')
+   child.sendline('commit 1')
    child.expect('\[1/1\] Commit/Edit/Skip/Abort\?')
    child.sendline('c')
    child.expect('Update state in patchwork\? \[y/N\]')

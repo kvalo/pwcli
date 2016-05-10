@@ -767,7 +767,7 @@ class PWCLI():
       else:
          self.patches = self.project.get_patches(state, username)
 
-      index = 0
+      index = 1
       for patch in self.patches:
          self.output('[%3d] %s %s' % (index, patch.get_id(), patch.get_name()))
          index += 1
@@ -785,14 +785,18 @@ class PWCLI():
          return
 
       for index in indexes:
-         if index > len(self.patches):
+         if index - 1 > len(self.patches):
             self.output('Patch index %d not found, max %d' %
                         (index, len(self.patches)))
             return
 
+         if index - 1 < 0:
+            self.output('Invalid patch list index: %d %d' % (index))
+            return
+
       if len(indexes) > 1:
          for i in indexes:
-            patch = self.patches[i]
+            patch = self.patches[i - 1]
             self.output('[%-3d] %s %s' % (i, patch.get_id(), patch.get_name()))
 
          self.output('------------------------------------------------------------')
@@ -809,7 +813,7 @@ class PWCLI():
          print '\rRetrieving patches (%d/%d)' % (j, len(indexes)),
          sys.stdout.flush()
 
-         self.patches[i].get_mbox()
+         self.patches[i - 1].get_mbox()
          j += 1
 
       # FIXME: should be self.output('')
@@ -822,7 +826,7 @@ class PWCLI():
       applied = []
       skipped = []
       for i in indexes:
-         patch = self.patches[i]
+         patch = self.patches[i - 1]
 
          skip = False
 
@@ -975,7 +979,7 @@ class PWCLI():
          self.output('Failed to convert index to integer: %s' % e)
          return
 
-      patch = self.patches[i]
+      patch = self.patches[i - 1]
       self.show_patch(patch)
 
    def cmd_review(self, args):
@@ -999,7 +1003,7 @@ class PWCLI():
       selected_patches = []
 
       for i in indexes:
-         selected_patches.append(self.patches[i])
+         selected_patches.append(self.patches[i - 1])
 
       # retrieve all mbox files in one for "smoother user experience"
       i = 1
@@ -1067,7 +1071,7 @@ class PWCLI():
          self.output('Patch index %d not found' % i)
          return
 
-      patch = self.patches[i]
+      patch = self.patches[i - 1]
       reply = patch.get_reply_msg(self.fullname, self.email)
 
       buf = self.edit_file(reply.as_string())
