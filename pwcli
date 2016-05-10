@@ -574,60 +574,33 @@ class Patchwork():
 
 class PWCLI():
 
-   def send_email(self, msg, edit_email=True):
+   def send_email(self, msg):
       logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
 
       # FIXME: check that email configs are set
 
-      while True:
+      if 'From' not in msg:
+         self.output('No From header found in the message')
+         return
 
-         if 'From' not in msg:
-            self.output('No From header found in the message')
-            return
+      if 'To' not in msg:
+         self.output('No To header found in the message')
+         return
 
-         if 'To' not in msg:
-            self.output('No To header found in the message')
-            return
+      envelope_from = msg['From']
 
-         envelope_from = msg['From']
-
-         envelope_to = []
-         for person in msg['To'].split(','):
-            envelope_to.append(clean(person))
+      envelope_to = []
+      for person in msg['To'].split(','):
+         envelope_to.append(clean(person))
       
-         if 'Cc' in msg:
-            for person in msg['Cc'].split(','):
-               envelope_to.append(clean(person))
+      if 'Cc' in msg:
+         for person in msg['Cc'].split(','):
+            envelope_to.append(clean(person))
 
-         if not edit_email:
-            # no need to edit mail, just send it
-            break
-
-         self.output('============================================================')
-         self.output(msg.as_string())
-         self.output('============================================================')
-
-         self.output('Envelope From: %s' % envelope_from)
-         self.output('Envelope To: %s' % envelope_to)
-
-         answer = self.input('Send/Edit/Abort? ')
-         answer = answer.lower()
-
-         if answer == 'a':
-            self.output('Aborted send email')
-            return
-
-         if answer == 'e':
-            buf = self.edit_file(msg.as_string())
-            msg = email.message_from_string(buf)
-            continue
-
-         if answer == 's':
-            # send email
-            break
-
-      logger.debug('sending email %s -> %s: %s' % (envelope_from, envelope_to,
-                                                   repr(str(msg))))
+      logger.debug('%s.send_email(): %s -> %s\n%r' % (self,
+                                                      envelope_from,
+                                                      envelope_to,
+                                                      msg.as_string()))
 
       if self.dry_run:
          self.output('Dry-run: %s -> %s' % (envelope_from, envelope_to))
@@ -649,6 +622,56 @@ class PWCLI():
          return
 
       logger.debug('email sent to %s:%s' % (self.smtp_host, self.smtp_port))
+
+   def edit_email(self, msg):
+      logger.debug('%s.edit_email(msg=%r)' % (self, msg.as_string()))
+
+      while True:
+
+         if 'From' not in msg:
+            self.output('No From header found in the message')
+            return
+
+         if 'To' not in msg:
+            self.output('No To header found in the message')
+            return
+
+         envelope_from = msg['From']
+
+         envelope_to = []
+         for person in msg['To'].split(','):
+            envelope_to.append(clean(person))
+      
+         if 'Cc' in msg:
+            for person in msg['Cc'].split(','):
+               envelope_to.append(clean(person))
+
+         self.output('============================================================')
+         self.output(msg.as_string())
+         self.output('============================================================')
+
+         self.output('Envelope From: %s' % envelope_from)
+         self.output('Envelope To: %s' % envelope_to)
+
+         answer = self.input('Send/Edit/Abort? ')
+         answer = answer.lower()
+
+         if answer == 's':
+            # Send
+            return msg
+         elif answer == 'e':
+            # Edit
+            buf = self.edit_file(msg.as_string())
+            msg = email.message_from_string(buf)
+         elif answer == 'a':
+            # Abort
+            self.output('Aborted send email')
+            return None
+         else:
+            self.output('Unknown choise: %s' % (answer))
+
+      # should not reach this
+      return None
 
    def edit_file(self, buf):
       f = open(PWCLI_EDIT_FILE, 'w')
@@ -1007,13 +1030,8 @@ class PWCLI():
             self.output('%d patches accepted, %d skipped' % (len(applied),
                                                              len(skipped)))
 
-            edit_email = True
-
-            if len(skipped) == 0:
-               # as there were no problems no need edit email
-               edit_email = False
-
-            self.send_email(reply, edit_email=edit_email)
+            # FIXME: what to do if there are skipped patches?
+            self.send_email(reply)
 
             self.output('Email sent')
 
@@ -1152,10 +1170,11 @@ class PWCLI():
       patch = self.patches[i - 1]
       reply = patch.get_reply_msg(self.fullname, self.email)
 
-      buf = self.edit_file(reply.as_string())
+      reply = self.edit_email(reply)
 
-      reply = email.message_from_string(buf)
-
+      if reply == None:
+         return
+      
       self.send_email(reply)
 
    def cmd_info(self, args):
