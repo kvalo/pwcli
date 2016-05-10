@@ -48,7 +48,9 @@ To: Dino Dinosaurus <dino@example.com>
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Thanks, applied to data.git.
+Thanks, 1 patch applied to data.git:
+
+fb409caeb2ec foo: test 1
 
 Timo Testi
 
@@ -76,6 +78,8 @@ To: Dino Dinosaurus <dino@example.com>
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Thanks, applied to data.git.
+Thanks, 1 patch applied to data.git:
+
+fb409caeb2ec foo: test 1
 
 Timo Testi

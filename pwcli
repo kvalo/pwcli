@@ -940,19 +940,25 @@ class PWCLI():
       payload = reply.get_payload()
       tree_name = '%s.git' % self.tree
 
+      # empty line after the quotation
       payload += '\n'
 
-      if len(applied) == 1:
-         payload += 'Thanks, applied to %s.\n' % tree_name
-      else:
-         payload += 'Thanks, %d patches applied to %s:\n\n' % (len(applied),
-                                                             tree_name)
-         payload += '%s\n' % self.git.log_oneline(len(applied))
+      # FIXME: what if len(applied) is zero?
 
-         if len(skipped) > 0:
-            payload += '\n%d patches skipped:\n\n' % len(skipped)
-            for patch in skipped:
-               payload += '%s\n' % patch.get_name()
+      if len(applied) == 1:
+         patches_str = 'patch'
+      else:
+         patches_str = 'patches'
+
+      payload += 'Thanks, %d %s applied to %s:\n\n' % (len(applied),
+                                                       patches_str,
+                                                       tree_name)
+      payload += '%s\n' % self.git.log_oneline(len(applied))
+
+      if len(skipped) > 0:
+         payload += '\n%d patches skipped:\n\n' % len(skipped)
+         for patch in skipped:
+            payload += '%s\n' % patch.get_name()
 
       payload += '\n%s\n' % self.fullname
 
