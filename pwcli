@@ -335,7 +335,7 @@ class Patch():
       payload = msg.get_payload()
 
       # add Patchwork-Id with s/^---\n/Patchwork-Id: 1001\n---\n
-      id_line = 'Patchwork-Id: %s\n---\n' % (self.get_id())
+      id_line = '\nPatchwork-Id: %s\n---\n' % (self.get_id())
       payload = re.sub(r'\n---\n', id_line, payload)
       msg.set_payload(payload)
 
