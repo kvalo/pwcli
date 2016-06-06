@@ -759,7 +759,7 @@ class PWCLI():
       self.print_header('Tree', self.tree)
 
       if self.pending_mode == 'stgit':
-         self.print_header('Main branch', self.main_branch)
+         self.print_header('Main branches', ' '.join(self.main_branches))
          self.print_header('Pending branch', self.pending_branch)
       else:
          self.print_header('Branch', self.git.get_branch())
@@ -925,7 +925,7 @@ class PWCLI():
          return
 
       if self.pending_mode == 'stgit':
-         self.git.checkout(self.main_branch)
+         self.git.checkout(self.selected_main_branch)
 
       num = 1
       applied = []
@@ -1048,8 +1048,14 @@ class PWCLI():
       else:
          patches_str = 'patches'
 
-      payload += 'Thanks, %d %s applied to %s:\n\n' % (len(applied),
+      if self.pending_mode == 'stgit' and len(self.main_branches) > 1:
+         branch_name = '%s branch of ' % (self.selected_main_branch)
+      else:
+         branch_name = ''
+
+      payload += 'Thanks, %d %s applied to %s%s:\n\n' % (len(applied),
                                                        patches_str,
+                                                         branch_name,
                                                        tree_name)
       payload += '%s\n' % self.git.log_oneline(len(applied))
 
@@ -1270,6 +1276,38 @@ class PWCLI():
 
       self.output('Switched to project: %s' % (self.project.name))
 
+   def cmd_branch(self, args):
+      logger.debug('cmd_branch(args=%r)' % repr(args))
+
+      if args.index == None:
+         self.output('Main branches:')
+         i = 0
+         for branch in self.main_branches:
+            if self.selected_main_branch == branch:
+               selected = '*'
+            else:
+               selected = ' '
+
+            self.output('%s %d: %s' % (selected, i, branch))
+
+            i += 1
+
+         return
+
+      try:
+         index = int(args.index)
+      except ValueError as e:
+         self.output('Failed to convert index to integer: %s' % e)
+         return
+
+      if index > len(self.main_branches) - 1:
+         self.output('index out of bounds: %d' % index)
+         return
+
+      self.selected_main_branch = self.main_branches[index]
+
+      self.output('Switched main branch to: %s' % (self.selected_main_branch))
+
    def run_shell(self):
       self.parser = argparse.ArgumentParser(description='pwcli shell', prog='',
                                     add_help=False)
@@ -1306,12 +1344,20 @@ class PWCLI():
       parser_project.add_argument('index', metavar='INDEX', nargs='?')
       parser_project.set_defaults(func=self.cmd_project)
 
+      parser_project = subparsers.add_parser('branch')
+      parser_project.add_argument('index', metavar='INDEX', nargs='?')
+      parser_project.set_defaults(func=self.cmd_branch)
+
       subparsers.add_parser('info').set_defaults(func=self.cmd_info)
 
       while True:
          prompt = ''
 
-         prompt += '%s@%s ' % (self.git.get_branch(), self.tree)
+         if self.pending_mode == 'stgit':
+            branch = self.selected_main_branch
+         else:
+            branch = self.git.get_branch()
+         prompt += '%s@%s ' % (branch, self.tree)
 
          if self.dry_run:
             prompt += '(dry-run)'
@@ -1423,7 +1469,7 @@ class PWCLI():
       # defaults
       self.pending_mode = 'disabled'
       self.pending_branch = None
-      self.main_branch = None
+      self.main_branches = None
 
       if self.config.has_option('general', 'pending_mode'):
          self.pending_mode = self.config.get('general', 'pending_mode').lower()
@@ -1435,16 +1481,18 @@ class PWCLI():
       if self.config.has_option('general', 'pending_branch'):
          self.pending_branch = self.config.get('general', 'pending_branch').lower()
 
-      if self.config.has_option('general', 'main_branch'):
-         self.main_branch = self.config.get('general', 'main_branch').lower()
+      if self.config.has_option('general', 'main_branches'):
+         branches = self.config.get('general', 'main_branches').lower()
+         self.main_branches = branches.split()
+         self.selected_main_branch = self.main_branches[0]
 
       if self.pending_mode == 'stgit':
          if self.pending_branch == None:
             self.output('general.pending_branch not set')
             sys.exit(1)
 
-         if self.main_branch == None:
-            self.output('general.main_branch not set')
+         if self.main_branches == None:
+            self.output('general.main_branches not set')
             sys.exit(1)
 
       # read settings from environment variables
