@@ -591,6 +591,20 @@ class Patchwork():
 
 class PWCLI():
 
+   def create_patchlist_as_string(self, patches, show_indexes=False):
+      i = 1
+      index = ''
+      result = ''
+
+      for patch in patches:
+         if show_indexes:
+            index = '[%3d] ' % (i)
+
+         result += '%s%s %s\n' % (index, patch.get_id(), patch.get_name())
+         i += 1
+
+      return result.strip('\n')
+
    def send_email(self, msg):
       logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
 
@@ -811,10 +825,8 @@ class PWCLI():
       else:
          self.patches = self.project.get_patches(state, username)
 
-      index = 1
-      for patch in self.patches:
-         self.output('[%3d] %s %s' % (index, patch.get_id(), patch.get_name()))
-         index += 1
+      self.output(self.create_patchlist_as_string(self.patches,
+                                                  show_indexes=True))
 
    def cmd_commit(self, args):
       logger.debug('cmd_commit(args=%s)' % repr(args))
@@ -855,8 +867,8 @@ class PWCLI():
       # newline to clear the "progress bar"
       self.output('')
 
-      for patch in selected:
-         self.output('%s %s' % (patch.get_id(), patch.get_name()))
+      self.output(self.create_patchlist_as_string(selected,
+                                                  show_indexes=False))
 
       self.output('------------------------------------------------------------')
       self.output('%d patches' % len(selected))
@@ -1130,8 +1142,8 @@ class PWCLI():
       # force a newline so that new text starts from it's own line
       self.output('')
 
-      for patch in selected_patches:
-         self.output('%s %s' % (patch.get_id(), patch.get_name()))
+      self.output(self.create_patchlist_as_string(selected_patches,
+                                                  show_indexes=True))
 
       self.output('------------------------------------------------------------')
 
