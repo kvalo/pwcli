@@ -591,7 +591,24 @@ class Patchwork():
 
 class PWCLI():
 
-   def create_patchlist_as_string(self, patches, show_indexes=False):
+   def open_browser_url(self, url):
+      if not self.browser:
+         return
+
+      cmd = [self.browser, url]
+
+      # to avoid call() unnecessarily spamming stdout and stderr
+      devnull = open(os.devnull, "w")
+
+      returncode = subprocess.call(cmd, stdout=devnull, stderr=devnull)
+
+      devnull.close()
+
+      logger.debug('PWCLI.open_browser_url(url=%r): return code %d' % (url,
+                                                                       returncode))
+
+   def create_patchlist_as_string(self, patches, show_indexes=False,
+                                  open_browser=False):
       i = 1
       index = ''
       result = ''
@@ -601,6 +618,9 @@ class PWCLI():
             index = '[%3d] ' % (i)
 
          result += '%s%s %s\n' % (index, patch.get_id(), patch.get_name())
+         if open_browser:
+            self.open_browser_url(patch.get_url())
+
          i += 1
 
       return result.strip('\n')
@@ -868,7 +888,8 @@ class PWCLI():
       self.output('')
 
       self.output(self.create_patchlist_as_string(selected,
-                                                  show_indexes=False))
+                                                  show_indexes=False,
+                                                  open_browser=True))
 
       self.output('------------------------------------------------------------')
       self.output('%d patches' % len(selected))
@@ -1106,6 +1127,7 @@ class PWCLI():
 
       patch = self.patches[i - 1]
       self.show_patch(patch)
+      self.open_browser_url(patch.get_url())
 
    def cmd_review(self, args):
       logger.debug('cmd_review(args=%r)' % args)
@@ -1385,6 +1407,11 @@ class PWCLI():
                                                                 'default_filter_delegated')
       else:
          self.default_filter_delegated = True
+
+      if self.config.has_option('general', 'browser'):
+         self.browser = self.config.get('general', 'browser')
+      else:
+         self.browser = None
 
       pending_modes = ['disabled', 'stgit']
 
