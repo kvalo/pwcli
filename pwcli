@@ -226,6 +226,11 @@ class Git():
 
    def cherry_pick(self, commit_id):
       cmd = ['git', 'cherry-pick', commit_id]
+
+      if self.dry_run:
+            self.output('Dry-run: %s' % str(cmd))
+            return
+
       subprocess.check_output(cmd)
 
       # FIXME: if the cherry-pick fails (conflicts or whatnot) we
