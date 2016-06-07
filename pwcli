@@ -55,6 +55,17 @@ logger = logging.getLogger('pwcli')
 
 LOG_SEPARATOR = '\n---\n'
 
+PATCH_STATE_NEW = 'New'
+PATCH_STATE_UNDER_REVIEW = 'Under Review'
+PATCH_STATE_ACCEPTED = 'Accepted'
+PATCH_STATE_REJECTED = 'Rejected'
+PATCH_STATE_RFC = 'RFC'
+PATCH_STATE_NOT_APPLICABLE = 'Not Applicable'
+PATCH_STATE_CHANGES_REQUESTED = 'Changes Requested'
+PATCH_STATE_AWAITING_UPSTREAM = 'Awaiting Upstream'
+PATCH_STATE_SUPERSEDED = 'Superseded'
+PATCH_STATE_DEFERRED = 'Deferred'
+
 def utf8(buf):
    return unicode(buf).encode('utf-8')
 
@@ -487,7 +498,7 @@ class Project():
 
       return results
 
-   def get_patches(self, state='Under Review', username=None):
+   def get_patches(self, state=PATCH_STATE_UNDER_REVIEW, username=None):
       filters = {}
       filters['project_id'] = self.id
 
@@ -773,17 +784,17 @@ class PWCLI():
       if self.pending_mode == 'stgit':
          review = len(self.get_pending_branch_patches())
       else:
-         review = len(self.project.get_patches('Under Review', username))
+         review = len(self.project.get_patches(PATCH_STATE_UNDER_REVIEW, username))
 
-      new = len(self.project.get_patches('New', username))
-      upstream = len(self.project.get_patches('Awaiting Upstream', username))
-      deferred = len(self.project.get_patches('Deferred', username))
+      new = len(self.project.get_patches(PATCH_STATE_NEW, username))
+      upstream = len(self.project.get_patches(PATCH_STATE_AWAITING_UPSTREAM, username))
+      deferred = len(self.project.get_patches(PATCH_STATE_DEFERRED, username))
       total = new + review + upstream + deferred
 
-      self.print_header('New', new)
+      self.print_header(PATCH_STATE_NEW, new)
       self.print_header('Review', review)
       self.print_header('Upstream', upstream)
-      self.print_header('Deferred', deferred)
+      self.print_header(PATCH_STATE_DEFERRED, deferred)
       self.print_header('Total', total)
 
    def get_pending_branch_patches(self):
@@ -826,16 +837,16 @@ class PWCLI():
       logger.debug('cmd_list(args=%s)' % repr(args))
 
       if args.state == 'review':
-         state = 'Under Review'
+         state = PATCH_STATE_UNDER_REVIEW
       elif args.state == 'upstream':
-         state = 'Awaiting Upstream'
+         state = PATCH_STATE_AWAITING_UPSTREAM
       elif args.state == 'new':
-         state = 'New'
+         state = PATCH_STATE_NEW
       elif args.state == 'deferred':
-         state = 'Deferred'
+         state = PATCH_STATE_DEFERRED
       elif args.state == None:
          # default
-         state = 'Under Review'
+         state = PATCH_STATE_UNDER_REVIEW
       else:
          self.output('Unknown state: %s' % args.state)
          return
@@ -845,7 +856,7 @@ class PWCLI():
       else:
          username = None
 
-      if self.pending_mode == 'stgit' and state == 'Under Review':
+      if self.pending_mode == 'stgit' and state == PATCH_STATE_UNDER_REVIEW:
          self.patches = self.get_pending_branch_patches()
       else:
          self.patches = self.project.get_patches(state, username)
@@ -1086,7 +1097,7 @@ class PWCLI():
          if answer == 'a':
             # Accept
             for patch in applied:
-               patch.set_state_name('Accepted')
+               patch.set_state_name(PATCH_STATE_ACCEPTED)
 
             self.output('%d patches accepted, %d skipped' % (len(applied),
                                                              len(skipped)))
@@ -1207,7 +1218,7 @@ class PWCLI():
          applied = selected_patches
 
       for patch in applied:
-         patch.set_state_name('Under Review')
+         patch.set_state_name(PATCH_STATE_UNDER_REVIEW)
 
       # FIXME: print summary of applied and skipped patches (with totals)
       self.output('%d patches set to Under Review, %d skipped' % (len(applied), len(skipped)))
