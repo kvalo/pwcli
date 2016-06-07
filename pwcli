@@ -814,6 +814,11 @@ class PWCLI():
 
          patch = self.project.get_patch(c['patchwork_id'])
 
+         # patches in pending branch can be applied, tests or
+         # whatever, so skip those
+         if patch.get_state_name() != PATCH_STATE_UNDER_REVIEW:
+            continue
+
          # Set commit_ref so that we can use it when commiting the
          # patch. This is actually stored to the server as well, even
          # though it's not really needed in the server at this stage.
