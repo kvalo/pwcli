@@ -842,12 +842,9 @@ class PWCLI():
          if patch.get_state_name() != PATCH_STATE_UNDER_REVIEW:
             continue
 
-         # Set commit_ref so that we can use it when commiting the
-         # patch. This is actually stored to the server as well, even
-         # though it's not really needed in the server at this stage.
-         # This round trip also slows down the execution but I don't
-         # worry about speed right now.
-         patch.set_commit_ref(c['commit_id'])
+         # store the commit id so that we can use it when cherry picking
+         # the patch
+         patch.set_temp_ref(c['commit_id'])
 
          patches.append(patch)
 
@@ -1029,9 +1026,9 @@ class PWCLI():
 
                # The pwcli commit command always requires the list
                # command to be run first, which always sets the
-               # commit_ref (in stgit mode) so we can assume that the
+               # temp_ref (in stgit mode) so we can assume that the
                # patch has correct commit_ref set.
-               self.git.cherry_pick(patch.get_commit_ref())
+               self.git.cherry_pick(patch.get_temp_ref())
 
                # FIXME: remove Patchwork-Id from the commit log
                # git commit --amend --file=-
