@@ -16,3 +16,6 @@ test git log
 fb409caeb2ec foo: test 1
 6cf73d97d329 foo: test 2
 
+test git show HEAD
+commit fb409caeb2ecda7176f3d6af845e87b1c60f6665
+

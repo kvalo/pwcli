@@ -193,6 +193,22 @@ class Stg():
 
 class Git():
 
+   def get_commit(self, commitid):
+      result = {}
+      cmd = ['git', 'show', commitid]
+
+      output = subprocess.check_output(cmd)
+      output = output.strip()
+
+      match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
+      if match == None:
+         self.output('Commit id not found from patch: %s' % commitid)
+         return None
+
+      result['commit_id'] = match.group(1)
+
+      return result
+
    def log_oneline(self, max_count):
       cmd = ['git', 'log', '--oneline', '--reverse',
              '--max-count', str(max_count)]
@@ -327,6 +343,12 @@ class Patch():
       self.attributes['commit_ref'] = commit_ref
 
       logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
+
+   def get_temp_ref(self):
+      return self.temp_ref
+
+   def set_temp_ref(self, temp_ref):
+      self.temp_ref = temp_ref
 
    def get_url(self):
       return '%s%s/' % (self.pw.patch_url, self.get_id())
@@ -478,6 +500,7 @@ class Patch():
       self.dry_run = dry_run
 
       self.mbox = None
+      self.temp_ref = None
 
 class Project():
    def _get_patches(self, filters, username=None):
@@ -1018,6 +1041,10 @@ class PWCLI():
             else:
                self.git.am(patch.get_mbox())
 
+            # store the commit id temporarily
+            c = self.git.get_commit('HEAD')
+            patch.set_temp_ref(c['commit_id'])
+
             applied.append(patch)
 
             # FIXME: Retrieve the commit id and set commit_ref so that
@@ -1103,6 +1130,7 @@ class PWCLI():
             # Accept
             for patch in applied:
                patch.set_state_name(PATCH_STATE_ACCEPTED)
+               patch.set_commit_ref(patch.get_temp_ref())
 
             self.output('%d patches accepted, %d skipped' % (len(applied),
                                                              len(skipped)))

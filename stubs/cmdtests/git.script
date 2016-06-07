@@ -125,6 +125,10 @@ def main():
       subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
       print
 
+      print 'test git show HEAD'
+      subprocess.call([stub_git, 'show', 'HEAD'])
+      print
+
       # cleanup
       shutil.rmtree(gitdir)
 

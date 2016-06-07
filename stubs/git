@@ -132,6 +132,23 @@ def cmd_log(args):
 
                   print '%.12s %s' % (commit, subject)
 
+def cmd_show(args):
+      # FIXME: only support HEAD for now
+      if args.commitid != 'HEAD':
+            print 'Unsupported commit id: %s' % (args.commitid)
+            return
+
+      objectsdir = os.path.join(gitdir, 'objects')
+      commitsfile = os.path.join(objectsdir, 'commits')
+
+      f = open(commitsfile, 'r')
+      buf = f.read()
+      f.close()
+
+      commits = buf.splitlines()
+
+      print 'commit %s' % (commits[0])
+
 def main():
       global gitdir
 
@@ -162,6 +179,10 @@ def main():
       parser_log.add_argument('--reverse', action='store_true')
       parser_log.add_argument('--max-count', nargs=1, action='store')
       parser_log.set_defaults(func=cmd_log)
+
+      parser_show = subparsers.add_parser('show')
+      parser_show.add_argument('commitid')
+      parser_show.set_defaults(func=cmd_show)
 
       args = parser.parse_args()
 
