@@ -1217,7 +1217,8 @@ class PWCLI():
       self.output('')
 
       self.output(self.create_patchlist_as_string(selected_patches,
-                                                  show_indexes=True))
+                                                  show_indexes=True,
+                                                  open_browser=True))
 
       self.output('------------------------------------------------------------')
 
