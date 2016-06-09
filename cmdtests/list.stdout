@@ -34,7 +34,7 @@ test-branch@data > quit
 mails: ['0']
 smtpddir/0:
 test@example.com -> dino@example.com
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: Re: [1/7] foo: test 1

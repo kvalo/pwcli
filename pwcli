@@ -42,6 +42,7 @@ import os
 import ConfigParser
 import email
 import email.mime.text
+import email.header
 import smtplib
 import pprint
 import re
@@ -419,11 +420,18 @@ class Patch():
       # create body
       quote = []
 
-      (name, address) = email.utils.parseaddr(msg['From'])
-      if len(name) > 0 and len(address) > 0:
-         who = '%s <%s>' % (name, address)
-      elif len(address) > 0:
-         who = address
+      from_entries = email.header.decode_header(msg['From'])
+      logger.debug('from_entries %r' % (from_entries))
+
+      if len(from_entries) == 0:
+         raise Exception('Invalid From header: %r' % (msg['From']))
+
+      (header_from, charset) = from_entries[0]
+
+      # FIXME: what if charset is something else (iso-8859-1 etc), can
+      # we use that still?
+      if charset == 'utf-8' or charset == None:
+         who = header_from
       else:
          who = None
 
@@ -439,8 +447,10 @@ class Patch():
 
       logger.debug('body=%s', repr(body))
 
-      # FIXME: should use utf-8
-      reply = email.mime.text.MIMEText(body, _charset='us-ascii')
+      # avoid base64 encoding, a tip from http://bugs.python.org/issue12552
+      email.charset.add_charset('utf-8', email.charset.SHORTEST)
+
+      reply = email.mime.text.MIMEText(body, _charset='utf-8')
 
       # create cc list
       persons = []
