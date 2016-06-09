@@ -630,6 +630,31 @@ class Patchwork():
 
 class PWCLI():
 
+   def get_patches_from_ids(self, ids):
+      indexes = parse_list(ids)
+
+      if self.patches == None:
+         raise Exception('No patches listed, forgot to run list command?')
+
+      if len(self.patches) == 0:
+         raise Exception('No patches available, doing nothing.')
+         return
+
+      # sanity check and populate selected[]
+      selected_patches = []
+      for index in indexes:
+         if index > len(self.patches):
+            raise Exception('Patch index %d not found, max %d' %
+                            (index, len(self.patches)))
+
+         if index - 1 < 0:
+            self.output('Invalid patch list index: %d %d' % (index))
+            return
+
+         selected_patches.append(self.patches[index - 1])
+
+      return selected_patches
+
    def open_browser_url(self, url):
       if not self.browser:
          return
@@ -891,30 +916,7 @@ class PWCLI():
 
    def cmd_commit(self, args):
       logger.debug('cmd_commit(args=%s)' % repr(args))
-      indexes = parse_list(args.ids)
-      selected = []
-
-      if self.patches == None:
-         self.output('No patches listed, forgot to run list command?')
-         return
-
-      if len(self.patches) == 0:
-         self.output('No patches available, doing nothing.')
-         return
-
-      # sanity check and populate selected[]
-      for index in indexes:
-         if index - 1 > len(self.patches):
-            self.output('Patch index %d not found, max %d' %
-                        (index, len(self.patches)))
-            return
-
-         if index - 1 < 0:
-            self.output('Invalid patch list index: %d %d' % (index))
-            return
-
-         patch = self.patches[index - 1]
-         selected.append(patch)
+      selected = self.get_patches_from_ids(args.ids)
 
       # retrieve all mbox files in one for "smoother user experience"
       j = 1
@@ -1183,26 +1185,8 @@ class PWCLI():
 
    def cmd_review(self, args):
       logger.debug('cmd_review(args=%r)' % args)
-      indexes = parse_list(args.ids)
 
-      if self.patches == None:
-         self.output('No patches listed, forgot to run list command?')
-         return
-
-      if len(self.patches) == 0:
-         self.output('No patches available, doing nothing.')
-         return
-
-      for index in indexes:
-         if index > len(self.patches):
-            self.output('Patch index %d not found, max %d' %
-                        (index, len(self.patches)))
-            return
-
-      selected_patches = []
-
-      for i in indexes:
-         selected_patches.append(self.patches[i - 1])
+      selected_patches = self.get_patches_from_ids(args.ids)
 
       # retrieve all mbox files in one for "smoother user experience"
       i = 1
