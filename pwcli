@@ -630,6 +630,16 @@ class Patchwork():
 
 class PWCLI():
 
+   # retrieve all mbox files in one for "smoother user experience"
+   def prefetch_patches(self, patches):
+      i = 1
+      for patch in patches:
+         print '\rRetrieving patches (%d/%d)' % (i, len(patches)),
+         sys.stdout.flush()
+
+         patch.get_mbox()
+         i += 1
+
    def get_patches_from_ids(self, ids):
       indexes = parse_list(ids)
 
@@ -918,14 +928,7 @@ class PWCLI():
       logger.debug('cmd_commit(args=%s)' % repr(args))
       selected = self.get_patches_from_ids(args.ids)
 
-      # retrieve all mbox files in one for "smoother user experience"
-      j = 1
-      for patch in selected:
-         print '\rRetrieving patches (%d/%d)' % (j, len(selected)),
-         sys.stdout.flush()
-
-         patch.get_mbox()
-         j += 1
+      self.prefetch_patches(selected)
 
       # newline to clear the "progress bar"
       self.output('')
@@ -1188,14 +1191,7 @@ class PWCLI():
 
       selected_patches = self.get_patches_from_ids(args.ids)
 
-      # retrieve all mbox files in one for "smoother user experience"
-      i = 1
-      for patch in selected_patches:
-         print '\rRetrieving patches (%d/%d)' % (i, len(selected_patches)),
-         sys.stdout.flush()
-
-         patch.get_mbox()
-         i += 1
+      self.prefetch_patches(selected_patches)
 
       # force a newline so that new text starts from it's own line
       self.output('')
