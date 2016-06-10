@@ -1212,15 +1212,15 @@ class PWCLI():
 
       self.output('------------------------------------------------------------')
 
-      answer = self.input('Set to %d patch(es) to Under Review state? [y/N] ' % len(selected_patches))
-      answer = answer.lower()
-
-      if answer != 'y':
-         return
-
       applied = []
       skipped = []
       if self.pending_mode == 'stgit':
+         answer = self.input('Apply %d patches to the pending branch? [Apply/aBort] ' % len(selected_patches))
+         answer = answer.lower()
+
+         if answer != 'A':
+            return
+
          # git checkout self.pending_branch
          self.git.checkout(self.pending_branch)
          
@@ -1238,11 +1238,46 @@ class PWCLI():
          # stgit disabled, no need to apply any patches
          applied = selected_patches
 
-      for patch in applied:
-         patch.set_state_name(PATCH_STATE_UNDER_REVIEW)
+
+      while True:
+         choices = 'Under review/Changes requested/Deferred/Rejected/aBort? '
+         answer = self.input(choices)
+         answer = answer.lower()
+
+         valid = ['u', 'c', 'd', 'r', 'b']
+
+         if answer in valid:
+            break
+
+         self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                       ', '.join(valid)))
+      # Under review
+      if answer == 'u':
+         state = PATCH_STATE_UNDER_REVIEW
+      # Changes requested
+      elif answer == 'c':
+         state = PATCH_STATE_CHANGES_REQUESTED
+      # Deferred
+      elif answer == 'd':
+         state = PATCH_STATE_DEFERRED
+         pass
+      # Rejected
+      elif answer == 'r':
+         state = PATCH_STATE_REJECTED
+      # aBort
+      elif answer == 'b':
+         self.output('Aborted.')
+         return
+      else:
+         # should not be reached
+         assert(False)
+
+      for patch in selected_patches:
+         patch.set_state_name(state)
 
       # FIXME: print summary of applied and skipped patches (with totals)
-      self.output('%d patches set to Under Review, %d skipped' % (len(applied), len(skipped)))
+      self.output('%d patches set to %s, %d applied and %d not applied' %
+                  (len(selected_patches), state, len(applied), len(skipped)))
 
    def cmd_reply(self, args):
       logger.debug('cmd_reply(args=%s)' % repr(args))
