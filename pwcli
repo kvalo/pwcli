@@ -1186,15 +1186,19 @@ class PWCLI():
    def cmd_show(self, args):
       logger.debug('cmd_show(args=%s)' % repr(args))
 
-      try:
-         i = int(args.id[0])
-      except ValueError as e:
-         self.output('Failed to convert index to integer: %s' % e)
-         return
+      selected_patches = self.get_patches_from_ids(args.ids)
 
-      patch = self.patches[i - 1]
-      self.show_patch(patch)
-      self.open_browser_url(patch.get_url())
+      if len(selected_patches) == 1:
+         patch = selected_patches[0]
+         self.show_patch(patch)
+         self.open_browser_url(patch.get_url())
+      elif len(selected_patches) > 1:
+         self.output(self.create_patchlist_as_string(selected_patches,
+                                                     show_indexes=False,
+                                                     open_browser=True))
+      else:
+         # FIXME: what to do if we don't find any patches?
+         pass
 
    def cmd_review(self, args):
       logger.debug('cmd_review(args=%r)' % args)
@@ -1400,7 +1404,7 @@ class PWCLI():
       parser_review.set_defaults(func=self.cmd_review)
 
       parser_show = subparsers.add_parser('show')
-      parser_show.add_argument('id', metavar='ID', nargs=1)
+      parser_show.add_argument('ids', metavar='IDS', nargs='+')
       parser_show.set_defaults(func=self.cmd_show)
 
       parser_reply = subparsers.add_parser('reply')
