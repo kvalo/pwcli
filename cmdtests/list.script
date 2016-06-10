@@ -1,63 +1,66 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2016, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 
-import pexpect
-import sys
 import os
-import shutil
+import cmdtestlib
 
-PROMPT = 'test-branch@data >'
 def main():
-   srcdir = os.environ['SRCDIR']
-   datadir = os.environ['DATADIR']
-   patchesdir = os.path.join(datadir, 'patches')
-   gitdir = os.path.join(datadir, 'git')
-   smtpddir = os.path.join(datadir, 'smtpd')
-   srcpatchesdir = os.path.join(srcdir, '..', 'stubs', 'data', 'patches')
-   srcgitdir = os.path.join(srcdir, '..', 'stubs', 'data', 'git')
+   git = cmdtestlib.GitStub()
+   smtpd = cmdtestlib.SmtpdStub()
+   patchwork = cmdtestlib.PatchworkStub()
 
-   # create copy of patches
-   shutil.copytree(srcpatchesdir, patchesdir)
-   os.environ['STUB_PATCHWORK_DATADIR'] = patchesdir
-
-   # create fake git repo
-   shutil.copytree(srcgitdir, gitdir)
-   os.environ['STUB_GIT_DATADIR'] = gitdir
-
-   # setup directory for smtpd
-   os.mkdir(smtpddir)
-   os.environ['STUB_SMTPD_DATADIR'] = smtpddir
-   
+   # move to the top level source directory
    os.chdir('..')
 
-   # use short timeout so that failures don't take too long to detect
-   child = pexpect.spawn('./run_stub', timeout=3)
+   child = cmdtestlib.PwcliStubSpawn()
 
-   child.logfile = sys.stdout
-   child.expect(PROMPT)
+   child.expect_prompt()
    child.sendline('list')
-   child.expect(PROMPT)
+   child.expect_prompt()
    child.sendline('commit 1')
    child.expect('commit All/commit Individually/aBort\?')
    child.sendline('a')
    child.expect('Accept/request Changes/Reject/Show mail/Edit mail/aBort?')
    child.sendline('a')
 
-   child.expect(PROMPT)
+   child.expect_prompt()
    child.sendline('quit')
 
-   # check what mails smtpd received
-   print 'mails: %s' % os.listdir(smtpddir)
+   print smtpd.get_mails_as_string()
 
-   # cat smtpddir/0
-   mail0 = os.path.join(smtpddir, '0')
-   f = open(mail0, 'r')
-   print 'smtpddir/0:'
-   print f.read()
-   f.close()
-
-   # cleanup
-   shutil.rmtree(patchesdir)
-   shutil.rmtree(smtpddir)
+   git.cleanup()
+   patchwork.cleanup()
+   smtpd.cleanup()
 
 if __name__ == "__main__":
    main()

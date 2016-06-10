@@ -31,8 +31,8 @@ a
 smtpd: test@example.com -> dino@example.com
 Email sent
 test-branch@data > quit
-mails: ['0']
-smtpddir/0:
+mail 0:
+----------------------------------------------------------------------
 test@example.com -> dino@example.com
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
@@ -55,4 +55,5 @@ fb409caeb2ec foo: test 1
 -- 
 Sent by pwcli
 http://localhost:8000/1001/
+----------------------------------------------------------------------
 
