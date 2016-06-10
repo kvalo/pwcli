@@ -66,6 +66,13 @@ PERSON_LIST = [
        'name': 'Timo Testi', 'id': 118371}
       ]
 
+def state_name_by_id(state_id):
+      for state in STATE_LIST:
+            if state['id'] == state_id:
+                  return state['name']
+
+      return None
+
 class Patch():
       hdr_map = {
             'name': 'Subject',
@@ -101,6 +108,16 @@ class Patch():
 
       def set(self, params):
             for k in params:
+                  # state needs special handling, the 'state'
+                  # attribute actually contains state_id
+                  if k == 'state':
+                        state_id = params[k]
+                        state_name = state_name_by_id(state_id)
+
+                        self.params['state_id'] = state_id
+                        self.params['state'] = state_name
+                        continue
+
                   self.params[k] = params[k]
 
             self.save()
