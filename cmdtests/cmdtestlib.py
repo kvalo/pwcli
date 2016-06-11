@@ -43,16 +43,15 @@ datadir = os.environ['DATADIR']
 
 class GitStub():
     def __init__(self):
-        gitdir = os.path.join(datadir, 'git')
+        self.gitdir = os.path.join(datadir, 'git')
         srcgitdir = os.path.join(srcdir, '..', 'stubs', 'data', 'git')
 
         # create fake git repo
-        shutil.copytree(srcgitdir, gitdir)
-        os.environ['STUB_GIT_DATADIR'] = gitdir
+        shutil.copytree(srcgitdir, self.gitdir)
+        os.environ['STUB_GIT_DATADIR'] = self.gitdir
 
     def cleanup(self):
-        # FIXME: implement
-        pass
+        shutil.rmtree(self.gitdir)
 
 class SmtpdStub():
     def __init__(self):
