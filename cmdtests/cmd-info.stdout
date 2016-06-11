@@ -1,0 +1,22 @@
+Connecting to http://localhost:8000/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 2
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > info
+info
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 2
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > quit
