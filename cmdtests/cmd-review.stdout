@@ -1,0 +1,41 @@
+Connecting to http://localhost:8000/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 2
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > list new
+list new
+[  1] 1030 foo: new patch
+test-branch@data > review 1
+review 1
+Retrieving patches (1/1) 
+[  1] 1030 foo: new patch
+------------------------------------------------------------
+Under review/Changes requested/Deferred/Rejected/aBort? b
+b
+Aborted.
+test-branch@data > review 1
+review 1
+Retrieving patches (1/1) 
+[  1] 1030 foo: new patch
+------------------------------------------------------------
+Under review/Changes requested/Deferred/Rejected/aBort? u
+u
+1 patches set to Under Review, 1 applied and 0 not applied
+test-branch@data > info
+info
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 0
+Review        : 3
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > quit
