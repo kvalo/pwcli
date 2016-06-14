@@ -1222,7 +1222,7 @@ class PWCLI():
          answer = self.input('Apply %d patches to the pending branch? [Apply/aBort] ' % len(selected_patches))
          answer = answer.lower()
 
-         if answer != 'A':
+         if answer != 'a':
             return
 
          # git checkout self.pending_branch
