@@ -36,19 +36,19 @@ import cmdtestlib
 def main():
    ctxt = cmdtestlib.StubContext()
    ctxt.start()
-   child = ctxt.pwcli
+   pwcli = ctxt.pwcli
 
-   child.expect_prompt()
-   child.sendline('list')
-   child.expect_prompt()
-   child.sendline('commit 1')
-   child.expect('commit All/commit Individually/aBort\?')
-   child.sendline('a')
-   child.expect('Accept/request Changes/Reject/Show mail/Edit mail/aBort?')
-   child.sendline('a')
+   pwcli.expect_prompt()
+   pwcli.sendline('list')
+   pwcli.expect_prompt()
+   pwcli.sendline('commit 1')
+   pwcli.expect('commit All/commit Individually/aBort\?')
+   pwcli.sendline('a')
+   pwcli.expect('Accept/request Changes/Reject/Show mail/Edit mail/aBort?')
+   pwcli.sendline('a')
 
-   child.expect_prompt()
-   child.sendline('quit')
+   pwcli.expect_prompt()
+   pwcli.sendline('quit')
 
    print ctxt.smtpd.get_mails_as_string()
 

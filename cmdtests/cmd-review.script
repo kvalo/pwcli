@@ -36,29 +36,29 @@ import cmdtestlib
 def main():
    ctxt = cmdtestlib.StubContext()
    ctxt.start()
-   child = ctxt.pwcli
+   pwcli = ctxt.pwcli
 
-   child.expect_prompt()
-   child.sendline('list new')
-   child.expect_prompt()
-   child.sendline('review 1')
+   pwcli.expect_prompt()
+   pwcli.sendline('list new')
+   pwcli.expect_prompt()
+   pwcli.sendline('review 1')
 
    # abort
-   child.expect(cmdtestlib.PROMPT_REVIEW_STATE)
-   child.sendline('b')
+   pwcli.expect(cmdtestlib.PROMPT_REVIEW_STATE)
+   pwcli.sendline('b')
    
-   child.expect_prompt()
-   child.sendline('review 1')
+   pwcli.expect_prompt()
+   pwcli.sendline('review 1')
 
    # Under review
-   child.expect(cmdtestlib.PROMPT_REVIEW_STATE)
-   child.sendline('u')
+   pwcli.expect(cmdtestlib.PROMPT_REVIEW_STATE)
+   pwcli.sendline('u')
 
-   child.expect_prompt()
-   child.sendline('info')
+   pwcli.expect_prompt()
+   pwcli.sendline('info')
 
-   child.expect_prompt()
-   child.sendline('quit')
+   pwcli.expect_prompt()
+   pwcli.sendline('quit')
 
    ctxt.stop_and_cleanup()
 

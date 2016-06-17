@@ -36,12 +36,12 @@ import cmdtestlib
 def main():
    ctxt = cmdtestlib.StubContext()
    ctxt.start()
-   child = ctxt.pwcli
+   pwcli = ctxt.pwcli
 
-   child.expect_prompt()
-   child.sendline('info')
-   child.expect_prompt()
-   child.sendline('quit')
+   pwcli.expect_prompt()
+   pwcli.sendline('info')
+   pwcli.expect_prompt()
+   pwcli.sendline('quit')
 
    ctxt.stop_and_cleanup()
 
