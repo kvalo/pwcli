@@ -31,13 +31,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
 import cmdtestlib
 
 def main():
    ctxt = cmdtestlib.StubContext()
-
-   child = cmdtestlib.PwcliStubSpawn()
+   ctxt.start()
+   child = ctxt.pwcli
 
    child.expect_prompt()
    child.sendline('list new')
@@ -61,7 +60,7 @@ def main():
    child.expect_prompt()
    child.sendline('quit')
 
-   ctxt.cleanup()
+   ctxt.stop_and_cleanup()
 
 if __name__ == "__main__":
    main()
