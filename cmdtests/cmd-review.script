@@ -50,14 +50,14 @@ def main():
    child.sendline('review 1')
 
    # abort
-   child.expect('Under review/Changes requested/Deferred/Rejected/aBort?')
+   child.expect(cmdtestlib.PROMPT_REVIEW_STATE)
    child.sendline('b')
    
    child.expect_prompt()
    child.sendline('review 1')
 
    # Under review
-   child.expect('Under review/Changes requested/Deferred/Rejected/aBort?')
+   child.expect(cmdtestlib.PROMPT_REVIEW_STATE)
    child.sendline('u')
 
    child.expect_prompt()

@@ -37,6 +37,7 @@ import shutil
 import os
 
 PROMPT = 'test-branch@data >'
+PROMPT_REVIEW_STATE = 'Under review/Changes requested/Deferred/Rejected/aBort?'
 
 srcdir = os.environ['SRCDIR']
 datadir = os.environ['DATADIR']
