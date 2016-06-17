@@ -42,9 +42,9 @@ def main():
    pwcli.sendline('list')
    pwcli.expect_prompt()
    pwcli.sendline('commit 1')
-   pwcli.expect('commit All/commit Individually/aBort\?')
+   pwcli.expect(cmdtestlib.PROMPT_COMMIT_ALL)
    pwcli.sendline('a')
-   pwcli.expect('Accept/request Changes/Reject/Show mail/Edit mail/aBort?')
+   pwcli.expect(cmdtestlib.PROMPT_COMMIT_ACCEPT)
    pwcli.sendline('a')
 
    pwcli.expect_prompt()
