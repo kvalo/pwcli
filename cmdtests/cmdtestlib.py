@@ -62,7 +62,7 @@ logger.debug('cmdtestdir=%r' % (cmdtestdir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
 class StubContext():
-    def __init__(self):
+    def __init__(self, start=False):
         self.git = GitStub()
         self.smtpd = SmtpdStub()
         self.patchwork = PatchworkStub()
@@ -71,6 +71,9 @@ class StubContext():
         os.chdir(testdatadir)
 
         self.pwcli = PwcliSpawn()
+
+        if start:
+            self.start()
 
     def start(self):
         self.git.start()

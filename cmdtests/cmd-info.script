@@ -34,8 +34,7 @@
 import cmdtestlib
 
 def main():
-   ctxt = cmdtestlib.StubContext()
-   ctxt.start()
+   ctxt = cmdtestlib.StubContext(start=True)
    pwcli = ctxt.pwcli
 
    pwcli.expect_prompt()
