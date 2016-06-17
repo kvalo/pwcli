@@ -42,6 +42,21 @@ PROMPT_REVIEW_STATE = 'Under review/Changes requested/Deferred/Rejected/aBort?'
 srcdir = os.environ['SRCDIR']
 datadir = os.environ['DATADIR']
 
+class StubContext():
+    def __init__(self):
+        self.git = GitStub()
+        self.smtpd = SmtpdStub()
+        self.patchwork = PatchworkStub()
+
+        # move to the top level source directory
+        # FIXME: try to get rid of this
+        os.chdir('..')
+
+    def cleanup(self):
+        self.git.cleanup()
+        self.smtpd.cleanup()
+        self.patchwork.cleanup()
+
 class GitStub():
     def __init__(self):
         self.gitdir = os.path.join(datadir, 'git')

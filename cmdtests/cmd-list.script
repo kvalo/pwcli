@@ -35,12 +35,7 @@ import os
 import cmdtestlib
 
 def main():
-   git = cmdtestlib.GitStub()
-   smtpd = cmdtestlib.SmtpdStub()
-   patchwork = cmdtestlib.PatchworkStub()
-
-   # move to the top level source directory
-   os.chdir('..')
+   ctxt = cmdtestlib.StubContext()
 
    child = cmdtestlib.PwcliStubSpawn()
 
@@ -56,9 +51,7 @@ def main():
    child.expect_prompt()
    child.sendline('quit')
 
-   git.cleanup()
-   patchwork.cleanup()
-   smtpd.cleanup()
+   ctxt.cleanup()
 
 if __name__ == "__main__":
    main()
