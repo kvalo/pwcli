@@ -172,6 +172,8 @@ class SmtpdStub():
             return
 
         self.smtpd.terminate()
+        self.smtpd.wait()
+
         self.started = False
 
     def cleanup(self):
@@ -230,6 +232,8 @@ class PatchworkStub():
             return
 
         self.patchwork.terminate()
+        self.patchwork.wait()
+
         self.started = False
 
     def cleanup(self):
