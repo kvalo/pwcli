@@ -5,15 +5,14 @@ set -e
 echo runnint unit tests
 cd unittests
 ./run
+cd ..
 
 echo
 echo running cmdtests
-cd ..
 cmdtest cmdtests
 
 echo
 echo running stubs cmdtests
-cd stubs/cmdtests
-./run
+cmdtest stubs/cmdtests
 
 figlet -c -- ---- OK ----

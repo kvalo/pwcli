@@ -49,7 +49,7 @@ def git_am(stub_git, buf):
 def main():
       srcdir = os.environ['SRCDIR']
       datadir = os.environ['DATADIR']
-      stubsdir = os.path.join(srcdir, '..')
+      stubsdir = os.path.join(srcdir, 'stubs')
       stubsdatadir = os.path.join(stubsdir, 'data')
       patchesdir = os.path.join(stubsdatadir, 'patches')
       gitdir = os.path.join(datadir, 'git')

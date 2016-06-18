@@ -40,7 +40,7 @@ import time
 def main():
       srcdir = os.environ['SRCDIR']
       datadir = os.environ['DATADIR']
-      stubdir = os.path.join(srcdir, '..')
+      stubdir = os.path.join(srcdir, 'stubs')
       smtpddir = os.path.join(datadir, 'smtpddir')
 
       os.chdir(datadir)

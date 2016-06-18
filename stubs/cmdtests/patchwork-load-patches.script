@@ -39,7 +39,7 @@ import shutil
 def main():
       srcdir = os.environ['SRCDIR']
       datadir = os.environ['DATADIR']
-      stubdir = os.path.join(srcdir, '..')
+      stubdir = os.path.join(srcdir, 'stubs')
 
       patchesdir = os.path.join(datadir, 'patches')
 
