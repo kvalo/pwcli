@@ -116,13 +116,3 @@ class PwcliSpawn(pexpect.spawn):
 
     def expect_prompt(self):
         return super(PwcliSpawn, self).expect(PROMPT)
-
-class PwcliStubSpawn(pexpect.spawn):
-    def __init__(self):
-        # use short timeout so that failures don't take too long to detect
-        super(PwcliStubSpawn, self).__init__('./run_stub', timeout=3,
-                                             logfile=sys.stdout)
-
-    def expect_prompt(self):
-        return super(PwcliStubSpawn, self).expect(PROMPT)
-        
