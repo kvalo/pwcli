@@ -51,14 +51,16 @@ PROMPT_REVIEW_STATE = 'Under review/Changes requested/Deferred/Rejected/aBort?'
 PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
 PROMPT_COMMIT_ACCEPT = 'Accept/request Changes/Reject/Show mail/Edit mail/aBort?'
 
-cmdtestdir = os.environ['SRCDIR']
+# the toplevel source directory
+srcdir = os.environ['SRCDIR']
+
+# the directory where the tests can store temporary data
 testdatadir = os.environ['DATADIR']
-srcdir = os.path.abspath(os.path.join(cmdtestdir, '..'))
+
 stubsdir = os.path.join(srcdir, 'stubs')
 
 logger.debug('srcdir=%r' % (srcdir))
 logger.debug('testdatadir=%r' % (testdatadir))
-logger.debug('cmdtestdir=%r' % (cmdtestdir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
 class StubContext():

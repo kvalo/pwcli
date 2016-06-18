@@ -8,12 +8,12 @@ cd unittests
 
 echo
 echo running cmdtests
-cd ../cmdtests
-./run
+cd ..
+cmdtest cmdtests
 
 echo
 echo running stubs cmdtests
-cd ../stubs/cmdtests
+cd stubs/cmdtests
 ./run
 
 figlet -c -- ---- OK ----
