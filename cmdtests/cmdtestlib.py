@@ -76,9 +76,14 @@ class StubContext():
             self.start()
 
     def start(self):
-        self.git.start()
-        self.smtpd.start()
-        self.patchwork.start()
+        try:
+            self.git.start()
+            self.smtpd.start()
+            self.patchwork.start()
+        except Exception as e:
+            print 'Failed to start stubs: %s' % (e)
+            self.stop_and_cleanup()
+            sys.exit(1)
 
     def stop(self):
         self.git.stop()
@@ -108,6 +113,8 @@ class GitStub():
         os.environ['GIT_DIR'] = 'git'
         os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
 
+        self.started = False
+
     def start(self):
         logger.debug('GitStub.start(): %s' % (os.getcwd()))
         p = subprocess.Popen(['git', '--version', 'branch'], stdout=subprocess.PIPE)
@@ -118,8 +125,13 @@ class GitStub():
         if git_version != 'stub-git':
             raise Exception('Not running git-stub: %s' % git_version)
 
+        self.started = True
+
     def stop(self):
-        pass
+        if not self.started:
+            return
+
+        self.started = False
 
     def cleanup(self):
         shutil.rmtree(self.gitdir)
@@ -136,6 +148,8 @@ class SmtpdStub():
 
         logger.debug('SmtpdStub(): smtpddir=%r' % (self.smtpddir))
 
+        self.started = False
+
     def start(self):
         # Note: there's a problem that stdout from smtpd output does
         # not go to cmdtest stdout log anymore (after switching away
@@ -150,8 +164,15 @@ class SmtpdStub():
 
         if self.smtpd.poll() != None:
             raise Exception('Failed to start smtpd stub: %d' % self.smtpd.returncode)
+
+        self.started = True
+
     def stop(self):
+        if not self.started:
+            return
+
         self.smtpd.terminate()
+        self.started = False
 
     def cleanup(self):
         shutil.rmtree(self.smtpddir)
@@ -191,6 +212,8 @@ class PatchworkStub():
 
         logger.debug('PatchworkStub(): patchesdir=%r' % (self.patchesdir))
 
+        self.started = False
+
     def start(self):
         self.patchwork = subprocess.Popen([os.path.join(stubsdir, 'patchwork')])
 
@@ -200,8 +223,14 @@ class PatchworkStub():
         if self.patchwork.poll() != None:
             raise Exception('Failed to start patchwork stub: %d' % self.patchwork.returncode)
 
+        self.started = True
+
     def stop(self):
+        if not self.started:
+            return
+
         self.patchwork.terminate()
+        self.started = False
 
     def cleanup(self):
         shutil.rmtree(self.patchesdir)
