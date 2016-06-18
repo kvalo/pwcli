@@ -66,11 +66,10 @@ class StubContext():
         self.git = GitStub()
         self.smtpd = SmtpdStub()
         self.patchwork = PatchworkStub()
+        self.pwcli = None
 
         # move to the fake git repository before starting pwcli
         os.chdir(testdatadir)
-
-        self.pwcli = PwcliSpawn()
 
         if start:
             self.start()
@@ -80,6 +79,10 @@ class StubContext():
             self.git.start()
             self.smtpd.start()
             self.patchwork.start()
+
+            # must be instiated only after daemon stubs are running,
+            # as this immediately starts pwcli
+            self.pwcli = PwcliSpawn()
         except Exception as e:
             print 'Failed to start stubs: %s' % (e)
             self.stop_and_cleanup()
