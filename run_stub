@@ -39,58 +39,30 @@ import time
 import tempfile
 import shutil
 import argparse
+import logging
 
-SMTP_PORT = 5870
+# logging
+logging.basicConfig()
+logger = logging.getLogger('run_stub')
 
-datadir = None
+# uncomment to get debug logs
+#logger.setLevel(logging.DEBUG)
 
-# Create a temporary directory for data files so that they can be
-# modified on the fly. With cmdtest tests we should not be using this
-# directory.
-def create_datadir():
-      global datadir
+# these below must be initialised before importing stubs module
+srcdir = os.getcwd()
+os.environ['SRCDIR'] = srcdir
 
-      if datadir != None:
-            return
+datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
+os.environ['DATADIR'] = datadir
 
-      datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
-      print 'using temporary data dir: %s' % (datadir)
+stubsdir = os.path.join(srcdir, 'stubs')
+sys.path.insert(0, stubsdir)
 
-def run(srcdir, stubsdir):
-      p = subprocess.Popen(['git', '--version', 'branch'], stdout=subprocess.PIPE)
-      (stdout, stderr) = p.communicate()
+import stubs
 
-      git_version = stdout.splitlines()[0]
-
-      if git_version != 'stub-git':
-            print 'Not running git-stub: %s' % git_version
-            sys.exit(1)
-
-      patchwork = subprocess.Popen([os.path.join(stubsdir, 'patchwork')])
-
-      # wait some time to make sure that the stub started
-      time.sleep(0.2)
-
-      if patchwork.poll() != None:
-            print 'Failed to start patchwork stub: %d' % patchwork.returncode
-            sys.exit(1)
-
-      smtpd = subprocess.Popen([os.path.join(stubsdir, 'smtpd'), '--port=%d' % SMTP_PORT])
-
-      # wait some time to make sure that the stub started
-      time.sleep(0.2)
-
-      if smtpd.poll() != None:
-            print 'Failed to start smtpd stub: %d' % smtpd.returncode
-            sys.exit(1)
-
-      pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
-                               stdin=sys.stdin, stdout=sys.stdout,
-                               stderr=sys.stderr)
-      pwcli.wait()
-
-      patchwork.terminate()
-      smtpd.terminate()
+logger.debug('srcdir=%r' % (srcdir))
+logger.debug('datadir=%r' % (datadir))
+logger.debug('stubsdir=%r' % (stubsdir))
 
 def main():
       parser = argparse.ArgumentParser(description='run_stub')
@@ -100,41 +72,30 @@ def main():
 
       args = parser.parse_args()
 
-      srcdir = os.getcwd()
-      stubsdir = os.path.join(srcdir, 'stubs')
+      git = stubs.GitStub()
+      git.start()
 
-      os.chdir(os.path.join(stubsdir, 'data'))
+      patchwork = stubs.PatchworkStub()
+      patchwork.start()
 
-      os.environ['GIT_DIR'] = 'git'
-      os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
+      smtpd = stubs.SmtpdStub()
+      smtpd.start()
 
-      if not 'STUB_PATCHWORK_DATADIR' in os.environ:
-            create_datadir()
-            patchworkdir = os.path.join(datadir, 'patchwork')
-            shutil.copytree(os.path.join(stubsdir, 'data', 'patches'),
-                            patchworkdir)
-            os.environ['STUB_PATCHWORK_DATADIR'] = patchworkdir
+      os.chdir(datadir)
 
-      if not 'STUB_GIT_DATADIR' in os.environ:
-            create_datadir()
-            gitdir = os.path.join(datadir, 'git')
-            shutil.copytree(os.path.join(stubsdir, 'data', 'git'),
-                            gitdir)
-            os.environ['STUB_GIT_DATADIR'] = gitdir
+      pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
+                               stdin=sys.stdin, stdout=sys.stdout,
+                               stderr=sys.stderr)
+      pwcli.wait()
 
-      if not 'STUB_SMTPD_DATADIR' in os.environ:
-            create_datadir()
-            smtpddir = os.path.join(datadir, 'smtpd')
-            os.mkdir(smtpddir)
-            os.environ['STUB_SMTPD_DATADIR'] = smtpddir
+      patchwork.stop()
+      smtpd.stop()
+      git.stop()
 
-      run(srcdir=srcdir, stubsdir=stubsdir)
-
-      if datadir:
-            if not args.keep:
-                  shutil.rmtree(datadir)
-            else:
-                  print 'Keeping temporary datadir %s' % (datadir)
+      if not args.keep:
+            shutil.rmtree(datadir)
+      else:
+            print 'Keeping temporary datadir %s' % (datadir)
 
 if __name__ == "__main__":
       main()
