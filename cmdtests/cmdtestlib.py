@@ -50,6 +50,7 @@ PROMPT = 'test-branch@data >'
 PROMPT_REVIEW_STATE = 'Under review/Changes requested/Deferred/Rejected/aBort?'
 PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
 PROMPT_COMMIT_ACCEPT = 'Accept/request Changes/Reject/Show mail/Edit mail/aBort?'
+PROMPT_REPLY = 'Send/Edit/Abort?'
 
 # the toplevel source directory
 srcdir = os.environ['SRCDIR']
