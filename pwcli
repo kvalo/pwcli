@@ -1217,25 +1217,42 @@ class PWCLI():
 
       applied = []
       skipped = []
+
       if self.pending_mode == 'stgit':
-         answer = self.input('Apply %d patches to the pending branch? [Apply/aBort] ' % len(selected_patches))
-         answer = answer.lower()
+         while True:
+            choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(selected_patches)
+            answer = self.input(choises)
+            answer = answer.lower()
 
-         if answer != 'a':
-            return
+            valid = ['a', 's', 'b']
 
-         # git checkout self.pending_branch
-         self.git.checkout(self.pending_branch)
+            if answer in valid:
+               break
+
+            self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                          ', '.join(valid)))
+
+         # Apply
+         if answer == 'a':
+            # git checkout self.pending_branch
+            self.git.checkout(self.pending_branch)
          
-         for patch in selected_patches:
-            # stg import --sign
-            # FIXME: catch GitError
-            try:
-               self.stg.import_patch(patch.get_mbox_for_stgit())
-               applied.append(patch)
-            except GitError as e:
-               self.output('Failed to apply patch: %s' % e)
-               skipped.append(patch)
+            for patch in selected_patches:
+               # stg import --sign
+               # FIXME: catch GitError
+               try:
+                  self.stg.import_patch(patch.get_mbox_for_stgit())
+                  applied.append(patch)
+               except GitError as e:
+                  self.output('Failed to apply patch: %s' % e)
+                  skipped.append(patch)
+         # Skip
+         elif answer == 's':
+            # do nothing, just continue to state handling
+            pass
+         # aBort
+         elif answer == 'b':
+            return
 
       else:
          # stgit disabled, no need to apply any patches
