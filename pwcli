@@ -445,6 +445,9 @@ class Patch():
 
       body = '\n'.join(quote)
 
+      # empty line after the quote
+      body += '\n'
+
       body += text
       body += '\n%s\n' % self.get_email_signature()
 
@@ -1092,9 +1095,6 @@ class PWCLI():
       # create the "Thanks, applied" email
       payload = ''
       tree_name = '%s.git' % self.tree
-
-      # empty line after the quotation
-      payload += '\n'
 
       # FIXME: what if len(applied) is zero?
 
