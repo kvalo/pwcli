@@ -67,7 +67,8 @@ logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
 class StubContext():
-    def __init__(self, start=False):
+    def __init__(self, start=False, debug=False):
+        self.debug = debug
         self.git = stubs.GitStub()
         self.smtpd = stubs.SmtpdStub()
         self.patchwork = stubs.PatchworkStub()
@@ -87,7 +88,7 @@ class StubContext():
 
             # must be instiated only after daemon stubs are running,
             # as this immediately starts pwcli
-            self.pwcli = PwcliSpawn()
+            self.pwcli = PwcliSpawn(debug=self.debug)
         except Exception as e:
             print 'Failed to start stubs: %s' % (e)
             self.stop_and_cleanup()
@@ -108,9 +109,14 @@ class StubContext():
         self.cleanup()
 
 class PwcliSpawn(pexpect.spawn):
-    def __init__(self):
+    def __init__(self, debug=False):
+        cmd = 'pwcli'
+
+        if debug:
+            cmd += ' --debug'
+
         # use short timeout so that failures don't take too long to detect
-        super(PwcliSpawn, self).__init__(os.path.join(srcdir, 'pwcli'),
+        super(PwcliSpawn, self).__init__(os.path.join(srcdir, cmd),
                                          timeout=3,
                                          logfile=sys.stdout)
 
