@@ -71,6 +71,7 @@ class TestPatch(unittest.TestCase):
         patch = pwcli.Patch(None, attributes, False)
 
         patch.get_email = mock.Mock(return_value=email.message_from_string(TEST_MBOX))
+        patch.get_url = mock.Mock(return_value='http://localhost:8000/1001/')
 
         reply = patch.get_reply_msg('Timo Testi', 'test@example.com')
 

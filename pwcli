@@ -412,7 +412,7 @@ class Patch():
    def get_email(self):
       return email.message_from_string(self.get_mbox())
 
-   def get_reply_msg(self, from_name, from_email):
+   def get_reply_msg(self, from_name, from_email, text=''):
       msg = self.get_email()
 
       (log, sep, patch) = msg.get_payload().partition(LOG_SEPARATOR)
@@ -444,6 +444,9 @@ class Patch():
       quote.append('')
 
       body = '\n'.join(quote)
+
+      body += text
+      body += '\n%s\n' % self.get_email_signature()
 
       logger.debug('body=%s', repr(body))
 
@@ -1087,10 +1090,7 @@ class PWCLI():
          self.output('')
 
       # create the "Thanks, applied" email
-      patch = applied[0]
-      reply = patch.get_reply_msg(self.fullname, self.email)
-
-      payload = reply.get_payload()
+      payload = ''
       tree_name = '%s.git' % self.tree
 
       # empty line after the quotation
@@ -1119,9 +1119,8 @@ class PWCLI():
          for patch in skipped:
             payload += '%s\n' % patch.get_name()
 
-      payload += '\n%s\n' % patch.get_email_signature()
-
-      reply.set_payload(payload)
+      patch = applied[0]
+      reply = patch.get_reply_msg(self.fullname, self.email, payload)
 
       while True:
 
@@ -1302,10 +1301,6 @@ class PWCLI():
 
       patch = self.patches[i - 1]
       reply = patch.get_reply_msg(self.fullname, self.email)
-
-      payload = reply.get_payload()
-      payload += '\n%s\n' % (patch.get_email_signature())
-      reply.set_payload(payload)
 
       reply = self.edit_email(reply)
 
