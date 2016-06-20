@@ -1,0 +1,61 @@
+Connecting to http://localhost:8000/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 2
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > list
+list
+[  1] 1001 [1/7] foo: test 1
+[  2] 1002 [1/7] foo: test 2
+test-branch@data > commit 1-2
+commit 1-2
+Retrieving patches (1/2) Retrieving patches (2/2) 
+1001 [1/7] foo: test 1
+1002 [1/7] foo: test 2
+------------------------------------------------------------
+2 patches
+commit All/commit Individually/aBort? a
+a
+============================================================
+2 patches applied:
+
+fb409caeb2ec foo: test 1
+6cf73d97d329 foo: test 2
+
+Accept/request Changes/Reject/Show mail/Edit mail/aBort? a
+a
+2 patches accepted, 0 skipped
+Email sent
+test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> dino@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Thanks, 2 patches applied to data.git:
+
+fb409caeb2ec foo: test 1
+6cf73d97d329 foo: test 2
+
+-- 
+Sent by pwcli
+http://localhost:8000/1001/
+----------------------------------------------------------------------
+
