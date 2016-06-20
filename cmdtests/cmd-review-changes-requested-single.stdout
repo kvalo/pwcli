@@ -1,0 +1,85 @@
+Connecting to http://localhost:8000/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 2
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > list
+list
+[  1] 1001 [1/7] foo: test 1
+[  2] 1002 [1/7] foo: test 2
+test-branch@data > review 1
+review 1
+Retrieving patches (1/1) 
+[  1] 1001 [1/7] foo: test 1
+------------------------------------------------------------
+Under review/Changes requested/Deferred/Rejected/aBort? c
+c
+============================================================
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+The patch has been dropped, please resend.
+
+-- 
+Sent by pwcli
+http://localhost:8000/1001/
+
+
+============================================================
+Envelope From: Timo Testi <test@example.com>
+Envelope To: ['Dino Dinosaurus <dino@example.com>']
+Send/Edit/Abort? s
+s
+1 patches set to Changes Requested, 1 applied and 0 not applied
+test-branch@data > info
+info
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 1
+Upstream      : 0
+Deferred      : 1
+Total         : 3
+test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> dino@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+The patch has been dropped, please resend.
+
+-- 
+Sent by pwcli
+http://localhost:8000/1001/
+----------------------------------------------------------------------
+

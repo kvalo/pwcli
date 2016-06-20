@@ -1254,12 +1254,20 @@ class PWCLI():
 
          self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
                                                                        ', '.join(valid)))
+
+      reply_text = None
+      if len(selected_patches) > 1:
+         patches_word = 'Patches have'
+      else:
+         patches_word = 'The patch has'
+
       # Under review
       if answer == 'u':
          state = PATCH_STATE_UNDER_REVIEW
       # Changes requested
       elif answer == 'c':
          state = PATCH_STATE_CHANGES_REQUESTED
+         reply_text = '%s been dropped, please resend.' % (patches_word)
       # Deferred
       elif answer == 'd':
          state = PATCH_STATE_DEFERRED
@@ -1267,6 +1275,7 @@ class PWCLI():
       # Rejected
       elif answer == 'r':
          state = PATCH_STATE_REJECTED
+         reply_text = '%s been dropped.' % (patches_word)
       # aBort
       elif answer == 'b':
          self.output('Aborted.')
@@ -1277,6 +1286,28 @@ class PWCLI():
 
       for patch in selected_patches:
          patch.set_state_name(state)
+
+      if reply_text:
+         first_patch = selected_patches[0]
+
+         reply_text += '\n'
+
+         # No point adding patchlist for a single patch, it doesn't
+         # bring any extra value which isn't already in the title or
+         # in the signature.
+         if len(selected_patches) > 1:
+            reply_text += '\n%s\n' % (self.create_patchlist_as_string(selected_patches))
+
+         reply = first_patch.get_reply_msg(self.fullname, self.email,
+                                           reply_text)
+
+         reply = self.edit_email(reply)
+
+         if reply == None:
+            # user aborted
+            return
+
+         self.send_email(reply)
 
       # FIXME: print summary of applied and skipped patches (with totals)
       self.output('%d patches set to %s, %d applied and %d not applied' %
