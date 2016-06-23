@@ -61,12 +61,32 @@ logger.debug('stubsdir=%r' % (stubsdir))
 class GitStub():
     def __init__(self):
         self.gitdir = os.path.join(testdatadir, 'git')
-        srcgitdir = os.path.join(stubsdir, 'data', 'git')
 
         logger.debug('GitStub(): gitdir=%r' % (self.gitdir))
 
-        # create fake git repo
-        shutil.copytree(srcgitdir, self.gitdir)
+        os.mkdir(self.gitdir)
+        
+        # create branches file
+        f = open(os.path.join(self.gitdir, 'branches'), 'w')
+        f.write('* test-branch')
+        f.close()
+
+        # create the config file
+        self.config = ConfigParser.RawConfigParser()
+        user = 'user'
+        self.config.add_section(user)
+        self.config.set(user, 'email', 'test@example.com')
+        self.config.set(user, 'name', 'Timo Testi')
+
+        sendemail = 'sendemail'
+        self.config.add_section(sendemail)
+        self.config.set(sendemail, 'smtpserver', 'localhost')
+        self.config.set(sendemail, 'smtpserverport', '5870')
+
+        with open(os.path.join(self.gitdir, 'config'), 'w') as configfile:
+            self.config.write(configfile)
+        
+        
         os.environ['STUB_GIT_DATADIR'] = self.gitdir
 
         os.environ['GIT_DIR'] = 'git'
