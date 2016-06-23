@@ -38,6 +38,7 @@ import os
 import subprocess
 import time
 import logging
+import stubs
 
 # logging
 logging.basicConfig()
@@ -59,9 +60,6 @@ srcdir = os.environ['SRCDIR']
 testdatadir = os.environ['DATADIR']
 
 stubsdir = os.path.join(srcdir, 'stubs')
-
-sys.path.insert(0, stubsdir)
-import stubs
 
 logger.debug('srcdir=%r' % (srcdir))
 logger.debug('testdatadir=%r' % (testdatadir))

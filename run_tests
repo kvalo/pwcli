@@ -2,6 +2,8 @@
 
 set -e
 
+export PYTHONPATH=stubs:$PYTHONPATH
+
 echo runnint unit tests
 cd unittests
 ./run
