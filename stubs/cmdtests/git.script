@@ -35,8 +35,7 @@ import os
 import os.path
 import sys
 import subprocess
-import time
-import shutil
+import stubs
 
 def git_am(stub_git, buf):
       cmd = [stub_git, 'am', '-s']
@@ -52,30 +51,18 @@ def main():
       stubsdir = os.path.join(srcdir, 'stubs')
       stubsdatadir = os.path.join(stubsdir, 'data')
       patchesdir = os.path.join(stubsdatadir, 'patches')
-      gitdir = os.path.join(datadir, 'git')
-      stub_git = os.path.join(stubsdir, 'git')
-
-      os.environ['STUB_GIT_DATADIR'] = gitdir
+      stub_git = 'git'
 
       os.chdir(datadir)
-
-      # create and populate fake git repository for the stub
-      shutil.copytree(os.path.join(stubsdir, 'data', 'git'), gitdir)
 
       # hack to enable automatic flushing so that printouts are not
       # out of order
       sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-      output = subprocess.check_output([stub_git, '--version', 'branch'])
-      output = output.strip()
-      git_version = output.splitlines()[0]
-
-      print 'git version: %s\n' % (git_version)
-
-      if git_version != 'stub-git':
-            print 'Not using stub-git: %s' % (git_version)
-            sys.exit(1)
-
+      gitstub = stubs.GitStub()
+      gitdir = gitstub.gitdir
+      gitstub.start()
+      
       print 'check branch'
       sys.stdout.flush()
       subprocess.call([stub_git, 'branch'])
@@ -130,7 +117,7 @@ def main():
       print
 
       # cleanup
-      shutil.rmtree(gitdir)
+      gitstub.cleanup()
 
 if __name__ == "__main__":
       main()
