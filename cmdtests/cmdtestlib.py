@@ -102,6 +102,7 @@ class StubContext():
         self.editor.stop()
 
     def cleanup(self):
+        self.pwcli.cleanup()
         self.git.cleanup()
         self.smtpd.cleanup()
         self.patchwork.cleanup()
@@ -118,10 +119,16 @@ class PwcliSpawn(pexpect.spawn):
         if debug:
             cmd += ' --debug'
 
+        self.pwcli_wrapper = stubs.PwcliWrapper()
+        self.pwcli_wrapper.write_config()
+
         # use short timeout so that failures don't take too long to detect
         super(PwcliSpawn, self).__init__(os.path.join(srcdir, cmd),
                                          timeout=3,
                                          logfile=sys.stdout)
+
+    def cleanup(self):
+        self.pwcli_wrapper.cleanup()
 
     def expect_prompt(self):
         return super(PwcliSpawn, self).expect(PROMPT)

@@ -1,0 +1,7 @@
+[general]
+project = stub-test
+password = password
+username = test
+url = http://localhost:8000/
+
+

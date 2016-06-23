@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2015, The Linux Foundation.
+# Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,69 +31,24 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
-import os.path
-import sys
-import tempfile
-import shutil
-import argparse
-import logging
-
-# logging
-logging.basicConfig()
-logger = logging.getLogger('run_stub')
-
-# uncomment to get debug logs
-#logger.setLevel(logging.DEBUG)
-
-# these below must be initialised before importing stubs module
-srcdir = os.getcwd()
-os.environ['SRCDIR'] = srcdir
-
-datadir = tempfile.mkdtemp(prefix='pwcli-stub-')
-os.environ['DATADIR'] = datadir
-
-stubsdir = os.path.join(srcdir, 'stubs')
-sys.path.insert(0, stubsdir)
-
 import stubs
-
-logger.debug('srcdir=%r' % (srcdir))
-logger.debug('datadir=%r' % (datadir))
-logger.debug('stubsdir=%r' % (stubsdir))
+import os
 
 def main():
-      parser = argparse.ArgumentParser(description='run_stub')
-
-      parser.add_argument('--keep', action='store_true',
-                          help='Keep the temporary datadir for debugging')
-
-      args = parser.parse_args()
-
-      git = stubs.GitStub()
-      git.start()
-
-      patchwork = stubs.PatchworkStub()
-      patchwork.start()
-
-      smtpd = stubs.SmtpdStub()
-      smtpd.start()
+      srcdir = os.environ['SRCDIR']
+      datadir = os.environ['DATADIR']
 
       os.chdir(datadir)
 
       pwcli = stubs.PwcliWrapper()
       pwcli.write_config()
-      pwcli.start()
-      pwcli.wait()
 
-      patchwork.stop()
-      smtpd.stop()
-      git.stop()
+      # print the config file
+      f = open(pwcli.configpath, 'r')
+      print f.read()
+      f.close()
 
-      if not args.keep:
-            shutil.rmtree(datadir)
-      else:
-            print 'Keeping temporary datadir %s' % (datadir)
+      pwcli.cleanup()
 
 if __name__ == "__main__":
       main()

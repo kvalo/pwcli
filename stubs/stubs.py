@@ -31,13 +31,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import pexpect
 import sys
 import shutil
 import os
 import subprocess
 import time
 import logging
+import ConfigParser
 
 # logging
 logging.basicConfig()
@@ -211,3 +211,41 @@ class EditorStub():
     
     def cleanup(self):
         pass
+
+class PwcliWrapper():
+    def __init__(self):
+        self.config = ConfigParser.RawConfigParser()
+
+        self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
+        self.dirname = os.path.dirname(self.configpath)
+        
+        # for some reason ConfigParser reverses the order
+        general = 'general'
+        self.config.add_section(general)
+        self.config.set(general, 'project', 'stub-test')
+        self.config.set(general, 'password', 'password')
+        self.config.set(general, 'username', 'test')
+        self.config.set(general, 'url', 'http://localhost:8000/')
+
+    def start(self):
+        self.pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
+                                      stdin=sys.stdin, stdout=sys.stdout,
+                                      stderr=sys.stderr)
+
+    def wait(self):
+        self.pwcli.wait()
+    
+    def stop(self):
+        pass
+    
+    def cleanup(self):
+        shutil.rmtree(self.dirname)
+
+    def write_config(self):
+        if not os.path.exists(self.dirname):
+            os.makedirs(self.dirname)
+        elif not os.path.isdir(self.dirname):
+            raise Exception('%s exists but is not a directory' % (self.dirname))
+
+        with open(self.configpath, 'wb') as configfile:
+            self.config.write(configfile)
