@@ -73,6 +73,7 @@ class StubContext():
         self.git = stubs.GitStub()
         self.smtpd = stubs.SmtpdStub()
         self.patchwork = stubs.PatchworkStub()
+        self.editor = stubs.EditorStub()
         self.pwcli = None
 
         # move to the fake git repository before starting pwcli
@@ -86,6 +87,7 @@ class StubContext():
             self.git.start()
             self.smtpd.start()
             self.patchwork.start()
+            self.editor.stop()
 
             # must be instiated only after daemon stubs are running,
             # as this immediately starts pwcli
@@ -99,11 +101,13 @@ class StubContext():
         self.git.stop()
         self.smtpd.stop()
         self.patchwork.stop()
+        self.editor.stop()
 
     def cleanup(self):
         self.git.cleanup()
         self.smtpd.cleanup()
         self.patchwork.cleanup()
+        self.editor.cleanup()
 
     def stop_and_cleanup(self):
         self.stop()

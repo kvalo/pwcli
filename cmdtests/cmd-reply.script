@@ -35,9 +35,6 @@ import cmdtestlib
 import os
 
 def main():
-   # add a fake editor until we have a proper stub
-   os.environ['EDITOR'] = '/bin/true'
-
    ctxt = cmdtestlib.StubContext(start=True)
    pwcli = ctxt.pwcli
 

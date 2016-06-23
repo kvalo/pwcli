@@ -197,3 +197,17 @@ class PatchworkStub():
 
     def cleanup(self):
         shutil.rmtree(self.patchesdir)
+
+class EditorStub():
+    def __init__(self):
+        # add a fake editor until we have a proper stub
+        os.environ['EDITOR'] = '/bin/true'
+
+    def start(self):
+        pass
+    
+    def stop(self):
+        pass
+    
+    def cleanup(self):
+        pass
