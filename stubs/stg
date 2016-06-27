@@ -1,0 +1,221 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2016, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import argparse
+import sys
+import os
+import os.path
+import email
+import re
+import hashlib
+
+gitdir = None
+objectsdir = None
+stgdir = None
+patchesfile = None
+
+# stg stub repository directory layout, location defined in
+# STUB_GIT_DATADIR:
+#
+# stg/patches - list of patches, format '<commitid>\t<patchname>'
+# objects/<commitid> - patch object
+
+# TODO:
+#
+# cmd = ['stg', 'import', '--mbox', '--sign']
+# cmd = ['stg', 'series', '--noprefix', '--all']
+# cmd = ['stg', 'show', patchname]
+#
+# StgStub.get_patches(): patches['foo-patch-name'] = '<full patch>'
+
+def get_patches():
+      patches = {}
+
+      if not os.path.exists(patchesfile):
+            return patches
+
+      f = open(patchesfile, 'r')
+      buf = f.read()
+      f.close()
+
+      for line in buf.splitlines():
+            l = line.split('\t')
+            if len(l) != 2:
+                  raise Exception('Invalid format in %s' % (patchesfile))
+
+            commit_id = l[0]
+            patch_name = l[1]
+
+            patches[patch_name] = commit_id
+
+      return patches
+
+def get_commit(patch_name):
+      commit_id = get_patches()[patch_name]
+
+      path = os.path.join(objectsdir, commit_id)
+      f = open(path, 'r')
+      buf = f.read()
+      f.close()
+
+      return (commit_id, buf)
+
+def cmd_series(args):
+      if not args.noprefix or not args.all:
+            # only support --noprefix and --all for now
+            print 'Unsupported args: %s' % (args)
+            sys.exit(1)
+
+      for patch_name in get_patches().keys():
+            print patch_name
+
+def cmd_import(args):
+      if not args.mbox or not args.sign:
+            # only support --mbox and --sign for now
+            print 'Unsupported args: %s' % (args)
+            sys.exit(1)
+
+      if not os.path.isdir(objectsdir):
+            os.mkdir(objectsdir)
+
+      buf = sys.stdin.read()
+
+      # create stgit name for the patch
+      msg = email.message_from_string(buf)
+      patch_name = msg['Subject']
+      patch_name = patch_name.lower()
+
+      # remove all tags ("[foo]") before the title
+      patch_name = re.sub(r'^\s*(\[.*?\]\s*)*', '', patch_name)
+
+      # replace all non-alphanumeric characters with a hyphen
+      patch_name = re.sub(r'\W+', '-', patch_name)
+
+      # FIXME: Check if there's already a patch with that name and in
+      # that case append a number suffix patch_name with a number.
+
+      commit_id = hashlib.sha1(buf).hexdigest()
+
+      f = open(patchesfile, 'a')
+      f.write('%s\t%s\n' % (commit_id, patch_name))
+      f.close()
+
+      path = os.path.join(objectsdir, commit_id)
+      f = open(path, 'w')
+      f.write(buf)
+      f.close()
+
+      # fake real stg output
+      print 'Checking for changes in the working directory ... done'
+      print 'Importing patch "%s" ... done' % (patch_name)
+      print 'Now at patch "%s"' % (patch_name)
+
+# Output format:
+#
+# commit 1234567890123456789012345678901234567890
+# Author: Ed Example <ed@example.com>
+# Date:   Tue Jun 28 13:06:59 EEST 2016
+#
+#     foo: title
+#    
+#     commit log
+#    
+#     Signed-off-by: Ed Example <ed@example.com>
+
+def cmd_show(args):
+      if not args.patchname:
+            print 'Unsupported arguments for stg show command: %s' % (args)
+            sys.exit(1)
+
+      (commit_id, buf) = get_commit(args.patchname)
+
+      msg = email.message_from_string(buf)
+
+      print 'commit %s' % (commit_id)
+      print 'Author: %s' % (msg['From'])
+      print 'Date:   %s' % (msg['Date'])
+
+      for line in msg.get_payload().splitlines():
+            print '   %s' % (line)
+
+def main():
+      global gitdir, objectsdir, stgdir, patchesfile
+
+      if 'STUB_GIT_DATADIR' in os.environ:
+            gitdir = os.environ['STUB_GIT_DATADIR']
+      else:
+            gitdir = '.'
+
+      stgdir = os.path.join(gitdir, 'stg')
+      objectsdir = os.path.join(gitdir, 'objects')
+      patchesfile = os.path.join(stgdir, 'patches')
+
+      parser = argparse.ArgumentParser(description='stg-stub', prog='',
+                                       add_help=False)
+
+      parser.add_argument('--version', action='store_true')
+
+      subparsers = parser.add_subparsers()
+
+      parser_import = subparsers.add_parser('import')
+      parser_import.add_argument('--mbox', action='store_true')
+      parser_import.add_argument('--sign', action='store_true')
+      parser_import.set_defaults(func=cmd_import)
+
+      parser_series = subparsers.add_parser('series')
+      parser_series.add_argument('--noprefix', action='store_true')
+      parser_series.add_argument('--all', action='store_true')
+      parser_series.set_defaults(func=cmd_series)
+
+      parser_show = subparsers.add_parser('show')
+      parser_show.add_argument('patchname')
+      parser_show.set_defaults(func=cmd_show)
+
+      args = parser.parse_args()
+
+      if args.version:
+            # Print a version string so that test scripts can verify
+            # that this really is a stub and not playing with a real
+            # git repo.
+            #
+            # Note: have to be called with 'stg --version branch' as I
+            # didn't know how to implement 'stg --version' with
+            # argparse
+            print 'stub-stg'
+            print 'STUB_GIT_DATADIR=%s' % gitdir
+            sys.exit(0)
+
+      args.func(args)
+
+if __name__ == "__main__":
+      main()

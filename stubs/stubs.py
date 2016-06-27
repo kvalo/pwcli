@@ -38,6 +38,7 @@ import subprocess
 import time
 import logging
 import ConfigParser
+import email
 
 # logging
 logging.basicConfig()
@@ -57,6 +58,94 @@ stubsdir = os.path.join(srcdir, 'stubs')
 logger.debug('srcdir=%r' % (srcdir))
 logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
+
+class StgStub():
+    def __init__(self):
+        self.gitdir = os.path.join(testdatadir, 'git')
+        self.objectsdir = os.path.join(self.gitdir, 'objects')
+        self.stgdir = os.path.join(self.gitdir, 'stg')
+        self.stgpatchesfile = os.path.join(self.stgdir, 'patches')
+
+        logger.debug('StgStub(): stgdir=%r' % (self.stgdir))
+
+        # create gitdir if it doesn't happen to exist
+        if not os.path.exists(self.gitdir):
+            os.mkdir(self.gitdir)
+
+        os.mkdir(self.stgdir)
+        
+        os.environ['STUB_GIT_DATADIR'] = self.gitdir
+        os.environ['GIT_DIR'] = 'git'
+        os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
+
+        self.started = False
+
+    def start(self):
+        logger.debug('StgStub.start(): %s' % (os.getcwd()))
+        p = subprocess.Popen(['stg', '--version', 'import'], stdout=subprocess.PIPE)
+        (stdout, stderr) = p.communicate()
+
+        stg_version = stdout.splitlines()[0]
+
+        if stg_version != 'stub-stg':
+            raise Exception('Not running stg-stub: %s' % stg_version)
+
+        self.started = True
+
+    def stop(self):
+        if not self.started:
+            return
+
+        self.started = False
+
+    def cleanup(self):
+        shutil.rmtree(self.stgdir)
+
+        # remove gitdir only if it's empty (which most likely means
+        # that this instance created it)
+        try:
+            os.rmdir(self.gitdir)
+        except OSError:
+            # the directory was not empty, ignore the error
+            pass
+
+    def get_patches(self):
+        result = []
+
+        if not os.path.exists(self.stgpatchesfile):
+            return result
+
+        f = open(self.stgpatchesfile, 'r')
+        buf = f.read()
+        f.close()
+
+        patches = {}
+        for line in buf.splitlines():
+            l = line.split('\t')
+            if len(l) != 2:
+                raise Exception('Invalid format in %s' % (self.patchesfile))
+
+            commit_id = l[0]
+            patch_name = l[1]
+
+            patches[patch_name] = commit_id
+
+        for commit_id in patches.values():
+            path = os.path.join(self.objectsdir, commit_id)
+            f = open(path, 'r')
+            buf = f.read()
+            result.append(buf)
+            f.close()
+
+        return result
+
+    def get_patches_as_msg(self):
+        msgs = []
+
+        for patch in self.get_patches():
+            msgs.append(email.message_from_string(patch))
+
+        return msgs
 
 class GitStub():
     def __init__(self):

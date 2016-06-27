@@ -1,0 +1,28 @@
+import one patch
+Checking for changes in the working directory ... done
+Importing patch "foo-test-1" ... done
+Now at patch "foo-test-1"
+
+check patch was correctly imported
+[1/7] foo: test 1
+
+import a second patch
+Checking for changes in the working directory ... done
+Importing patch "foo-test-2" ... done
+Now at patch "foo-test-2"
+
+test series
+foo-test-1
+foo-test-2
+
+test show
+commit 6cf73d97d329764a9732837dac6d5e2f7d4568d6
+Author: Timo Tiger <timo@example.com>
+Date:   Thu,  11 Feb 2011 15:23:31 +0300
+   
+   Foo commit log. Ignore this text
+   
+   Signed-off-by: Dino Dinosaurus <dino@example.com>
+   
+   ---
+   FIXME: add the patch here
