@@ -168,6 +168,10 @@ def cmd_cherry_pick(args):
       f.write(commit_id + '\n')
       f.close()
 
+def cmd_checkout(args):
+      # FIXME: just a dummy command for now
+      pass
+
 def main():
       global gitdir
 
@@ -206,6 +210,10 @@ def main():
       parser_cherry_pick = subparsers.add_parser('cherry-pick')
       parser_cherry_pick.add_argument('commit_id')
       parser_cherry_pick.set_defaults(func=cmd_cherry_pick)
+
+      parser_checkout = subparsers.add_parser('checkout')
+      parser_checkout.add_argument('branch')
+      parser_checkout.set_defaults(func=cmd_checkout)
 
       args = parser.parse_args()
 
