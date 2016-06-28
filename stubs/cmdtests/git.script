@@ -110,6 +110,10 @@ def main():
       print
 
       print 'test git log'
+      f = open(os.path.join(patchesdir, '030-new-1.patch'), 'r')
+      buf = f.read()
+      f.close()
+      git_am(stub_git, buf)
       subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
       print
 

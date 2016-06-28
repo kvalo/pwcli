@@ -126,8 +126,12 @@ def cmd_log(args):
 
       if len(args.max_count) > 0:
             max_count = int(args.max_count[0])
-            for i in range(max_count):
-                  commit = commits[i]
+
+            # The commits file is in reversed order, HEAD is in the
+            # bottom so need to take the last commits.
+            commits = commits[-max_count:]
+
+            for commit in commits:
                   subject = get_commit_subject(commit)
 
                   print '%.12s %s' % (commit, subject)
