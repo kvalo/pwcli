@@ -17,3 +17,7 @@ fab4214fa8c7 foo: new patch
 test git show HEAD
 commit fb409caeb2ecda7176f3d6af845e87b1c60f6665
 
+test git cherry-pick
+fab4214fa8c7 foo: new patch
+fb409caeb2ec foo: test 1
+

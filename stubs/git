@@ -153,6 +153,21 @@ def cmd_show(args):
 
       print 'commit %s' % (commits[0])
 
+def cmd_cherry_pick(args):
+      objectsdir = os.path.join(gitdir, 'objects')
+      commitsfile = os.path.join(objectsdir, 'commits')
+
+      commit_id = args.commit_id
+      commit_path = os.path.join(objectsdir, commit_id)
+
+      if not os.path.exists(commit_path):
+            print 'Commit id %s not found.' % (commit_id)
+            sys.exit(1)
+
+      f = open(commitsfile, 'a')
+      f.write(commit_id + '\n')
+      f.close()
+
 def main():
       global gitdir
 
@@ -187,6 +202,10 @@ def main():
       parser_show = subparsers.add_parser('show')
       parser_show.add_argument('commitid')
       parser_show.set_defaults(func=cmd_show)
+
+      parser_cherry_pick = subparsers.add_parser('cherry-pick')
+      parser_cherry_pick.add_argument('commit_id')
+      parser_cherry_pick.set_defaults(func=cmd_cherry_pick)
 
       args = parser.parse_args()
 
