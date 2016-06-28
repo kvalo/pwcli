@@ -67,11 +67,17 @@ def main():
 
       parser.add_argument('--keep', action='store_true',
                           help='Keep the temporary datadir for debugging')
+      parser.add_argument('--stgit', action='store_true',
+                          help='Enable stgit mode')
 
       args = parser.parse_args()
 
       git = stubs.GitStub()
       git.start()
+
+      if args.stgit:
+            stg = stubs.StgStub()
+            stg.start()
 
       patchwork = stubs.PatchworkStub()
       patchwork.start()
@@ -81,13 +87,17 @@ def main():
 
       os.chdir(datadir)
 
-      pwcli = stubs.PwcliWrapper()
+      pwcli = stubs.PwcliWrapper(stgit=args.stgit)
       pwcli.write_config()
       pwcli.start()
       pwcli.wait()
 
       patchwork.stop()
       smtpd.stop()
+
+      if args.stgit:
+            stg.stop()
+
       git.stop()
 
       if not args.keep:

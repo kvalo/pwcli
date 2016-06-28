@@ -33,10 +33,7 @@
 
 import pexpect
 import sys
-import shutil
 import os
-import subprocess
-import time
 import logging
 import stubs
 
@@ -52,6 +49,7 @@ PROMPT_REVIEW_STATE = 'Under review/Changes requested/Deferred/Rejected/aBort?'
 PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
 PROMPT_COMMIT_ACCEPT = 'Accept/request Changes/Reject/Show mail/Edit mail/aBort?'
 PROMPT_REPLY = 'Send/Edit/Abort?'
+PROMPT_REVIEW_ACCEPT = 'Apply \d+ patches to the pending branch\? \[Apply/Skip/aBort\]'
 
 # the toplevel source directory
 srcdir = os.environ['SRCDIR']
@@ -66,9 +64,15 @@ logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
 class StubContext():
-    def __init__(self, start=False, debug=False):
+    def __init__(self, start=False, debug=False, stgit=False):
         self.debug = debug
         self.git = stubs.GitStub()
+
+        if stgit:
+            self.stgit = stubs.StgStub()
+        else:
+            self.stgit = None
+
         self.smtpd = stubs.SmtpdStub()
         self.patchwork = stubs.PatchworkStub()
         self.editor = stubs.EditorStub()
@@ -81,15 +85,23 @@ class StubContext():
             self.start()
 
     def start(self):
+        stgit = False
+
         try:
             self.git.start()
+
+            if self.stgit:
+                stgit = True
+                self.stgit = self.stgit.start()
+
             self.smtpd.start()
             self.patchwork.start()
+            # FIXME: should this be start()?
             self.editor.stop()
 
             # must be instiated only after daemon stubs are running,
             # as this immediately starts pwcli
-            self.pwcli = PwcliSpawn(debug=self.debug)
+            self.pwcli = PwcliSpawn(debug=self.debug, stgit=stgit)
         except Exception as e:
             print 'Failed to start stubs: %s' % (e)
             self.stop_and_cleanup()
@@ -97,6 +109,10 @@ class StubContext():
 
     def stop(self):
         self.git.stop()
+
+        if self.stgit:
+            self.stgit = self.stgit.stop()
+
         self.smtpd.stop()
         self.patchwork.stop()
         self.editor.stop()
@@ -104,6 +120,10 @@ class StubContext():
     def cleanup(self):
         self.pwcli.cleanup()
         self.git.cleanup()
+
+        if self.stgit:
+            self.stgit = self.stgit.cleanup()
+
         self.smtpd.cleanup()
         self.patchwork.cleanup()
         self.editor.cleanup()
@@ -113,13 +133,13 @@ class StubContext():
         self.cleanup()
 
 class PwcliSpawn(pexpect.spawn):
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, stgit=False):
         cmd = 'pwcli'
 
         if debug:
             cmd += ' --debug'
 
-        self.pwcli_wrapper = stubs.PwcliWrapper()
+        self.pwcli_wrapper = stubs.PwcliWrapper(stgit=stgit)
         self.pwcli_wrapper.write_config()
 
         # use short timeout so that failures don't take too long to detect

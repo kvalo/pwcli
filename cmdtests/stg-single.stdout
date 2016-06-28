@@ -1,0 +1,29 @@
+Connecting to http://localhost:8000/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Main branches : test-branch
+Pending branch: pending
+New           : 1
+Review        : 0
+Upstream      : 0
+Deferred      : 1
+Total         : 2
+test-branch@data > list new
+list new
+[  1] 1030 foo: new patch
+test-branch@data > review 1
+review 1
+Retrieving patches (1/1) 
+[  1] 1030 foo: new patch
+------------------------------------------------------------
+Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
+a
+Checking for changes in the working directory ... done
+Importing patch "foo-new-patch" ... done
+Now at patch "foo-new-patch"
+Under review/Changes requested/Deferred/Rejected/aBort? u
+u
+1 patches set to Under Review, 1 applied and 0 not applied
+test-branch@data > quit
+

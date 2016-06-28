@@ -322,7 +322,7 @@ class EditorStub():
         pass
 
 class PwcliWrapper():
-    def __init__(self):
+    def __init__(self, stgit=False):
         self.config = ConfigParser.RawConfigParser()
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
@@ -335,6 +335,12 @@ class PwcliWrapper():
         self.config.set(general, 'password', 'password')
         self.config.set(general, 'username', 'test')
         self.config.set(general, 'url', 'http://localhost:8000/')
+
+        if stgit:
+            self.config.set(general, 'pending_mode', 'stgit')
+            self.config.set(general, 'pending_branch', 'pending')
+            self.config.set(general, 'main_branches', 'test-branch')
+            
 
     def start(self):
         self.pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
