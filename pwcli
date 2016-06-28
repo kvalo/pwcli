@@ -886,7 +886,8 @@ class PWCLI():
          if c == None:
             continue
 
-         patch = self.project.get_patch(c['patchwork_id'])
+         patchwork_id = int(c['patchwork_id'])
+         patch = self.project.get_patch(patchwork_id)
 
          if not patch:
             self.output('Patch id %s not found' % (c['patchwork_id']))

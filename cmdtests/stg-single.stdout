@@ -25,5 +25,8 @@ Now at patch "foo-new-patch"
 Under review/Changes requested/Deferred/Rejected/aBort? u
 u
 1 patches set to Under Review, 1 applied and 0 not applied
+test-branch@data > list
+list
+[  1] 1030 foo: new patch
 test-branch@data > quit
 

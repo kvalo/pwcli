@@ -47,6 +47,9 @@ def main():
    pwcli.sendline('u')
 
    pwcli.expect_prompt()
+   pwcli.sendline('list')
+
+   pwcli.expect_prompt()
    pwcli.sendline('quit')
 
    print ctxt.smtpd.get_mails_as_string()
