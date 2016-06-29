@@ -54,5 +54,8 @@ def main():
       subprocess.call([os.path.join(stubdir, 'patchwork'),
                        '--test=load-patches'])
 
+      # cleanup
+      shutil.rmtree(patchesdir)
+
 if __name__ == "__main__":
       main()

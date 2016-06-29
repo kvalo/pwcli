@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2016, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import stubs
+import os
+import xmlrpclib
+import base64
+
+class AuthTransport(xmlrpclib.SafeTransport):
+   def send_auth(self, connection):
+      creds = base64.encodestring('%s:%s' % (self.username,
+                                             self.password)).strip()
+      auth_string = 'Basic ' + creds
+      connection.putheader('Authorization', auth_string)
+
+   def send_host(self, connection, host):
+      xmlrpclib.Transport.send_host(self, connection, host)
+
+      if self.username != None and self.password != None:
+         self.send_auth(connection)
+
+   def make_connection(self, host):
+      if self.https:
+         return xmlrpclib.SafeTransport.make_connection(self, host)
+      else:
+         return xmlrpclib.Transport.make_connection(self, host)
+
+   def __init__(self, username = None, password = None, https = False):
+      xmlrpclib.SafeTransport.__init__(self)
+
+      self.username = username
+      self.password = password
+      self.https = https
+
+def main():
+      #srcdir = os.environ['SRCDIR']
+      datadir = os.environ['DATADIR']
+      #stubdir = os.path.join(srcdir, 'stubs')
+      #patchesdir = os.path.join(datadir, 'patches')
+
+      os.chdir(datadir)
+
+      # start patchwork
+      pw_stub = stubs.PatchworkStub()
+      pw_stub.start()
+
+      url = 'http://localhost:8000/'
+      project_name = 'stub-test'
+      username = 'test'
+      password = 'password'
+
+      https = url.startswith('https')
+      transport = AuthTransport(username, password, https)
+      rpc = xmlrpclib.Server(url, transport = transport)
+
+      projects = rpc.project_list(project_name, 0)
+
+      project_id = None
+      for project in projects:
+         if project['linkname'] == project_name:
+            project_id = project['id']
+
+      if not project_id:
+            raise Exception('Failed to find a project id for %s' % (project_name))
+
+      print 'retrieve all patches under review'
+      filters = {}
+      filters['project_id'] = project_id
+      filters['state_id'] = 2
+
+      patches = rpc.patch_list(filters)
+
+      i = 1
+      for patch in patches:
+            print '[%d] %s' % (i, patch['name'])
+            i += 1
+
+      print
+
+      print 'retrieve patch id 1030'
+      filters = {}
+      filters['id'] = 1030
+
+      patches = rpc.patch_list(filters)
+
+      i = 1
+      for patch in patches:
+            print '[%d] %s' % (i, patch['name'])
+            i += 1
+
+      print
+
+      pw_stub.stop()
+      pw_stub.cleanup()
+
+if __name__ == "__main__":
+      main()
