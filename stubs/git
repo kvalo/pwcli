@@ -172,6 +172,10 @@ def cmd_checkout(args):
       # FIXME: just a dummy command for now
       pass
 
+def cmd_filter_branch(args):
+      # FIXME: just a dummy command for now
+      pass
+
 def main():
       global gitdir
 
@@ -214,6 +218,11 @@ def main():
       parser_checkout = subparsers.add_parser('checkout')
       parser_checkout.add_argument('branch')
       parser_checkout.set_defaults(func=cmd_checkout)
+
+      parser_filter_branch = subparsers.add_parser('filter-branch')
+      parser_filter_branch.add_argument('--force', action='store_true')
+      parser_filter_branch.add_argument('--msg-filter', nargs=2)
+      parser_filter_branch.set_defaults(func=cmd_filter_branch)
 
       args = parser.parse_args()
 

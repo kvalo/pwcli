@@ -21,3 +21,5 @@ test git cherry-pick
 fab4214fa8c7 foo: new patch
 fb409caeb2ec foo: test 1
 
+test git filter-branch
+
