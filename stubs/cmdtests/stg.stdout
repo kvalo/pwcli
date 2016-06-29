@@ -11,6 +11,10 @@ Checking for changes in the working directory ... done
 Importing patch "foo-test-2" ... done
 Now at patch "foo-test-2"
 
+test that commit id is stable and a valid git object
+fb409caeb2ec foo: test 1
+6cf73d97d329 foo: test 2
+
 test series
 foo-test-1
 foo-test-2

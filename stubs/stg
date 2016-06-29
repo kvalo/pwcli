@@ -41,6 +41,7 @@ import hashlib
 
 gitdir = None
 objectsdir = None
+commitsfile = None
 stgdir = None
 patchesfile = None
 
@@ -135,6 +136,10 @@ def cmd_import(args):
       f.write(buf)
       f.close()
 
+      f = open(commitsfile, 'a')
+      f.write(commit_id + '\n')
+      f.close()
+
       # fake real stg output
       print 'Checking for changes in the working directory ... done'
       print 'Importing patch "%s" ... done' % (patch_name)
@@ -169,7 +174,7 @@ def cmd_show(args):
             print '   %s' % (line)
 
 def main():
-      global gitdir, objectsdir, stgdir, patchesfile
+      global gitdir, objectsdir, stgdir, patchesfile, commitsfile
 
       if 'STUB_GIT_DATADIR' in os.environ:
             gitdir = os.environ['STUB_GIT_DATADIR']
@@ -178,6 +183,7 @@ def main():
 
       stgdir = os.path.join(gitdir, 'stg')
       objectsdir = os.path.join(gitdir, 'objects')
+      commitsfile = os.path.join(objectsdir, 'commits')
       patchesfile = os.path.join(stgdir, 'patches')
 
       parser = argparse.ArgumentParser(description='stg-stub', prog='',

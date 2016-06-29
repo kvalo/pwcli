@@ -42,6 +42,7 @@ datadir = os.environ['DATADIR']
 stubsdir = os.path.join(srcdir, 'stubs')
 stubsdatadir = os.path.join(stubsdir, 'data')
 patchesdir = os.path.join(stubsdatadir, 'patches')
+stub_git = 'git'
 stub_stg = 'stg'
 
 def stg_import(filename):
@@ -79,6 +80,10 @@ def main():
 
       print 'import a second patch'
       stg_import('test-2.patch')
+      print
+
+      print 'test that commit id is stable and a valid git object'
+      subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
       print
 
       print 'test series'
