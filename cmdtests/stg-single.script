@@ -50,6 +50,15 @@ def main():
    pwcli.sendline('list')
 
    pwcli.expect_prompt()
+   pwcli.sendline('commit 1')
+
+   pwcli.expect(cmdtestlib.PROMPT_COMMIT_ALL)
+   pwcli.sendline('a')
+
+   pwcli.expect(cmdtestlib.PROMPT_COMMIT_ACCEPT)
+   pwcli.sendline('a')
+
+   pwcli.expect_prompt()
    pwcli.sendline('quit')
 
    print ctxt.smtpd.get_mails_as_string()

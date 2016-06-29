@@ -28,5 +28,47 @@ u
 test-branch@data > list
 list
 [  1] 1030 foo: new patch
+test-branch@data > commit 1
+commit 1
+Retrieving patches (1/1) 
+1030 foo: new patch
+------------------------------------------------------------
+1 patches
+commit All/commit Individually/aBort? a
+a
+============================================================
+1 patches applied:
+
+68cc2ed04895 foo: new patch
+
+Accept/request Changes/Reject/Show mail/Edit mail/aBort? a
+a
+1 patches accepted, 0 skipped
+Email sent
 test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> timo@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: foo: new patch
+From: Timo Testi <test@example.com>
+In-Reply-To: <22222@example.com>
+To: Timo Tiger <timo@example.com>
+
+Timo Tiger <timo@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Thanks, 1 patch applied to data.git:
+
+68cc2ed04895 foo: new patch
+
+-- 
+Sent by pwcli
+http://localhost:8000/1030/
+----------------------------------------------------------------------
 
