@@ -553,10 +553,10 @@ class Project():
       results = self._get_patches(filters)
 
       if len(results) > 1:
-         self.output('Multiple patches found with same patchwork id %s' % (patchwork_id))
+         logger.debug('Multiple patches found with same patchwork id %s' % (patchwork_id))
          return None
       elif len(results) == 0:
-         self.output('patchwork id %s not found' % (patchwork_id))
+         logger.debug('patchwork id %s not found' % (patchwork_id))
          return None
 
       return results[0]
@@ -887,6 +887,10 @@ class PWCLI():
             continue
 
          patch = self.project.get_patch(c['patchwork_id'])
+
+         if not patch:
+            self.output('Patch id %s not found' % (c['patchwork_id']))
+            continue
 
          # patches in pending branch can be applied, tests or
          # whatever, so skip those
