@@ -125,7 +125,10 @@ def cmd_import(args):
       # FIXME: Check if there's already a patch with that name and in
       # that case append a number suffix patch_name with a number.
 
-      commit_id = hashlib.sha1(buf).hexdigest()
+      # strip out the date ('From nobody <date>') from the first line,
+      # which is added by email.message.Message.as_string(unixfrom=True)
+      buf_cleaned = re.sub(r'^From nobody.*\n', 'From nobody\n', buf)
+      commit_id = hashlib.sha1(buf_cleaned).hexdigest()
 
       f = open(patchesfile, 'a')
       f.write('%s\t%s\n' % (commit_id, patch_name))
