@@ -46,6 +46,7 @@ import email.header
 import smtplib
 import pprint
 import re
+import timeit
 
 PWCLI_EDIT_FILE = '.pwcli-edit'
 
@@ -125,6 +126,17 @@ def parse_list(entries):
       prev = val
 
    return ids
+
+class Timer():
+
+   def start(self):
+      self.start_time = timeit.default_timer()
+
+   def stop(self):
+      self.end_time = timeit.default_timer()
+
+   def get_seconds(self):
+      return self.end_time - self.start_time
 
 class GitError(Exception):
 
@@ -872,6 +884,53 @@ class PWCLI():
       self.print_header(PATCH_STATE_DEFERRED, deferred)
       self.print_header('Total', total)
 
+   def run_build_script(self):
+      cmd = self.build_command
+
+      if not cmd:
+         # build command is not specified, skip the build
+         return
+
+      if self.dry_run:
+            self.output('Dry-run: %s' % str(cmd))
+            return
+
+      empty_line = '                                                                 '
+      stdoutdata = ''
+      stderrdata = ''
+
+      self.timer.start()
+      p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+      lines = iter(p.stdout.readline, '')
+      for line in lines:
+         stdoutdata += line
+         print '\r%s\r%s' % (empty_line, line.replace('\n', '')),
+
+      stderrdata = p.stderr.read()
+
+      p.stdout.close()
+      p.stderr.close()
+      returncode = p.wait()
+
+      self.timer.stop()
+
+      logger.debug('Build \'%s\' done in %.1fs: (%r, %r, %r)' %
+                   (cmd, self.timer.get_seconds(), returncode,
+                    stdoutdata, stderrdata))
+
+      # empty the line from "status" messages
+      print '\r%s\r' % (empty_line),
+
+      if returncode != 0:
+         self.output(stderrdata.strip())
+         self.output('Build failed: %d' % (returncode))
+      elif len(stderrdata) > 0:
+         self.output(stderrdata.strip())
+         self.output('Build failed with warnings')
+      else:
+         self.output('Build succesful')
+
    def get_pending_branch_patches(self):
       patches = []
 
@@ -1377,6 +1436,11 @@ class PWCLI():
 
       self.show_info()
 
+   def cmd_build(self, args):
+      logger.debug('cmd_build(args=%s)' % repr(args))
+
+      self.run_build_script()
+
    def cmd_project(self, args):
       logger.debug('cmd_project(args=%r)' % repr(args))
 
@@ -1508,6 +1572,9 @@ class PWCLI():
       subparsers.add_parser('info').set_defaults(func=self.cmd_info,
                                                  help='show various patchwork statistics')
 
+      subparsers.add_parser('build').set_defaults(func=self.cmd_build,
+                                                 help='run build script and show results')
+
       while True:
          prompt = ''
 
@@ -1551,6 +1618,7 @@ class PWCLI():
       return cmd
 
    def __init__(self):
+      self.timer = Timer()
 
       if 'GIT_DIR' in os.environ:
          self.git_dir = os.environ['GIT_DIR']
@@ -1603,6 +1671,12 @@ class PWCLI():
       self.url = self.config.get('general', 'url')
       self.username = self.config.get('general', 'username')
       self.password = self.config.get('general', 'password')
+
+      if self.config.has_option('general', 'build-command'):
+         self.build_command = self.config.get('general', 'build-command')
+      else:
+         self.build_command = None
+
       self.project_names = self.config.get('general', 'project')
 
       self.project_names = self.project_names.split()

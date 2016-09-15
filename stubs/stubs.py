@@ -335,6 +335,7 @@ class PwcliWrapper():
         self.config.set(general, 'password', 'password')
         self.config.set(general, 'username', 'test')
         self.config.set(general, 'url', 'http://localhost:8000/')
+        self.config.set(general, 'build-command', 'echo This is a warning >&2')
 
         if stgit:
             self.config.set(general, 'pending_mode', 'stgit')
