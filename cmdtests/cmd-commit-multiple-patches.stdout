@@ -21,6 +21,8 @@ commit 1-2
 2 patches
 commit All/commit Individually/aBort? a
 a
+                                                                 This is a warning
+Build failed with warnings
 ============================================================
 2 patches applied:
 

@@ -1150,6 +1150,9 @@ class PWCLI():
       if len(applied) == 0:
          return
 
+      # run a build test
+      self.run_build_script()
+
       # show summary in the shell
       self.output('============================================================')
       self.output('%d patches applied:' % len(applied))
