@@ -1429,46 +1429,72 @@ class PWCLI():
       self.output('Switched main branch to: %s' % (self.selected_main_branch))
 
    def run_shell(self):
-      self.parser = argparse.ArgumentParser(description='pwcli shell', prog='',
-                                    add_help=False)
+      index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
+
+      self.parser = argparse.ArgumentParser(description='pwcli - patchwork client shell. More help for individual commands with --help switch',
+                                            prog='',
+                                            add_help=False)
    
       subparsers = self.parser.add_subparsers()
 
-      subparsers.add_parser('help').set_defaults(func=self.cmd_help)
+      subparsers.add_parser('help').set_defaults(func=self.cmd_help,
+                                                 help='show summary of available commands')
 
-      subparsers.add_parser('quit').set_defaults(func=self.cmd_quit)
-      subparsers.add_parser('q').set_defaults(func=self.cmd_quit)
+      subparsers.add_parser('quit').set_defaults(func=self.cmd_quit,
+                                                 help='quit the shell')
+      subparsers.add_parser('q').set_defaults(func=self.cmd_quit,
+                                              help='quit the shell')
 
-      parser_list = subparsers.add_parser('list')
+      parser_list = subparsers.add_parser('list', 
+                                          help='list patches from patchwork',
+                                          description='Fetches patches from patchwork based on various filters and shows the summary with indexes')
       parser_list.add_argument('state', metavar='STATE', nargs='?',
-                               help='optional patch state (new, review, upstream)')
+                               help='optional patch state: new, review (default), upstream, deferred')
       parser_list.set_defaults(func=self.cmd_list)
 
-      parser_commit = subparsers.add_parser('commit')
-      parser_commit.add_argument('ids', metavar='IDs', nargs='+')
+      parser_commit = subparsers.add_parser('commit',
+                                            help='commit list of patches',
+                                            description='Commits one or more patches using git, changes the state of patches accordingly and sends an email reply. Requires that the list command is run before.')
+      parser_commit.add_argument('ids', metavar='IDS', nargs='+',
+                                 help=index_help)
       parser_commit.set_defaults(func=self.cmd_commit)
 
-      parser_review = subparsers.add_parser('review')
-      parser_review.add_argument('ids', metavar='IDs', nargs='+')
+      parser_review = subparsers.add_parser('review',
+                                            help='review patches and change states',
+                                            description='Opens each patch in a brower window for easy review of the patch and comments. Provides options to change states')
+      parser_review.add_argument('ids', metavar='IDS', nargs='+',
+                                 help=index_help)
       parser_review.set_defaults(func=self.cmd_review)
 
-      parser_show = subparsers.add_parser('show')
-      parser_show.add_argument('ids', metavar='IDS', nargs='+')
+      parser_show = subparsers.add_parser('show',
+                                          help='show information about the patches',
+                                          description='Show information about the patches and open browser window for each')
+      parser_show.add_argument('ids', metavar='IDS', nargs='+',
+                               help=index_help)
       parser_show.set_defaults(func=self.cmd_show)
 
-      parser_reply = subparsers.add_parser('reply')
-      parser_reply.add_argument('id', metavar='ID', nargs=1)
+      parser_reply = subparsers.add_parser('reply',
+                                           help='send an email reply to the patch')
+      parser_reply.add_argument('id', metavar='ID', nargs=1,
+                                help='patch index from list command')
       parser_reply.set_defaults(func=self.cmd_reply)
 
-      parser_project = subparsers.add_parser('project')
-      parser_project.add_argument('index', metavar='INDEX', nargs='?')
+      parser_project = subparsers.add_parser('project',
+                                             help='switch between patchwork projects',
+                                             description='Switch between patchwork projects, if no index is specified list of projects is shown with indexes.')
+      parser_project.add_argument('index', metavar='INDEX', nargs='?',
+                                  help='patchwork project index')
       parser_project.set_defaults(func=self.cmd_project)
 
-      parser_project = subparsers.add_parser('branch')
-      parser_project.add_argument('index', metavar='INDEX', nargs='?')
+      parser_project = subparsers.add_parser('branch',
+                                             help='switch between git branches',
+                                             description='Switch between git branches, if no branch index specified list of available branches is shown with indexes.')
+      parser_project.add_argument('index', metavar='INDEX', nargs='?',
+                                  help='branch index')
       parser_project.set_defaults(func=self.cmd_branch)
 
-      subparsers.add_parser('info').set_defaults(func=self.cmd_info)
+      subparsers.add_parser('info').set_defaults(func=self.cmd_info,
+                                                 help='show various patchwork statistics')
 
       while True:
          prompt = ''
