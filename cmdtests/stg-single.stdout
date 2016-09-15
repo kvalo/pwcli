@@ -55,6 +55,7 @@ Content-Transfer-Encoding: 7bit
 Subject: Re: foo: new patch
 From: Timo Testi <test@example.com>
 In-Reply-To: <22222@example.com>
+References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 
 Timo Tiger <timo@example.com> wrote:

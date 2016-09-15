@@ -485,6 +485,7 @@ class Patch():
       reply['Subject'] = subject_hdr
       reply['From'] = from_hdr
       reply['In-Reply-To'] = msg['Message-Id']
+      reply['References'] = msg['Message-Id']
       reply['To'] = to_hdr
 
       if len(cc_hdr) > 0:

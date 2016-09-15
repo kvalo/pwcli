@@ -39,6 +39,7 @@ Content-Transfer-Encoding: 7bit
 Subject: Re: [1/7] foo: test 1
 From: Timo Testi <test@example.com>
 In-Reply-To: <11111@example.com>
+References: <11111@example.com>
 To: Dino Dinosaurus <dino@example.com>
 
 Dino Dinosaurus <dino@example.com> wrote:
