@@ -943,6 +943,15 @@ class PWCLI():
       else:
          self.patches = self.project.get_patches(state, username)
 
+      # filter patches
+      for patch in self.patches:
+         if args.subject:
+            match = re.search(args.subject[0], patch.get_name(),
+                              re.MULTILINE | re.IGNORECASE)
+            if not match:
+               self.patches.remove(patch)
+               continue
+
       self.output(self.create_patchlist_as_string(self.patches,
                                                   show_indexes=True))
 
@@ -1450,6 +1459,9 @@ class PWCLI():
                                           description='Fetches patches from patchwork based on various filters and shows the summary with indexes')
       parser_list.add_argument('state', metavar='STATE', nargs='?',
                                help='optional patch state: new, review (default), upstream, deferred')
+      parser_list.add_argument('--subject', '-s',
+                               metavar='REGEXP', nargs=1,
+                               help='show only patches with subject matching REGEXP (case is ingored)')
       parser_list.set_defaults(func=self.cmd_list)
 
       parser_commit = subparsers.add_parser('commit',

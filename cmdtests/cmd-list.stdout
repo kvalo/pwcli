@@ -22,4 +22,7 @@ list new
 test-branch@data > list deferred
 list deferred
 [  1] 1020 foo: small cleanup
+test-branch@data > list -s foo:.*2
+list -s foo:.*2
+[  1] 1002 [1/7] foo: test 2
 test-branch@data > quit

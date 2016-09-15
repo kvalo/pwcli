@@ -45,6 +45,8 @@ def main():
    pwcli.sendline('list new')
    pwcli.expect_prompt()
    pwcli.sendline('list deferred')
+   pwcli.expect_prompt()
+   pwcli.sendline('list -s foo:.*2')
 
    pwcli.expect_prompt()
    pwcli.sendline('quit')
