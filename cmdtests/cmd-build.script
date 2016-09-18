@@ -33,17 +33,13 @@
 
 import cmdtestlib
 
-def main():
-   ctxt = cmdtestlib.StubContext(start=True)
-   pwcli = ctxt.pwcli
-
+def test_build(ctxt, pwcli):
    pwcli.expect_prompt()
    pwcli.sendline('build')
 
    pwcli.expect_prompt()
    pwcli.sendline('quit')
 
-   ctxt.stop_and_cleanup()
-
 if __name__ == "__main__":
-   main()
+   cmdtestlib.StubContext.run_test(test_build)
+

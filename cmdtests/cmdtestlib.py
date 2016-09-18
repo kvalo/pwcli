@@ -84,6 +84,18 @@ class StubContext():
         if start:
             self.start()
 
+    @staticmethod
+    def run_test(func, stgit=False):
+        ctxt = StubContext(start=True, stgit=stgit)
+        pwcli = ctxt.pwcli
+
+        try:
+            func(ctxt, pwcli)
+        except Exception as e:
+            print e
+
+        ctxt.stop_and_cleanup()
+
     def start(self):
         stgit = False
 

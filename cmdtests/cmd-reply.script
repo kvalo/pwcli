@@ -34,10 +34,7 @@
 import cmdtestlib
 import os
 
-def main():
-   ctxt = cmdtestlib.StubContext(start=True)
-   pwcli = ctxt.pwcli
-
+def test_reply(ctxt, pwcli):
    pwcli.expect_prompt()
    pwcli.sendline('list review')
    pwcli.expect_prompt()
@@ -56,8 +53,6 @@ def main():
 
    print 'received mails:'
    print ctxt.smtpd.get_mails_as_string()
-   
-   ctxt.stop_and_cleanup()
 
 if __name__ == "__main__":
-   main()
+   cmdtestlib.StubContext.run_test(test_reply)
