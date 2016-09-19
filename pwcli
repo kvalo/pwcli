@@ -36,7 +36,6 @@ import base64
 import logging
 import sys
 import subprocess
-import readline
 import argparse
 import os
 import ConfigParser
@@ -47,6 +46,9 @@ import smtplib
 import pprint
 import re
 import timeit
+
+import readline
+assert readline # to shut up pyflakes
 
 PWCLI_EDIT_FILE = '.pwcli-edit'
 
