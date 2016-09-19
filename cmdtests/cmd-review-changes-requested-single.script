@@ -44,6 +44,10 @@ def test_review(ctxt, pwcli):
    pwcli.expect(cmdtestlib.PROMPT_REVIEW_STATE)
    pwcli.sendline('c')
 
+   # Reason
+   pwcli.expect(cmdtestlib.PROMPT_REVIEW_REASON)
+   pwcli.sendline('Needs more work.')
+
    # Send
    pwcli.expect(cmdtestlib.PROMPT_REPLY)
    pwcli.sendline('s')

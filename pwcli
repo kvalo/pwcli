@@ -46,6 +46,7 @@ import smtplib
 import pprint
 import re
 import timeit
+import textwrap
 
 import readline
 assert readline # to shut up pyflakes
@@ -58,6 +59,7 @@ DEFAULT_EDITOR = 'nano'
 logger = logging.getLogger('pwcli')
 
 LOG_SEPARATOR = '\n---\n'
+MAIL_BODY_WIDTH = 72
 
 PATCH_STATE_NEW = 'New'
 PATCH_STATE_UNDER_REVIEW = 'Under Review'
@@ -80,6 +82,12 @@ def clean(buf):
 
 def pretty(obj):
    return pprint.pformat(obj, indent=4)
+
+def get_patches_plural(count):
+   if count > 1:
+      return 'patches'
+
+   return 'patch'
 
 # parses a string like '1-3,5' and returns the indexes in a list [1, 2, 3, 5]
 def parse_list(entries):
@@ -463,6 +471,9 @@ class Patch():
       body += '\n'
 
       body += text
+
+      # FIXME: the newline before the signature should be removed,
+      # better that all callers use double newlines at the end
       body += '\n%s\n' % self.get_email_signature()
 
       logger.debug('body=%s', repr(body))
@@ -1278,28 +1289,43 @@ class PWCLI():
          # FIXME: what to do if we don't find any patches?
          pass
 
+   # Basic operation:
+   #
+   # * show list of patches
+   # * open patches in browser
+   # * if pending mode is enabled
+   # ** Apply/Skip/aBort?
+   # ** apply patches to the pending branch
+   # ** run build script
+   # * Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
+   # * print status '%d patch(es) set to %s'
+   # * if state == Under review: exit
+   # * Reason: 
+   # * if len(reason) == 0 don't send any mail
+   # * create summary mail: "%d patch(es) changed to state %s. <patchlist> Reason: <reason> <buildlogs>"
+   # * Send/Edit/aBort?
+
    def cmd_review(self, args):
       logger.debug('cmd_review(args=%r)' % args)
 
-      selected_patches = self.get_patches_from_ids(args.ids)
+      patches = self.get_patches_from_ids(args.ids)
 
-      self.prefetch_patches(selected_patches)
+      self.prefetch_patches(patches)
 
       # force a newline so that new text starts from it's own line
       self.output('')
 
-      self.output(self.create_patchlist_as_string(selected_patches,
+      self.output(self.create_patchlist_as_string(patches,
                                                   show_indexes=True,
                                                   open_browser=True))
 
       self.output('------------------------------------------------------------')
 
       applied = []
-      skipped = []
 
       if self.pending_mode == 'stgit':
          while True:
-            choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(selected_patches)
+            choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(patches)
             answer = self.input(choises)
             answer = answer.lower()
 
@@ -1316,7 +1342,7 @@ class PWCLI():
             # git checkout self.pending_branch
             self.git.checkout(self.pending_branch)
          
-            for patch in selected_patches:
+            for patch in patches:
                # stg import --sign
                # FIXME: catch GitError
                try:
@@ -1324,7 +1350,8 @@ class PWCLI():
                   applied.append(patch)
                except GitError as e:
                   self.output('Failed to apply patch: %s' % e)
-                  skipped.append(patch)
+
+            # FIXME: run build command
          # Skip
          elif answer == 's':
             # do nothing, just continue to state handling
@@ -1333,17 +1360,12 @@ class PWCLI():
          elif answer == 'b':
             return
 
-      else:
-         # stgit disabled, no need to apply any patches
-         applied = selected_patches
-
-
       while True:
-         choices = 'Under review/Changes requested/Deferred/Rejected/aBort? '
+         choices = 'Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/not aPplicable/rFc/aBort? '
          answer = self.input(choices)
          answer = answer.lower()
 
-         valid = ['u', 'c', 'd', 'r', 'b']
+         valid = ['u', 'c', 'r', 'n', 'd', 's', 'a', 'p', 'f', 'b']
 
          if answer in valid:
             break
@@ -1351,28 +1373,24 @@ class PWCLI():
          self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
                                                                        ', '.join(valid)))
 
-      reply_text = None
-      if len(selected_patches) > 1:
-         patches_word = 'Patches have'
-      else:
-         patches_word = 'The patch has'
-
-      # Under review
       if answer == 'u':
          state = PATCH_STATE_UNDER_REVIEW
-      # Changes requested
       elif answer == 'c':
          state = PATCH_STATE_CHANGES_REQUESTED
-         reply_text = '%s been dropped, please resend.' % (patches_word)
-      # Deferred
-      elif answer == 'd':
-         state = PATCH_STATE_DEFERRED
-         pass
-      # Rejected
       elif answer == 'r':
          state = PATCH_STATE_REJECTED
-         reply_text = '%s been dropped.' % (patches_word)
-      # aBort
+      elif answer == 'n':
+         state = PATCH_STATE_NEW
+      elif answer == 'd':
+         state = PATCH_STATE_DEFERRED
+      elif answer == 's':
+         state = PATCH_STATE_SUPERSEDED
+      elif answer == 'a':
+         state = PATCH_STATE_AWAITING_UPSTREAM
+      elif answer == 'p':
+         state = PATCH_STATE_NOT_APPLICABLE
+      elif answer == 'f':
+         state = PATCH_STATE_RFC
       elif answer == 'b':
          self.output('Aborted.')
          return
@@ -1380,34 +1398,53 @@ class PWCLI():
          # should not be reached
          assert(False)
 
-      for patch in selected_patches:
+      for patch in patches:
          patch.set_state_name(state)
 
-      if reply_text:
-         first_patch = selected_patches[0]
+      self.output('%d %s set to %s' % (len(patches),
+                                       get_patches_plural(len(patches)),
+                                       state))
+                                                                        
+      if state == PATCH_STATE_UNDER_REVIEW:
+         # patches were ok, no further action
+         return
 
-         reply_text += '\n'
+      reason = self.input('Reason (RET for no mail): ')
+      reason = reason.strip()
 
-         # No point adding patchlist for a single patch, it doesn't
-         # bring any extra value which isn't already in the title or
-         # in the signature.
-         if len(selected_patches) > 1:
-            reply_text += '\n%s\n' % (self.create_patchlist_as_string(selected_patches))
+      if len(reason) == 0:
+         # no reason specified so no need to send any mail either
+         return
 
-         reply = first_patch.get_reply_msg(self.fullname, self.email,
-                                           reply_text)
+      reply = ''
 
-         reply = self.edit_email(reply)
+      if len(patches) > 1:
+         w = '%d patches' % (len(patches))
+      else:
+         w = 'Patch'
 
-         if reply == None:
-            # user aborted
-            return
+      reply += '%s set to %s.\n\n' % (w, state)
 
-         self.send_email(reply)
+      # No point adding patchlist for a single patch, it doesn't
+      # bring any extra value which isn't already in the title or
+      # in the signature.
+      if len(patches) > 1:
+         reply += '%s\n\n' % (self.create_patchlist_as_string(patches))
 
-      # FIXME: print summary of applied and skipped patches (with totals)
-      self.output('%d patches set to %s, %d applied and %d not applied' %
-                  (len(selected_patches), state, len(applied), len(skipped)))
+      reply += 'Reason: %s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
+
+      # FIXME: add possible git failures and build logs
+         
+      first_patch = patches[0]
+      msg = first_patch.get_reply_msg(self.fullname, self.email,
+                                        reply)
+
+      msg = self.edit_email(msg)
+      if msg == None:
+         # user aborted
+         return
+
+      self.send_email(msg)
 
    def cmd_reply(self, args):
       logger.debug('cmd_reply(args=%s)' % repr(args))

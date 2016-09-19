@@ -44,8 +44,14 @@ logger = logging.getLogger('cmdtestlib')
 # uncomment to get debug logs
 #logger.setLevel(logging.DEBUG)
 
+# Note: these prompts are regexps, escape accordingly!
+
 PROMPT = 'test-branch@data >'
-PROMPT_REVIEW_STATE = 'Under review/Changes requested/Deferred/Rejected/aBort?'
+
+# there's some odd word wrapping happening (pexpect?) so had to cut this
+PROMPT_REVIEW_STATE = 'aPplicable/rFc/aBort\? '
+
+PROMPT_REVIEW_REASON = 'Reason \(RET for no mail\): '
 PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
 PROMPT_COMMIT_ACCEPT = 'Accept/request Changes/Reject/Show mail/Edit mail/aBort?'
 PROMPT_REPLY = 'Send/Edit/Abort?'

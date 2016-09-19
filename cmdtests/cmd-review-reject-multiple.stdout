@@ -18,8 +18,11 @@ review 1-2
 [  1] 1001 [1/7] foo: test 1
 [  2] 1002 [1/7] foo: test 2
 ------------------------------------------------------------
-Under review/Changes requested/Deferred/Rejected/aBort? r
+Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/nott aPplicable/rFc/aBort? r
 r
+2 patches set to Rejected
+Reason (RET for no mail): I will never take these.
+I will never take these.
 ============================================================
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
@@ -36,10 +39,13 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Patches have been dropped.
+2 patches set to Rejected.
 
 1001 [1/7] foo: test 1
 1002 [1/7] foo: test 2
+
+Reason: I will never take these.
+
 
 -- 
 Sent by pwcli
@@ -51,7 +57,6 @@ Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Dino Dinosaurus <dino@example.com>']
 Send/Edit/Abort? s
 s
-2 patches set to Rejected, 2 applied and 0 not applied
 test-branch@data > info
 info
 User          : test (7477, 30052, 118371)
@@ -82,10 +87,13 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Patches have been dropped.
+2 patches set to Rejected.
 
 1001 [1/7] foo: test 1
 1002 [1/7] foo: test 2
+
+Reason: I will never take these.
+
 
 -- 
 Sent by pwcli

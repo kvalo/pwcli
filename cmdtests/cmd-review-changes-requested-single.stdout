@@ -17,8 +17,11 @@ review 1
 Retrieving patches (1/1) 
 [  1] 1001 [1/7] foo: test 1
 ------------------------------------------------------------
-Under review/Changes requested/Deferred/Rejected/aBort? c
+Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/nott aPplicable/rFc/aBort? c
 c
+1 patch set to Changes Requested
+Reason (RET for no mail): Needs more work.
+Needs more work.
 ============================================================
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
@@ -35,7 +38,10 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-The patch has been dropped, please resend.
+Patch set to Changes Requested.
+
+Reason: Needs more work.
+
 
 -- 
 Sent by pwcli
@@ -47,7 +53,6 @@ Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Dino Dinosaurus <dino@example.com>']
 Send/Edit/Abort? s
 s
-1 patches set to Changes Requested, 1 applied and 0 not applied
 test-branch@data > info
 info
 User          : test (7477, 30052, 118371)
@@ -78,7 +83,10 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-The patch has been dropped, please resend.
+Patch set to Changes Requested.
+
+Reason: Needs more work.
+
 
 -- 
 Sent by pwcli

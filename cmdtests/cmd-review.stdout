@@ -16,7 +16,7 @@ review 1
 Retrieving patches (1/1) 
 [  1] 1030 foo: new patch
 ------------------------------------------------------------
-Under review/Changes requested/Deferred/Rejected/aBort? b
+Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/nott aPplicable/rFc/aBort? b
 b
 Aborted.
 test-branch@data > review 1
@@ -24,9 +24,9 @@ review 1
 Retrieving patches (1/1) 
 [  1] 1030 foo: new patch
 ------------------------------------------------------------
-Under review/Changes requested/Deferred/Rejected/aBort? u
+Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/nott aPplicable/rFc/aBort? u
 u
-1 patches set to Under Review, 1 applied and 0 not applied
+1 patch set to Under Review
 test-branch@data > info
 info
 User          : test (7477, 30052, 118371)
