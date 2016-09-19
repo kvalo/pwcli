@@ -77,7 +77,7 @@ def main():
 
       parser = argparse.ArgumentParser(description='smtpd-stub')
 
-      parser.add_argument('--port', action='store', type=int, default=5870)
+      parser.add_argument('--port', action='store', type=int, default=5872)
 
       args = parser.parse_args()
 

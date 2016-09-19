@@ -1,4 +1,4 @@
-Connecting to http://localhost:8000/
+Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
@@ -72,6 +72,6 @@ Thanks, 1 patch applied to data.git:
 
 -- 
 Sent by pwcli
-http://localhost:8000/1030/
+http://localhost:8105/1030/
 ----------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-Connecting to http://localhost:8000/
+Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
@@ -56,6 +56,6 @@ fb409caeb2ec foo: test 1
 
 -- 
 Sent by pwcli
-http://localhost:8000/1001/
+http://localhost:8105/1001/
 ----------------------------------------------------------------------
 

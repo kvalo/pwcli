@@ -1,4 +1,4 @@
-Connecting to http://localhost:8000/
+Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
@@ -33,7 +33,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 -- 
 Sent by pwcli
-http://localhost:8000/1001/
+http://localhost:8105/1001/
 
 
 ============================================================
@@ -60,7 +60,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 -- 
 Sent by pwcli
-http://localhost:8000/1001/
+http://localhost:8105/1001/
 
 
 ============================================================
@@ -91,6 +91,6 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 -- 
 Sent by pwcli
-http://localhost:8000/1001/
+http://localhost:8105/1001/
 ----------------------------------------------------------------------
 

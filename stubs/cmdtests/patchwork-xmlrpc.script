@@ -36,6 +36,8 @@ import os
 import xmlrpclib
 import base64
 
+PATCHWORK_PORT=8107
+
 class AuthTransport(xmlrpclib.SafeTransport):
    def send_auth(self, connection):
       creds = base64.encodestring('%s:%s' % (self.username,
@@ -71,10 +73,10 @@ def main():
       os.chdir(datadir)
 
       # start patchwork
-      pw_stub = stubs.PatchworkStub()
+      pw_stub = stubs.PatchworkStub(port=PATCHWORK_PORT)
       pw_stub.start()
 
-      url = 'http://localhost:8000/'
+      url = 'http://localhost:%d/' % (PATCHWORK_PORT)
       project_name = 'stub-test'
       username = 'test'
       password = 'password'

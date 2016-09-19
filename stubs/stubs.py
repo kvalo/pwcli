@@ -61,7 +61,7 @@ logger.debug('stubsdir=%r' % (stubsdir))
 
 # separate port numbers compared torun_stub so that it can be run
 # concurrently with tests
-PATCHWORK_PORT=8000
+PATCHWORK_PORT=8105
 SMTP_PORT=5870
 
 class StgStub():
