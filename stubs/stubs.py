@@ -59,6 +59,11 @@ logger.debug('srcdir=%r' % (srcdir))
 logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
+# separate port numbers compared torun_stub so that it can be run
+# concurrently with tests
+PATCHWORK_PORT=8000
+SMTP_PORT=5870
+
 class StgStub():
     def __init__(self):
         self.gitdir = os.path.join(testdatadir, 'git')
@@ -148,7 +153,7 @@ class StgStub():
         return msgs
 
 class GitStub():
-    def __init__(self, smtpport=5870):
+    def __init__(self, smtpport=SMTP_PORT):
         self.gitdir = os.path.join(testdatadir, 'git')
 
         logger.debug('GitStub(): gitdir=%r' % (self.gitdir))
@@ -205,7 +210,6 @@ class GitStub():
         shutil.rmtree(self.gitdir)
 
 class SmtpdStub():
-    SMTP_PORT = 5870
 
     def __init__(self, port=SMTP_PORT):
         self.smtpddir = os.path.join(testdatadir, 'smtpd')
@@ -215,7 +219,8 @@ class SmtpdStub():
         os.mkdir(self.smtpddir)
         os.environ['STUB_SMTPD_DATADIR'] = self.smtpddir
 
-        logger.debug('SmtpdStub(): smtpddir=%r' % (self.smtpddir))
+        logger.debug('SmtpdStub(): smtpddir=%r, smtpport=%d' % (self.smtpddir,
+                                                                self.port))
 
         self.started = False
 
@@ -273,7 +278,7 @@ class SmtpdStub():
         return result
 
 class PatchworkStub():
-    def __init__(self, port=None):
+    def __init__(self, port=PATCHWORK_PORT):
         self.patchesdir = os.path.join(testdatadir, 'patches')
         srcpatchesdir = os.path.join(stubsdir, 'data', 'patches')
 
@@ -329,7 +334,8 @@ class EditorStub():
         pass
 
 class PwcliWrapper():
-    def __init__(self, stgit=False, patchworkport=8000, smtpport=5870):
+    def __init__(self, stgit=False, patchworkport=PATCHWORK_PORT,
+                 smtpport=SMTP_PORT):
         self.config = ConfigParser.RawConfigParser()
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')

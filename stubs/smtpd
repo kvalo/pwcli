@@ -38,8 +38,6 @@ import os.path
 import asyncore
 import sys
 
-DEFAULT_PORT = 4321
-
 datadir = None
 
 class FakeSMTPServer(smtpd.SMTPServer):
@@ -58,18 +56,15 @@ class FakeSMTPServer(smtpd.SMTPServer):
             self.count = 0
 
 def run(args):
-      if args.port != None:
-            port = args.port
-      else:
-            port = DEFAULT_PORT
-
       if os.path.isdir(datadir):
             files = len(os.listdir(datadir))
             if files > 0:
                   print '%s directory is not empty: %d' % (datadir, files)
                   sys.exit(1)
 
-      server = FakeSMTPServer(('127.0.0.1', port), None)
+      server = FakeSMTPServer(('127.0.0.1', args.port), None)
+      assert server # shutup pyflakes
+
       asyncore.loop()
 
 def main():
@@ -82,7 +77,7 @@ def main():
 
       parser = argparse.ArgumentParser(description='smtpd-stub')
 
-      parser.add_argument('--port', action='store', type=int)
+      parser.add_argument('--port', action='store', type=int, default=5870)
 
       args = parser.parse_args()
 

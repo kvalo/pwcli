@@ -33,12 +33,9 @@
 
 import smtplib
 import argparse
-import os
 import email
 import email.mime.text
 import sys
-
-DEFAULT_PORT=4321
 
 def run(args):
     from_address = 'test@example.com'
@@ -48,13 +45,8 @@ def run(args):
     msg['To'] = ', '.join(to)
     msg['From'] = from_address
 
-    if args.port != None:
-        port = args.port
-    else:
-        port = DEFAULT_PORT
-
     try:
-        server = smtplib.SMTP('localhost', port)
+        server = smtplib.SMTP('localhost', args.port)
         server.sendmail(from_address, to, msg.as_string())
         server.quit()
     except Exception as e:
@@ -64,7 +56,7 @@ def run(args):
 def main():
       parser = argparse.ArgumentParser(description='smtpd-stub')
 
-      parser.add_argument('--port', action='store')
+      parser.add_argument('--port', action='store', type=int, default=5870)
 
       args = parser.parse_args()
 
