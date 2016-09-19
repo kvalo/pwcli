@@ -34,25 +34,56 @@
 import os
 import subprocess
 import sys
+import argparse
 
 def main():
+    parser = argparse.ArgumentParser(description='Run all sort of pwcli tests')
+    parser.add_argument('suite', metavar='SUITE', nargs='?',
+                        help='Choose the test suite to run',
+                        choices=('stubs', 'cmdtests', 'unittests'))
+    parser.add_argument('test', metavar='TEST', nargs='*',
+                        help='Run a specific test (or tests) from a test suite')
+
+    args = parser.parse_args()
+
     os.environ['PYTHONPATH'] = '%s:%s' % ('stubs', os.environ['PYTHONPATH'])
 
     try:
-        print '* Running unit tests'
-        os.chdir('unittests')
-        subprocess.check_call(['./run'])
-        os.chdir('..')
+        if not args.suite or args.suite == 'unittests':
+            print '* Running unit tests'
 
-        print
-        print '* Running pwcli cmdtests'
-        subprocess.check_call(['cmdtest', 'cmdtests'])
+            os.chdir('unittests')
+            subprocess.check_call(['./run'])
+            os.chdir('..')
 
-        print
-        print '* Running stub cmdtests'
-        subprocess.check_call(['cmdtest', 'stubs/cmdtests'])
+        if not args.suite or args.suite == 'cmdtests':
+            print
+            print '* Running pwcli cmdtests'
+
+            cmd = ['cmdtest', 'cmdtests']
+
+            for test in args.test:
+                cmd += ['--test', test]
+
+            subprocess.check_call(cmd)
+
+        if not args.suite or args.suite == 'stubs':
+            print
+            print '* Running stub cmdtests'
+
+            cmd = ['cmdtest', 'stubs/cmdtests']
+
+            for test in args.test:
+                cmd += ['--test', test]
+
+            subprocess.check_call(cmd)
+
     except subprocess.CalledProcessError:
         sys.exit(1)
+
+    # show OK only when all tests are run
+    if args.suite:
+        sys.exit(0)
 
     try:
         subprocess.check_call(['figlet', '-c', '--', '---- OK ----'])
