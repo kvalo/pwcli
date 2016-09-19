@@ -236,11 +236,11 @@ class PatchworkStub():
       def run(self):
             self.server.serve_forever()
 
-      def __init__(self, patchesdir):
+      def __init__(self, patchesdir, port):
             self.patchesdir = patchesdir
             self.container = PatchContainer(self.patchesdir)
 
-            self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", 8000),
+            self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", port),
                                                                 logRequests=False,
                                                                 requestHandler=SimpleXMLRPCServer.SimpleXMLRPCRequestHandler)
             self.server.register_introspection_functions()
@@ -285,6 +285,7 @@ def main():
       parser = argparse.ArgumentParser(description='patchwork-stub', prog='')
 
       parser.add_argument('--version', action='store_true')
+      parser.add_argument('--port', action='store', type=int, default=8000)
       parser.add_argument('--test', nargs=1)
 
       args = parser.parse_args()
@@ -299,7 +300,7 @@ def main():
             sys.exit(0)
 
       try:
-            stub = PatchworkStub(datadir)
+            stub = PatchworkStub(datadir, port=args.port)
             stub.run()
       except Exception as e:
             print 'Failed to start PatchworkStub RPC server: %s' % e

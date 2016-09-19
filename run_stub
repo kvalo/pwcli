@@ -62,6 +62,11 @@ logger.debug('srcdir=%r' % (srcdir))
 logger.debug('datadir=%r' % (datadir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
+# separate port numbers for run_stub so that it can be run
+# concurrently with tests
+PATCHWORK_PORT=8100
+SMTP_PORT=5871
+
 def main():
       parser = argparse.ArgumentParser(description='run_stub')
 
@@ -72,22 +77,24 @@ def main():
 
       args = parser.parse_args()
 
-      git = stubs.GitStub()
+      git = stubs.GitStub(smtpport=SMTP_PORT)
       git.start()
 
       if args.stgit:
             stg = stubs.StgStub()
             stg.start()
 
-      patchwork = stubs.PatchworkStub()
+      patchwork = stubs.PatchworkStub(port=PATCHWORK_PORT)
       patchwork.start()
 
-      smtpd = stubs.SmtpdStub()
+      smtpd = stubs.SmtpdStub(port=5871)
       smtpd.start()
 
       os.chdir(datadir)
 
-      pwcli = stubs.PwcliWrapper(stgit=args.stgit)
+      pwcli = stubs.PwcliWrapper(stgit=args.stgit,
+                                 patchworkport=PATCHWORK_PORT,
+                                 smtpport=SMTP_PORT)
       pwcli.write_config()
       pwcli.start()
       pwcli.wait()

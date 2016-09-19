@@ -148,7 +148,7 @@ class StgStub():
         return msgs
 
 class GitStub():
-    def __init__(self):
+    def __init__(self, smtpport=5870):
         self.gitdir = os.path.join(testdatadir, 'git')
 
         logger.debug('GitStub(): gitdir=%r' % (self.gitdir))
@@ -170,7 +170,7 @@ class GitStub():
         sendemail = 'sendemail'
         self.config.add_section(sendemail)
         self.config.set(sendemail, 'smtpserver', 'localhost')
-        self.config.set(sendemail, 'smtpserverport', '5870')
+        self.config.set(sendemail, 'smtpserverport', str(smtpport))
 
         with open(os.path.join(self.gitdir, 'config'), 'w') as configfile:
             self.config.write(configfile)
@@ -207,8 +207,9 @@ class GitStub():
 class SmtpdStub():
     SMTP_PORT = 5870
 
-    def __init__(self):
+    def __init__(self, port=SMTP_PORT):
         self.smtpddir = os.path.join(testdatadir, 'smtpd')
+        self.port = port
 
         # setup directory for smtpd
         os.mkdir(self.smtpddir)
@@ -225,7 +226,7 @@ class SmtpdStub():
         # exactly, maybe something to do how Popen() inherits stdout
         # rules from the running process?
         self.smtpd = subprocess.Popen([os.path.join(stubsdir, 'smtpd'),
-                                       '--port=%d' % SmtpdStub.SMTP_PORT])
+                                       '--port=%d' % self.port])
 
         # wait some time to make sure that the stub started
         time.sleep(0.2)
@@ -272,9 +273,11 @@ class SmtpdStub():
         return result
 
 class PatchworkStub():
-    def __init__(self):
+    def __init__(self, port=None):
         self.patchesdir = os.path.join(testdatadir, 'patches')
         srcpatchesdir = os.path.join(stubsdir, 'data', 'patches')
+
+        self.port=port
 
         # create copy of patches
         shutil.copytree(srcpatchesdir, self.patchesdir)
@@ -285,7 +288,11 @@ class PatchworkStub():
         self.started = False
 
     def start(self):
-        self.patchwork = subprocess.Popen([os.path.join(stubsdir, 'patchwork')])
+        cmd = [os.path.join(stubsdir, 'patchwork')]
+        if self.port:
+            cmd += ['--port', str(self.port)]
+
+        self.patchwork = subprocess.Popen(cmd)
 
         # wait some time to make sure that the stub started
         time.sleep(0.2)
@@ -322,7 +329,7 @@ class EditorStub():
         pass
 
 class PwcliWrapper():
-    def __init__(self, stgit=False):
+    def __init__(self, stgit=False, patchworkport=8000, smtpport=5870):
         self.config = ConfigParser.RawConfigParser()
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
@@ -334,7 +341,7 @@ class PwcliWrapper():
         self.config.set(general, 'project', 'stub-test')
         self.config.set(general, 'password', 'password')
         self.config.set(general, 'username', 'test')
-        self.config.set(general, 'url', 'http://localhost:8000/')
+        self.config.set(general, 'url', 'http://localhost:%d/' % (patchworkport))
         self.config.set(general, 'build-command', 'echo This is a warning >&2')
 
         if stgit:
