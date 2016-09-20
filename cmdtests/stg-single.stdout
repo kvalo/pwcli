@@ -24,7 +24,7 @@ Importing patch "foo-new-patch" ... done
 Now at patch "foo-new-patch"
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
 u
-1 patch set to Under Review
+Patch set to Under Review
 test-branch@data > list
 list
 [  1] 1030 foo: new patch
