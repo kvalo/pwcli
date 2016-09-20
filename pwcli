@@ -1102,10 +1102,7 @@ class PWCLI():
 
       num = 1
       applied = []
-      skipped = []
       for patch in selected:
-         skip = False
-
          while commit_individually:
             # FIXME: in stgit mode we should show the commit log from
             # pending branch
@@ -1114,11 +1111,11 @@ class PWCLI():
             answer = None
 
             while True:
-               answer = self.input('[%d/%d] Commit/Edit/Skip/Abort? ' % (num,
-                                                                         len(selected)))
+               answer = self.input('[%d/%d] Commit/Edit/Abort? ' % (num,
+                                                                    len(selected)))
                answer = answer.lower()
 
-               valid = ['c', 'e', 's', 'a']
+               valid = ['c', 'e', 'a']
 
                if answer in valid:
                   break
@@ -1129,11 +1126,6 @@ class PWCLI():
             if answer == 'a':
                self.output('Commit command aborted')
                return
-
-            if answer == 's':
-               self.output('Skipping patch')
-               skip = True
-               break
 
             if answer == 'e':
                mbox = patch.get_mbox()
@@ -1149,10 +1141,6 @@ class PWCLI():
                break
 
          num += 1
-
-         if skip:
-            skipped.append(patch)
-            continue
 
          # apply the patch
          try:
@@ -1186,7 +1174,6 @@ class PWCLI():
             # possible to find the patchwork id based on commit id.
          except GitError as e:
             self.output('Failed to apply the patch: %s' % e)
-            skipped.append(patch)
 
       # FIXME: should also summary if none of the patches were applied
       if len(applied) == 0:
@@ -1201,15 +1188,6 @@ class PWCLI():
       self.output('')
       self.output(self.git.log_oneline(len(applied)))
       self.output('')
-
-      if len(skipped) > 0:
-         self.output('%d patches skipped:' % len(skipped))
-         self.output('')
-
-         for patch in skipped:
-            self.output(patch.get_name())
-
-         self.output('')
 
       # create the "Thanks, applied" email
       payload = ''
@@ -1232,11 +1210,6 @@ class PWCLI():
                                                          branch_name,
                                                        tree_name)
       payload += '%s\n' % self.git.log_oneline(len(applied))
-
-      if len(skipped) > 0:
-         payload += '\n%d patches skipped:\n\n' % len(skipped)
-         for patch in skipped:
-            payload += '%s\n' % patch.get_name()
 
       patch = applied[0]
       reply = patch.get_reply_msg(self.fullname, self.email, payload)
@@ -1262,10 +1235,8 @@ class PWCLI():
                patch.set_state_name(PATCH_STATE_ACCEPTED)
                patch.set_commit_ref(patch.get_temp_ref())
 
-            self.output('%d patches accepted, %d skipped' % (len(applied),
-                                                             len(skipped)))
+            self.output('%d patches accepted' % (len(applied)))
 
-            # FIXME: what to do if there are skipped patches?
             self.send_email(reply)
 
             self.output('Email sent')
