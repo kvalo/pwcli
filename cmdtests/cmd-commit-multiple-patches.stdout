@@ -29,10 +29,9 @@ Build failed with warnings
 fb409caeb2ec foo: test 1
 6cf73d97d329 foo: test 2
 
-Accept/request Changes/Reject/Show mail/Edit mail/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
-2 patches accepted
-Email sent
+2 patches set to Accepted
 test-branch@data > quit
 mail 0:
 ----------------------------------------------------------------------
@@ -52,7 +51,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Thanks, 2 patches applied to data.git:
+2 patches applied to data.git, thanks.
 
 fb409caeb2ec foo: test 1
 6cf73d97d329 foo: test 2

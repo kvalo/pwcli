@@ -480,9 +480,7 @@ class Patch():
 
       body += text
 
-      # FIXME: the newline before the signature should be removed,
-      # better that all callers use double newlines at the end
-      body += '\n%s\n' % self.get_email_signature()
+      body += '%s\n' % self.get_email_signature()
 
       logger.debug('body=%s', repr(body))
 
@@ -1061,21 +1059,36 @@ class PWCLI():
       self.output(self.create_patchlist_as_string(self.patches,
                                                   show_indexes=True))
 
+   # Basic operation:
+   #
+   # * show lists of patches
+   # * open patches in browser
+   # * commit All/commit Individually/aBort?
+   # * commit patches
+   # * run build script
+   # * Accept/Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
+   # * print status '%d patch(es) set to %s'
+   # * if state == accept: send "%d patches applied to %s, thanks." and exit
+   # * if state != accept: revert applied patches from git tree
+   # * Reason:
+   # * if len(reason) == 0: exit
+   # * create summary mail: "%d patch(es) changed state to %s. <patchlist> Reason: <reason> <buildlogs>"
+   # * Send/Edit/aBort?
    def cmd_commit(self, args):
       logger.debug('cmd_commit(args=%s)' % repr(args))
-      selected = self.get_patches_from_ids(args.ids)
+      patches = self.get_patches_from_ids(args.ids)
 
-      self.prefetch_patches(selected)
+      self.prefetch_patches(patches)
 
       # newline to clear the "progress bar"
       self.output('')
 
-      self.output(self.create_patchlist_as_string(selected,
+      self.output(self.create_patchlist_as_string(patches,
                                                   show_indexes=False,
                                                   open_browser=True))
 
       self.output('------------------------------------------------------------')
-      self.output('%d patches' % len(selected))
+      self.output('%d patches' % len(patches))
 
       while True:
          answer = self.input('commit All/commit Individually/aBort? ')
@@ -1107,7 +1120,7 @@ class PWCLI():
 
       num = 1
       applied = []
-      for patch in selected:
+      for patch in patches:
          while commit_individually:
             # FIXME: in stgit mode we should show the commit log from
             # pending branch
@@ -1117,7 +1130,7 @@ class PWCLI():
 
             while True:
                answer = self.input('[%d/%d] Commit/Edit/Abort? ' % (num,
-                                                                    len(selected)))
+                                                                    len(patches)))
                answer = answer.lower()
 
                valid = ['c', 'e', 'a']
@@ -1194,88 +1207,78 @@ class PWCLI():
       self.output(self.git.log_oneline(len(applied)))
       self.output('')
 
-      # create the "Thanks, applied" email
-      payload = ''
-      tree_name = '%s.git' % self.tree
+      # need to use ordered dict so that the list is shown in correct order
+      state_table = collections.OrderedDict()
+      state_table['Accepted'] =           PATCH_STATE_ACCEPTED
+      state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+      state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
+      state_table['Rejected'] =           PATCH_STATE_REJECTED
+      state_table['New'] =                PATCH_STATE_NEW
+      state_table['Deferred'] =           PATCH_STATE_DEFERRED
+      state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
+      state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
+      state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
+      state_table['rFc'] =                PATCH_STATE_RFC
+      state_table['aBort'] =              STATE_ABORTED
 
-      # FIXME: what if len(applied) is zero?
+      state = self.show_choose_list(state_table)
 
-      if len(applied) == 1:
-         patches_str = 'patch'
+      if state == STATE_ABORTED:
+         self.output('Aborted.')
+         return
+
+      for patch in patches:
+         patch.set_state_name(state)
+
+         if state == PATCH_STATE_ACCEPTED:
+            patch.set_commit_ref(patch.get_temp_ref())
+
+      self.output('%s set to %s' % (get_patches_plural(len(patches)),
+                                    state))
+      reply = ''
+      reason = None
+
+      if state == PATCH_STATE_ACCEPTED:
+         tree_name = '%s.git' % self.tree
+
+         if self.pending_mode == 'stgit' and len(self.main_branches) > 1:
+            branch_name = '%s branch of ' % (self.selected_main_branch)
+         else:
+            branch_name = ''
+
+         reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
+                                                   branch_name,
+                                                   tree_name)
+         reply += '%s\n\n' % self.git.log_oneline(len(patches))
       else:
-         patches_str = 'patches'
+         reason = self.input('Reason (RET for no mail): ')
+         reason = reason.strip()
 
-      if self.pending_mode == 'stgit' and len(self.main_branches) > 1:
-         branch_name = '%s branch of ' % (self.selected_main_branch)
-      else:
-         branch_name = ''
-
-      payload += 'Thanks, %d %s applied to %s%s:\n\n' % (len(applied),
-                                                       patches_str,
-                                                         branch_name,
-                                                       tree_name)
-      payload += '%s\n' % self.git.log_oneline(len(applied))
-
-      patch = applied[0]
-      reply = patch.get_reply_msg(self.fullname, self.email, payload)
-
-      while True:
-
-         while True:
-            choices = 'Accept/request Changes/Reject/Show mail/Edit mail/aBort? '
-            answer = self.input(choices)
-            answer = answer.lower()
-
-            valid = ['a', 'c', 'r', 's', 'e', 'b']
-
-            if answer in valid:
-               break
-
-            self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                       ', '.join(valid)))
-
-         if answer == 'a':
-            # Accept
-            for patch in applied:
-               patch.set_state_name(PATCH_STATE_ACCEPTED)
-               patch.set_commit_ref(patch.get_temp_ref())
-
-            self.output('%d patches accepted' % (len(applied)))
-
-            self.send_email(reply)
-
-            self.output('Email sent')
-
-            break
-
-         if answer == 'c':
-            # request Changes
-
-            # sets all patches to 'Changes Requested' and creates an
-            # email requesting changes (send_email(edit=True))
-            self.output('FIXME: implement')
-
-         if answer == 'r':
-            # Reject
-            # sets all patches to 'Rejected' and creates an
-            # email stating the reason (send_email(edit=True))
-            self.output('FIXME: implement')
-
-         if answer == 's':
-            # Show mail
-            self.output(reply.as_string())
-
-         if answer == 'e':
-            # Edit mail
-            buf = self.edit_file(reply.as_string())
-
-            # FIXME: check if the mail is malformed
-            reply = email.message_from_string(buf)
-
-         if answer == 'b':
-            # aBort
-            self.output('Aborted commit command')
+         if len(reason) == 0:
+            # no reason specified so no need to send any mail either
             return
+
+         reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
+                                         state)
+         reply += '%s\n\n' % (self.create_patchlist_as_string(patches))
+
+         reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
+         reply += 'Reason: %s\n\n' % (reason)
+
+         # FIXME: add possible git failures and build logs
+         
+      first_patch = patches[0]
+      msg = first_patch.get_reply_msg(self.fullname, self.email,
+                                      reply)
+
+      # if the patches are accepted, there's no reason and no need to edit the mail
+      if reason:
+         msg = self.edit_email(msg)
+         if msg == None:
+            # user aborted
+            return
+
+      self.send_email(msg)
 
    def cmd_show(self, args):
       logger.debug('cmd_show(args=%s)' % repr(args))

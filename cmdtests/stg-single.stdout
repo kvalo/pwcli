@@ -43,10 +43,9 @@ Build failed with warnings
 
 68cc2ed04895 foo: new patch
 
-Accept/request Changes/Reject/Show mail/Edit mail/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
-1 patches accepted
-Email sent
+Patch set to Accepted
 test-branch@data > quit
 mail 0:
 ----------------------------------------------------------------------
@@ -66,7 +65,7 @@ Timo Tiger <timo@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Thanks, 1 patch applied to data.git:
+Patch applied to data.git, thanks.
 
 68cc2ed04895 foo: new patch
 

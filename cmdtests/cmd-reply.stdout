@@ -30,7 +30,6 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-
 -- 
 Sent by pwcli
 http://localhost:8105/1001/
@@ -56,7 +55,6 @@ Dino Dinosaurus <dino@example.com> wrote:
 > Foo commit log. Ignore this text
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
-
 
 -- 
 Sent by pwcli
@@ -87,7 +85,6 @@ Dino Dinosaurus <dino@example.com> wrote:
 > Foo commit log. Ignore this text
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
-
 
 -- 
 Sent by pwcli
