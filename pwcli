@@ -47,6 +47,7 @@ import pprint
 import re
 import timeit
 import textwrap
+import collections
 
 import readline
 assert readline # to shut up pyflakes
@@ -71,6 +72,8 @@ PATCH_STATE_CHANGES_REQUESTED = 'Changes Requested'
 PATCH_STATE_AWAITING_UPSTREAM = 'Awaiting Upstream'
 PATCH_STATE_SUPERSEDED = 'Superseded'
 PATCH_STATE_DEFERRED = 'Deferred'
+
+STATE_ABORTED = 'Aborted'
 
 def utf8(buf):
    return unicode(buf).encode('utf-8')
@@ -741,6 +744,32 @@ class PWCLI():
 
       return result.strip('\n')
 
+   def show_choose_list(self, table):
+
+      valid = {}
+
+      for name in table.keys():
+         # find the one char shortcut
+         match = re.search('([A-Z])', name)
+         if len(match.groups()) != 1:
+            raise Exception('Invalid number (%d) of upper case letters in choose list: %s' % (len(match.groups()), name))
+         shortcut = match.group(0).lower()
+         valid[shortcut] = table[name]
+
+      while True:
+         choices = '%s? ' % ('/'.join(table.keys()))
+         answer = self.input(choices)
+         answer = answer.lower()
+
+         if answer in valid:
+            return valid[answer]
+
+         self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                       ', '.join(valid)))
+
+      # should not be reached
+      assert(False)
+
    def send_email(self, msg):
       logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
 
@@ -1360,43 +1389,24 @@ class PWCLI():
          elif answer == 'b':
             return
 
-      while True:
-         choices = 'Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/not aPplicable/rFc/aBort? '
-         answer = self.input(choices)
-         answer = answer.lower()
+      # need to use ordered dict so that the list is shown in correct order
+      state_table = collections.OrderedDict()
+      state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+      state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
+      state_table['Rejected'] =           PATCH_STATE_REJECTED
+      state_table['New'] =                PATCH_STATE_NEW
+      state_table['Deferred'] =           PATCH_STATE_DEFERRED
+      state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
+      state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
+      state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
+      state_table['rFc'] =                PATCH_STATE_RFC
+      state_table['aBort'] =              STATE_ABORTED
 
-         valid = ['u', 'c', 'r', 'n', 'd', 's', 'a', 'p', 'f', 'b']
+      state = self.show_choose_list(state_table)
 
-         if answer in valid:
-            break
-
-         self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                       ', '.join(valid)))
-
-      if answer == 'u':
-         state = PATCH_STATE_UNDER_REVIEW
-      elif answer == 'c':
-         state = PATCH_STATE_CHANGES_REQUESTED
-      elif answer == 'r':
-         state = PATCH_STATE_REJECTED
-      elif answer == 'n':
-         state = PATCH_STATE_NEW
-      elif answer == 'd':
-         state = PATCH_STATE_DEFERRED
-      elif answer == 's':
-         state = PATCH_STATE_SUPERSEDED
-      elif answer == 'a':
-         state = PATCH_STATE_AWAITING_UPSTREAM
-      elif answer == 'p':
-         state = PATCH_STATE_NOT_APPLICABLE
-      elif answer == 'f':
-         state = PATCH_STATE_RFC
-      elif answer == 'b':
+      if state == STATE_ABORTED:
          self.output('Aborted.')
          return
-      else:
-         # should not be reached
-         assert(False)
 
       for patch in patches:
          patch.set_state_name(state)

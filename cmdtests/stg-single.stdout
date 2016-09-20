@@ -22,7 +22,7 @@ a
 Checking for changes in the working directory ... done
 Importing patch "foo-new-patch" ... done
 Now at patch "foo-new-patch"
-Under review/request Changes/Reject/New/Deferred/Superseded/Awaiting upstream/nott aPplicable/rFc/aBort? u
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
 u
 1 patch set to Under Review
 test-branch@data > list
