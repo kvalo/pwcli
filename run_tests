@@ -46,7 +46,12 @@ def main():
 
     args = parser.parse_args()
 
-    os.environ['PYTHONPATH'] = '%s:%s' % ('stubs', os.environ['PYTHONPATH'])
+    pythonpath = 'stubs'
+
+    if 'PYTHONPATH' in os.environ:
+        pythonpath += ':%s' % (os.environ['PYTHONPATH'])
+
+    os.environ['PYTHONPATH'] = pythonpath
 
     try:
         if not args.suite or args.suite == 'unittests':
