@@ -791,9 +791,19 @@ class PWCLI():
 
       return result.strip('\n')
 
-   def show_choose_list(self, table):
+   def show_choose_list(self, table, prefix=None):
 
       valid = {}
+
+      if not prefix:
+         prefix = ''
+
+      # for convenience convert list to a dict
+      if isinstance(table, list):
+         copy = table
+         table = collections.OrderedDict()
+         for c in copy:
+            table[c] = c
 
       for name in table.keys():
          # find the one char shortcut
@@ -804,7 +814,7 @@ class PWCLI():
          valid[shortcut] = table[name]
 
       while True:
-         choices = '%s? ' % ('/'.join(table.keys()))
+         choices = '%s%s? ' % (prefix, '/'.join(table.keys()))
          answer = self.input(choices)
          answer = answer.lower()
 
@@ -1147,31 +1157,26 @@ class PWCLI():
 
       applied = []
       for patch in patches:
+
+         # edit can be chosen multiple times, that's why the loop
          while commit_individually:
             # FIXME: in stgit mode we should show the commit log from
             # pending branch
             self.show_patch(patch)
 
-            answer = None
+            ANSWER_COMMIT = 'Commit'
+            ANSWER_EDIT = 'Edit'
+            ANSWER_ABORT = 'Abort'
 
-            while True:
-               answer = self.input('[%d/%d] Commit/Edit/Abort? ' % (len(applied) + 1,
-                                                                    len(patches)))
-               answer = answer.lower()
+            answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
+                                           prefix='[%d/%d] ' % (len(applied) + 1,
+                                                                len(patches)))
 
-               valid = ['c', 'e', 'a']
-
-               if answer in valid:
-                  break
-
-               self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                          ', '.join(valid)))
-
-            if answer == 'a':
+            if answer == ANSWER_ABORT:
                self.output('Commit command aborted')
                return
 
-            if answer == 'e':
+            if answer == ANSWER_EDIT:
                mbox = patch.get_mbox()
                new_mbox = self.edit_file(mbox)
 
@@ -1180,7 +1185,7 @@ class PWCLI():
 
                continue
 
-            if answer == 'c':
+            if answer == ANSWER_COMMIT:
                # continue with commit process
                break
 
