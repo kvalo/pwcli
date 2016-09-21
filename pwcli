@@ -1014,6 +1014,8 @@ class PWCLI():
       else:
          self.output('Build succesful')
 
+      return p
+
    def get_pending_branch_patches(self):
       patches = []
 
@@ -1157,41 +1159,44 @@ class PWCLI():
          self.git.checkout(self.selected_main_branch)
 
       applied = []
-      for patch in patches:
+      faillog = ''
+      builder = None
 
-         # edit can be chosen multiple times, that's why the loop
-         while commit_individually:
-            # FIXME: in stgit mode we should show the commit log from
-            # pending branch
-            self.show_patch(patch)
+      try:
+         for patch in patches:
 
-            ANSWER_COMMIT = 'Commit'
-            ANSWER_EDIT = 'Edit'
-            ANSWER_ABORT = 'aBort'
+            # edit can be chosen multiple times, that's why the loop
+            while commit_individually:
+               # FIXME: in stgit mode we should show the commit log from
+               # pending branch
+               self.show_patch(patch)
 
-            answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
-                                           prefix='[%d/%d] ' % (len(applied) + 1,
-                                                                len(patches)))
+               ANSWER_COMMIT = 'Commit'
+               ANSWER_EDIT = 'Edit'
+               ANSWER_ABORT = 'aBort'
 
-            if answer == ANSWER_ABORT:
-               self.output('Commit command aborted')
-               return
+               answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
+                                              prefix='[%d/%d] ' % (len(applied) + 1,
+                                                                   len(patches)))
 
-            if answer == ANSWER_EDIT:
-               mbox = patch.get_mbox()
-               new_mbox = self.edit_file(mbox)
+               if answer == ANSWER_ABORT:
+                  self.output('Commit command aborted')
+                  return
 
-               if mbox != new_mbox:
-                  patch.set_mbox(new_mbox)
+               if answer == ANSWER_EDIT:
+                  mbox = patch.get_mbox()
+                  new_mbox = self.edit_file(mbox)
 
-               continue
+                  if mbox != new_mbox:
+                     patch.set_mbox(new_mbox)
 
-            if answer == ANSWER_COMMIT:
-               # continue with commit process
-               break
+                  continue
 
-         # apply the patch
-         try:
+               if answer == ANSWER_COMMIT:
+                  # continue with commit process
+                  break
+
+            # apply the patch
             if self.pending_mode == 'stgit':
                # FIXME: add sanity check that the patch really is in
                # review state. Also applies to main ('non-pending')
@@ -1214,26 +1219,34 @@ class PWCLI():
 
             applied.append(patch)
 
-         except GitError as e:
-            self.output('Failed to apply the patch: %s' % e)
+      except GitError as e:
+         self.output('Failed to apply the patch: %s' % e)
+         # FIXME: add info to faillog
 
-      # FIXME: should also summary if none of the patches were applied
-      if len(applied) == 0:
-         return
+      if len(applied) == len(patches):
+         # all patches were succesfully applied
 
-      # run a build test
-      self.run_build_script()
+         # run a build test
+         builder = self.run_build_script()
 
-      # show summary in the shell
-      self.output('============================================================')
-      self.output('%d patches applied:' % len(applied))
-      self.output('')
-      self.output(self.git.log_oneline(len(applied)))
-      self.output('')
+         if len(builder.stderrdata) > 0:
+            faillog += builder.stderrdata
+
+         # show summary in the shell
+         self.output('============================================================')
+         self.output('%d patches applied:' % len(applied))
+         self.output('')
+         self.output(self.git.log_oneline(len(applied)))
+         self.output('')
 
       # need to use ordered dict so that the list is shown in correct order
       state_table = collections.OrderedDict()
-      state_table['Accepted'] =           PATCH_STATE_ACCEPTED
+
+      # Accepted state should not be shown if any of the patches
+      # failed apply or the build failed
+      if (len(patches) == len(applied)) and (builder and builder.returncode == 0):
+         state_table['Accepted'] =           PATCH_STATE_ACCEPTED
+
       state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
       state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
       state_table['Rejected'] =           PATCH_STATE_REJECTED
@@ -1246,6 +1259,11 @@ class PWCLI():
       state_table['aBort'] =              STATE_ABORTED
 
       state = self.show_choose_list(state_table)
+
+      if state != PATCH_STATE_ACCEPTED:
+         # FIXME: git revert all patches in applied list as the user
+         # didn't accept them
+         pass
 
       if state == STATE_ABORTED:
          self.output('Aborted.')
@@ -1277,6 +1295,9 @@ class PWCLI():
                                                    branch_name,
                                                    tree_name)
          reply += '%s\n\n' % self.git.log_oneline(len(patches))
+
+         # Note: faillog is not added if the patches are accepted, for
+         # example no need to show false warnings
       else:
          reason = self.input('Reason (RET for no mail): ')
          reason = reason.strip()
@@ -1292,7 +1313,8 @@ class PWCLI():
          reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
          reply += 'Reason: %s\n\n' % (reason)
 
-         # FIXME: add possible git failures and build logs
+         # add possible git and build failures/warnings to the mail
+         reply += '%s\n' % (faillog)
          
       first_patch = patches[0]
       msg = first_patch.get_reply_msg(self.fullname, self.email,

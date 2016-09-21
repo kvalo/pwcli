@@ -1,0 +1,109 @@
+Connecting to http://localhost:8105/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 1
+Review        : 2
+Upstream      : 0
+Deferred      : 1
+Total         : 4
+test-branch@data > list
+list
+[  1] 1001 [1/7] foo: test 1
+[  2] 1002 [1/7] foo: test 2
+test-branch@data > commit 1
+commit 1
+Retrieving patches (1/1)
+1001 [1/7] foo: test 1
+------------------------------------------------------------
+1 patches
+commit All/commit Individually/aBort? a
+a
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 foo.c: warning: is suspicious
+bar.c: warning: is suspicious
+aaa.c: warning: is suspicious
+bbb.c: warning: is suspicious
+Build failed: 1
+============================================================
+1 patches applied:
+
+fb409caeb2ec foo: test 1
+
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
+c
+Patch set to Changes Requested
+Reason (RET for no mail): Compile errors
+Compile errors
+============================================================
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+References: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Patch set to Changes Requested.
+
+1001 [1/7] foo: test 1
+
+Reason: Compile errors
+
+foo.c: warning: is suspicious
+bar.c: warning: is suspicious
+aaa.c: warning: is suspicious
+bbb.c: warning: is suspicious
+
+-- 
+Sent by pwcli
+http://localhost:8105/1001/
+
+
+============================================================
+Envelope From: Timo Testi <test@example.com>
+Envelope To: ['Dino Dinosaurus <dino@example.com>']
+Send/Edit/aBort? s
+s
+test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> dino@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+References: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Patch set to Changes Requested.
+
+1001 [1/7] foo: test 1
+
+Reason: Compile errors
+
+foo.c: warning: is suspicious
+bar.c: warning: is suspicious
+aaa.c: warning: is suspicious
+bbb.c: warning: is suspicious
+
+-- 
+Sent by pwcli
+http://localhost:8105/1001/
+----------------------------------------------------------------------
+
