@@ -1145,7 +1145,6 @@ class PWCLI():
       if self.pending_mode == 'stgit':
          self.git.checkout(self.selected_main_branch)
 
-      num = 1
       applied = []
       for patch in patches:
          while commit_individually:
@@ -1156,7 +1155,7 @@ class PWCLI():
             answer = None
 
             while True:
-               answer = self.input('[%d/%d] Commit/Edit/Abort? ' % (num,
+               answer = self.input('[%d/%d] Commit/Edit/Abort? ' % (len(applied) + 1,
                                                                     len(patches)))
                answer = answer.lower()
 
@@ -1184,8 +1183,6 @@ class PWCLI():
             if answer == 'c':
                # continue with commit process
                break
-
-         num += 1
 
          # apply the patch
          try:
