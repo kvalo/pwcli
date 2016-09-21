@@ -985,38 +985,20 @@ class PWCLI():
             return
 
       empty_line = '                                                                 '
-      stdoutdata = ''
-      stderrdata = ''
+      stdout_cb = lambda line: self.output('\r%s\r%s' % (empty_line,
+                                                         line.replace('\n', '')),
+                                           newline=False)
 
-      self.timer.start()
-      p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-      lines = iter(p.stdout.readline, '')
-      for line in lines:
-         stdoutdata += line
-         self.output('\r%s\r%s' % (empty_line, line.replace('\n', '')),
-                     newline=False)
-
-      stderrdata = p.stderr.read()
-
-      p.stdout.close()
-      p.stderr.close()
-      returncode = p.wait()
-
-      self.timer.stop()
-
-      logger.debug('Build \'%s\' done in %.1fs: (%r, %r, %r)' %
-                   (cmd, self.timer.get_seconds(), returncode,
-                    stdoutdata, stderrdata))
+      p = RunProcess(cmd, stdout_cb=stdout_cb)
 
       # empty the line from "status" messages
       self.output('\r%s\r' % (empty_line), newline=False)
 
-      if returncode != 0:
-         self.output(stderrdata.strip())
-         self.output('Build failed: %d' % (returncode))
-      elif len(stderrdata) > 0:
-         self.output(stderrdata.strip())
+      if p.returncode != 0:
+         self.output(p.stderrdata.strip())
+         self.output('Build failed: %d' % (p.returncode))
+      elif len(p.stderrdata) > 0:
+         self.output(p.stderrdata.strip())
          self.output('Build failed with warnings')
       else:
          self.output('Build succesful')
