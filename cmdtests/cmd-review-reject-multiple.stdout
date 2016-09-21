@@ -14,7 +14,7 @@ list
 [  2] 1002 [1/7] foo: test 2
 test-branch@data > review 1-2
 review 1-2
-Retrieving patches (1/2) Retrieving patches (2/2) 
+Retrieving patches (1/2)Retrieving patches (2/2)
 [  1] 1001 [1/7] foo: test 1
 [  2] 1002 [1/7] foo: test 2
 ------------------------------------------------------------

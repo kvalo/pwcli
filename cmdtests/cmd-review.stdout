@@ -13,7 +13,7 @@ list new
 [  1] 1030 foo: new patch
 test-branch@data > review 1
 review 1
-Retrieving patches (1/1) 
+Retrieving patches (1/1)
 [  1] 1030 foo: new patch
 ------------------------------------------------------------
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? b
@@ -21,7 +21,7 @@ b
 Aborted.
 test-branch@data > review 1
 review 1
-Retrieving patches (1/1) 
+Retrieving patches (1/1)
 [  1] 1030 foo: new patch
 ------------------------------------------------------------
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u

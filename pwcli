@@ -726,8 +726,8 @@ class PWCLI():
    def prefetch_patches(self, patches):
       i = 1
       for patch in patches:
-         print '\rRetrieving patches (%d/%d)' % (i, len(patches)),
-         sys.stdout.flush()
+         self.output('\rRetrieving patches (%d/%d)' % (i, len(patches)),
+                     newline=False)
 
          patch.get_mbox()
          i += 1
@@ -994,7 +994,8 @@ class PWCLI():
       lines = iter(p.stdout.readline, '')
       for line in lines:
          stdoutdata += line
-         print '\r%s\r%s' % (empty_line, line.replace('\n', '')),
+         self.output('\r%s\r%s' % (empty_line, line.replace('\n', '')),
+                     newline=False)
 
       stderrdata = p.stderr.read()
 
@@ -1009,7 +1010,7 @@ class PWCLI():
                     stdoutdata, stderrdata))
 
       # empty the line from "status" messages
-      print '\r%s\r' % (empty_line),
+      self.output('\r%s\r' % (empty_line), newline=False)
 
       if returncode != 0:
          self.output(stderrdata.strip())
@@ -1676,9 +1677,17 @@ class PWCLI():
       fmt = "%- 14s: %s"
       self.output(fmt % (name, value))
 
-   def output(self, buf):
+   def output(self, buf, newline=True):
       logger.debug('> \'%s\'' % buf)
-      print buf
+
+      if newline:
+         buf += '\n'
+
+      sys.stdout.write(buf)
+
+      # flush so that the message really goes to the user
+      if not newline:
+         sys.stdout.flush()
 
    def input(self, prompt):
       logger.debug('> \'%s\'' % prompt)

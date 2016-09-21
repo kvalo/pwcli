@@ -14,7 +14,7 @@ list new
 [  1] 1030 foo: new patch
 test-branch@data > review 1
 review 1
-Retrieving patches (1/1) 
+Retrieving patches (1/1)
 [  1] 1030 foo: new patch
 ------------------------------------------------------------
 Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
@@ -30,13 +30,13 @@ list
 [  1] 1030 foo: new patch
 test-branch@data > commit 1
 commit 1
-Retrieving patches (1/1) 
+Retrieving patches (1/1)
 1030 foo: new patch
 ------------------------------------------------------------
 1 patches
 commit All/commit Individually/aBort? a
 a
-                                                                   CC foo.c                                                                    CC bar.c                                                                    CC aaa.c                                                                    CC bbb.c                                                                  Build succesful
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build succesful
 ============================================================
 1 patches applied:
 

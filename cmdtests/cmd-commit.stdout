@@ -14,13 +14,13 @@ list
 [  2] 1002 [1/7] foo: test 2
 test-branch@data > commit 1
 commit 1
-Retrieving patches (1/1) 
+Retrieving patches (1/1)
 1001 [1/7] foo: test 1
 ------------------------------------------------------------
 1 patches
 commit All/commit Individually/aBort? a
 a
-                                                                   CC foo.c                                                                    CC bar.c                                                                    CC aaa.c                                                                    CC bbb.c                                                                  Build succesful
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build succesful
 ============================================================
 1 patches applied:
 
