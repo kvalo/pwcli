@@ -156,6 +156,50 @@ class Timer():
    def get_seconds(self):
       return self.end_time - self.start_time
 
+class RunProcess():
+
+   # subprocess.Popen() throws OSError if the command is not found
+   def __init__(self, args, stdout_cb=None, input=None):
+      self.args = args
+      self.input = input
+
+      self.returncode = None
+      self.stdoutdata = ''
+      self.stderrdata = ''
+      self.timer = Timer()
+
+      self.timer.start()
+
+      self.p = subprocess.Popen(args,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+      if input:
+         self.p.stdin.write(input)
+
+      # need to close stdin after writing everything, otherwise
+      # reading output will block
+      self.p.stdin.close()
+         
+      lines = iter(self.p.stdout.readline, '')
+      for line in lines:
+         self.stdoutdata += line
+         if stdout_cb:
+            stdout_cb(line)
+
+      self.stderrdata = self.p.stderr.read()
+
+      self.p.stdout.close()
+      self.p.stderr.close()
+      self.returncode = self.p.wait()
+
+      self.timer.stop()
+
+      logger.debug('%s took %.1fs: (%r, %r, %r)' %
+                   (self, self.timer.get_seconds(), self.returncode,
+                    self.stdoutdata, self.stderrdata))
+
 class GitError(Exception):
 
    def __str__(self):
