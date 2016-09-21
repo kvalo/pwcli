@@ -64,6 +64,19 @@ logger.debug('stubsdir=%r' % (stubsdir))
 PATCHWORK_PORT=8105
 SMTP_PORT=5870
 
+BUILDER_WARNINGS_COUNT = 'STUB_BUILDER_WARNINGS_COUNT'
+BUILDER_RETURN_VALUE = 'STUB_BUILDER_RETURN_VALUE'
+
+class BuilderStub():
+    def __init__(self):
+        os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
+
+    def set_warning_count(self, count):
+        os.environ[BUILDER_WARNINGS_COUNT] = str(count)
+
+    def set_return_value(self, value):
+        os.environ[BUILDER_RETURN_VALUE] = str(value)
+
 class StgStub():
     def __init__(self):
         self.gitdir = os.path.join(testdatadir, 'git')
