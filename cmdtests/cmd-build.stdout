@@ -10,6 +10,5 @@ Deferred      : 1
 Total         : 4
 test-branch@data > build
 build
-                                                                 This is a warning
-Build failed with warnings
+                                                                   CC foo.c                                                                    CC bar.c                                                                    CC aaa.c                                                                    CC bbb.c                                                                  Build succesful
 test-branch@data > quit

@@ -86,6 +86,7 @@ class StubContext():
         self.patchwork = stubs.PatchworkStub()
         self.editor = stubs.EditorStub()
         self.pwcli = None
+        self.builder = stubs.BuilderStub()
 
         # move to the fake git repository before starting pwcli
         os.chdir(testdatadir)
@@ -154,13 +155,13 @@ class StubContext():
         self.cleanup()
 
 class PwcliSpawn(pexpect.spawn):
-    def __init__(self, debug=False, stgit=False):
+    def __init__(self, debug=False, stgit=False, builder=True):
         cmd = 'pwcli'
 
         if debug:
             cmd += ' --debug'
 
-        self.pwcli_wrapper = stubs.PwcliWrapper(stgit=stgit)
+        self.pwcli_wrapper = stubs.PwcliWrapper(stgit=stgit, builder=builder)
         self.pwcli_wrapper.write_config()
 
         # use short timeout so that failures don't take too long to detect

@@ -347,7 +347,7 @@ class EditorStub():
         pass
 
 class PwcliWrapper():
-    def __init__(self, stgit=False, patchworkport=PATCHWORK_PORT,
+    def __init__(self, stgit=False, builder=True, patchworkport=PATCHWORK_PORT,
                  smtpport=SMTP_PORT):
         self.config = ConfigParser.RawConfigParser()
 
@@ -361,7 +361,9 @@ class PwcliWrapper():
         self.config.set(general, 'password', 'password')
         self.config.set(general, 'username', 'test')
         self.config.set(general, 'url', 'http://localhost:%d/' % (patchworkport))
-        self.config.set(general, 'build-command', 'echo This is a warning >&2')
+
+        if builder:
+            self.config.set(general, 'build-command', 'builder')
 
         if stgit:
             self.config.set(general, 'pending_mode', 'stgit')

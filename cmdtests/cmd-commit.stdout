@@ -20,8 +20,7 @@ commit 1
 1 patches
 commit All/commit Individually/aBort? a
 a
-                                                                 This is a warning
-Build failed with warnings
+                                                                   CC foo.c                                                                    CC bar.c                                                                    CC aaa.c                                                                    CC bbb.c                                                                  Build succesful
 ============================================================
 1 patches applied:
 

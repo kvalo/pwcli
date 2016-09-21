@@ -3,6 +3,6 @@ project = stub-test
 password = password
 username = test
 url = http://localhost:8105/
-build-command = echo This is a warning >&2
+build-command = builder
 
 
