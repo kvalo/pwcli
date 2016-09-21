@@ -57,7 +57,7 @@ PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
 # there's some odd word wrapping happening (pexpect?) so had to cut this
 PROMPT_COMMIT_ACCEPT = 'aPplicable/rFc/aBort\? '
 
-PROMPT_REPLY = 'Send/Edit/Abort?'
+PROMPT_REPLY = 'Send/Edit/aBort?'
 PROMPT_REVIEW_ACCEPT = 'Apply \d+ patches to the pending branch\? \[Apply/Skip/aBort\]'
 
 # the toplevel source directory

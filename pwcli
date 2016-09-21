@@ -908,7 +908,7 @@ class PWCLI():
 
          ANSWER_SEND = 'Send'
          ANSWER_EDIT = 'Edit'
-         ANSWER_ABORT = 'Abort'
+         ANSWER_ABORT = 'aBort'
 
          answer = self.show_choose_list([ANSWER_SEND, ANSWER_EDIT, ANSWER_ABORT])
 
@@ -1167,7 +1167,7 @@ class PWCLI():
 
             ANSWER_COMMIT = 'Commit'
             ANSWER_EDIT = 'Edit'
-            ANSWER_ABORT = 'Abort'
+            ANSWER_ABORT = 'aBort'
 
             answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
                                            prefix='[%d/%d] ' % (len(applied) + 1,

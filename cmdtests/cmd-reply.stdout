@@ -38,7 +38,7 @@ http://localhost:8105/1001/
 ============================================================
 Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Dino Dinosaurus <dino@example.com>']
-Send/Edit/Abort? e
+Send/Edit/aBort? e
 e
 ============================================================
 Content-Type: text/plain; charset="utf-8"
@@ -64,7 +64,7 @@ http://localhost:8105/1001/
 ============================================================
 Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Dino Dinosaurus <dino@example.com>']
-Send/Edit/Abort? s
+Send/Edit/aBort? s
 s
 test-branch@data > quit
 received mails:
