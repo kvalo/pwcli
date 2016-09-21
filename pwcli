@@ -906,22 +906,23 @@ class PWCLI():
          self.output('Envelope From: %s' % envelope_from)
          self.output('Envelope To: %s' % envelope_to)
 
-         answer = self.input('Send/Edit/Abort? ')
-         answer = answer.lower()
+         ANSWER_SEND = 'Send'
+         ANSWER_EDIT = 'Edit'
+         ANSWER_ABORT = 'Abort'
 
-         if answer == 's':
+         answer = self.show_choose_list([ANSWER_SEND, ANSWER_EDIT, ANSWER_ABORT])
+
+         if answer == ANSWER_SEND:
             # Send
             return msg
-         elif answer == 'e':
+         elif answer == ANSWER_EDIT:
             # Edit
             buf = self.edit_file(msg.as_string())
             msg = email.message_from_string(buf)
-         elif answer == 'a':
+         elif answer == ANSWER_ABORT:
             # Abort
             self.output('Aborted send email')
             return None
-         else:
-            self.output('Unknown choise: %s' % (answer))
 
       # should not reach this
       return None
