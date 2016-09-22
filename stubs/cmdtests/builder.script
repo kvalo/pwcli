@@ -68,5 +68,7 @@ def main():
       returncode = subprocess.call('builder')
       print 'returncode = %d' % (returncode)
 
+      builder.cleanup()
+
 if __name__ == "__main__":
       main()

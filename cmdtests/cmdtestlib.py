@@ -149,6 +149,7 @@ class StubContext():
         self.smtpd.cleanup()
         self.patchwork.cleanup()
         self.editor.cleanup()
+        self.builder.cleanup()
 
     def stop_and_cleanup(self):
         self.stop()

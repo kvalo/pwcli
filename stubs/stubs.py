@@ -72,6 +72,12 @@ class BuilderStub():
     def __init__(self):
         os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
 
+    def cleanup(self):
+        if not os.path.exists(self.STUB_BUILDER_DIR):
+            return
+
+        shutil.rmtree(self.STUB_BUILDER_DIR)
+
     def create_builder_dir(self):
         if os.path.exists(self.STUB_BUILDER_DIR):
             if not os.path.isdir(self.STUB_BUILDER_DIR):
