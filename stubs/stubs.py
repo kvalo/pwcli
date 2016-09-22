@@ -64,18 +64,61 @@ logger.debug('stubsdir=%r' % (stubsdir))
 PATCHWORK_PORT=8105
 SMTP_PORT=5870
 
-BUILDER_WARNINGS_COUNT = 'STUB_BUILDER_WARNINGS_COUNT'
-BUILDER_RETURN_VALUE = 'STUB_BUILDER_RETURN_VALUE'
-
 class BuilderStub():
+    STUB_BUILDER_DIR = '.stub-builder'
+    FILE_WARNINGS_COUNT = os.path.join(STUB_BUILDER_DIR, 'warnings_count')
+    FILE_RETURN_VALUE = os.path.join(STUB_BUILDER_DIR, 'return_value')
+
     def __init__(self):
         os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
 
+    def create_builder_dir(self):
+        if os.path.exists(self.STUB_BUILDER_DIR):
+            if not os.path.isdir(self.STUB_BUILDER_DIR):
+                raise Exception('Not a directory: %s' % (self.STUB_BUILDER_DIR))
+
+            # directory already exists
+            return
+
+        os.mkdir(self.STUB_BUILDER_DIR)
+
     def set_warning_count(self, count):
-        os.environ[BUILDER_WARNINGS_COUNT] = str(count)
+        self.create_builder_dir()
+
+        # raises IOError to the caller if fails
+        f = open(self.FILE_WARNINGS_COUNT, 'w')
+        f.write('%d' % count)
+        f.close()
+
+    def get_warning_count(self):
+        if not os.path.exists(self.FILE_WARNINGS_COUNT):
+            return 0
+
+        # raises IOError and others to the caller if failures
+        f = open(self.FILE_WARNINGS_COUNT, 'r')
+        count = int(f.read())
+        f.close()
+
+        return count
 
     def set_return_value(self, value):
-        os.environ[BUILDER_RETURN_VALUE] = str(value)
+        self.create_builder_dir()
+
+        # raises IOError to the caller if fails
+        f = open(self.FILE_RETURN_VALUE, 'w')
+        f.write('%d' % value)
+        f.close()
+
+    def get_return_value(self):
+        if not os.path.exists(self.FILE_RETURN_VALUE):
+            return 0
+
+        # raises IOError and others to the caller if failures
+        f = open(self.FILE_RETURN_VALUE, 'r')
+        count = int(f.read())
+        f.close()
+
+        return count
 
 class StgStub():
     def __init__(self):

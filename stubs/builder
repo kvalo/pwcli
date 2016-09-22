@@ -33,12 +33,7 @@
 
 import argparse
 import sys
-import os
-import os.path
-
-
-BUILDER_WARNINGS_COUNT = 'STUB_BUILDER_WARNINGS_COUNT'
-BUILDER_RETURN_VALUE = 'STUB_BUILDER_RETURN_VALUE'
+import stubs
 
 def main():
       # for the help and possible future additions
@@ -46,21 +41,19 @@ def main():
       args = parser.parse_args()
       assert args # to shut up pyflakes
 
+      builder = stubs.BuilderStub()
+
       filenames = ['foo.c', 'bar.c', 'aaa.c', 'bbb.c']
       for filename in filenames:
             sys.stdout.write('  CC %s\n' % (filename))
             sys.stdout.flush()
 
-      if BUILDER_WARNINGS_COUNT in os.environ:
-            count = int(os.environ[BUILDER_WARNINGS_COUNT])
-            for i in range(min(count, len(filenames))):
-                  sys.stderr.write('%s: warning: is suspicious\n' % (filenames[i]))
-                  sys.stdout.flush()
+      count = builder.get_warning_count()
+      for i in range(min(count, len(filenames))):
+            sys.stderr.write('%s: warning: is suspicious\n' % (filenames[i]))
+            sys.stdout.flush()
 
-      if BUILDER_RETURN_VALUE in os.environ:
-            sys.exit(int(os.environ[BUILDER_RETURN_VALUE]))
-
-      sys.exit(0)
+      sys.exit(builder.get_return_value())
 
 if __name__ == "__main__":
       main()
