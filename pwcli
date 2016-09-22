@@ -219,8 +219,7 @@ class Stg():
 
       logger.debug('stg.import_patch(): %s' % (mbox))
 
-      p = subprocess.Popen(cmd, stdin = subprocess.PIPE)
-      p.communicate(mbox)
+      p = RunProcess(cmd, input=mbox)
 
       ret = p.returncode
       logger.debug('%s returned: %s' % (cmd, ret))
@@ -231,8 +230,8 @@ class Stg():
    def get_series(self):
       cmd = ['stg', 'series', '--noprefix', '--all']
 
-      output = subprocess.check_output(cmd)
-      output = output.strip()
+      p = RunProcess(cmd)
+      output = p.stdoutdata.strip()
 
       result = output.splitlines()
 
@@ -243,8 +242,8 @@ class Stg():
       result = {}
       cmd = ['stg', 'show', patchname]
 
-      output = subprocess.check_output(cmd)
-      output = output.strip()
+      p = RunProcess(cmd)
+      output = p.stdoutdata.strip()
 
       match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
       if match == None:
@@ -272,8 +271,8 @@ class Git():
       result = {}
       cmd = ['git', 'show', commitid]
 
-      output = subprocess.check_output(cmd)
-      output = output.strip()
+      p = RunProcess(cmd)
+      output = p.stdoutdata.strip()
 
       match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
       if match == None:
@@ -287,25 +286,25 @@ class Git():
    def log_oneline(self, max_count):
       cmd = ['git', 'log', '--oneline', '--reverse',
              '--max-count', str(max_count)]
-      output = subprocess.check_output(cmd)
-      output = output.strip()
+      p = RunProcess(cmd)
 
-      return output
+      return p.stdoutdata.strip()
 
    def get_config(self, config):
       cmd = ['git', 'config', '--get', config]
 
-      try:
-         output = subprocess.check_output(cmd)
-      except subprocess.CalledProcessError as e:
-         logger.debug(e)
+      p = RunProcess(cmd)
+      if p.returncode != 0:
+         logger.debug('Failed to get git config for %r: %d' % (config,
+                                                               p.returncode))
          return None
 
-      return output.strip()
+      return p.stdoutdata.strip()
 
    def get_branch(self):
       cmd = ['git', 'branch']
-      output = subprocess.check_output(cmd)
+      p = RunProcess(cmd)
+      output = p.stdoutdata
 
       # the current branch is prefixed with '*'
       for line in output.splitlines():
@@ -324,7 +323,7 @@ class Git():
 
       cmd = ['git', 'filter-branch', '--force', '--msg-filter', sed_cmd, 'HEAD^..HEAD']
 
-      subprocess.check_output(cmd)
+      RunProcess(cmd)
 
    def cherry_pick(self, commit_id):
       cmd = ['git', 'cherry-pick', commit_id]
@@ -333,14 +332,14 @@ class Git():
             self.output('Dry-run: %s' % str(cmd))
             return
 
-      subprocess.check_output(cmd)
+      RunProcess(cmd)
 
       # FIXME: if the cherry-pick fails (conflicts or whatnot) we
       # should run git cherry-pick --abort to cleanup
 
    def checkout(self, branch):
       cmd = ['git', 'checkout', branch]
-      subprocess.check_output(cmd)
+      RunProcess(cmd)
 
    def am(self, mbox):
       cmd = ['git', 'am', '-s', '-3']
@@ -349,8 +348,7 @@ class Git():
             self.output('Dry-run: %s' % str(cmd))
             return
 
-      p = subprocess.Popen(cmd, stdin = subprocess.PIPE)
-      p.communicate(mbox)
+      p = RunProcess(cmd, input=mbox)
 
       ret = p.returncode
       logger.debug('%s returned: %s' % (cmd, ret))
@@ -358,11 +356,11 @@ class Git():
       if ret != 0:
          abort_cmd = ['git', 'am', '--abort']
          logger.debug('Aborting git am: %s' % abort_cmd)
-         subprocess.call(abort_cmd)
+         RunProcess(abort_cmd)
 
          clean_cmd = ['git', 'checkout', '-f']
          logger.debug('Cleaning working tree: %s' % clean_cmd)
-         subprocess.call(clean_cmd)
+         RunProcess(clean_cmd)
 
          raise GitError('%s failed: %s' % (cmd, ret))
 
@@ -474,11 +472,9 @@ class Patch():
       self.attributes['name'] = msg['Subject']
 
    def get_diffstat(self):
-      p = subprocess.Popen(['diffstat', '-p1'], stdout=subprocess.PIPE,
-                           stdin=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+      p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
 
-      diffstat = p.communicate(input=self.get_mbox())[0]
+      diffstat = p.stdoutdata
       diffstat = diffstat.rstrip()
 
       return diffstat

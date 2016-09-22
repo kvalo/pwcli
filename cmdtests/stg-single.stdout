@@ -19,9 +19,6 @@ review 1
 ------------------------------------------------------------
 Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
 a
-Checking for changes in the working directory ... done
-Importing patch "foo-new-patch" ... done
-Now at patch "foo-new-patch"
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
 u
 Patch set to Under Review
