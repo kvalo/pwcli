@@ -205,8 +205,9 @@ class GitError(Exception):
    def __str__(self):
       return self.msg
 
-   def __init__(self, msg):
+   def __init__(self, msg, log=None):
       self.msg = msg
+      self.log = log
 
 class Stg():
 
@@ -225,12 +226,17 @@ class Stg():
       logger.debug('%s returned: %s' % (cmd, ret))
 
       if ret != 0:
-         raise GitError('%s failed: %s' % (cmd, ret))
+         raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
    def get_series(self):
       cmd = ['stg', 'series', '--noprefix', '--all']
 
       p = RunProcess(cmd)
+
+      if p.returncode != 0:
+         raise GitError('stg series failed: %d' % (p.returncode),
+                        log=p.stderrdata)
+
       output = p.stdoutdata.strip()
 
       result = output.splitlines()
@@ -243,19 +249,22 @@ class Stg():
       cmd = ['stg', 'show', patchname]
 
       p = RunProcess(cmd)
+
+      if p.returncode != 0:
+         raise GitError('stg show failed: %d' % (p.returncode),
+                        log=p.stderrdata)
+
       output = p.stdoutdata.strip()
 
       match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
       if match == None:
-         self.output('Commit id not found from patch: %s' % patchname)
-         return None
+         raise GitError('Commit id not found from patch: %s' % patchname)
 
       result['commit_id'] = match.group(1)
 
       match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', output, re.MULTILINE)
       if match == None:
-         self.output('Patchwork id not found from patch: %s' % patchname)
-         return None
+         raise GitError('Patchwork id not found from patch: %s' % patchname)
 
       result['patchwork_id'] = match.group(1)
 
@@ -272,12 +281,15 @@ class Git():
       cmd = ['git', 'show', commitid]
 
       p = RunProcess(cmd)
+      if p.returncode != 0:
+         raise GitError('git show failed: %d' % (p.returncode),
+                        log=p.stderrdata)
+
       output = p.stdoutdata.strip()
 
       match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
       if match == None:
-         self.output('Commit id not found from patch: %s' % commitid)
-         return None
+         raise GitError('Commit id not found from patch: %s' % commitid)
 
       result['commit_id'] = match.group(1)
 
@@ -288,6 +300,10 @@ class Git():
              '--max-count', str(max_count)]
       p = RunProcess(cmd)
 
+      if p.returncode != 0:
+         raise GitError('git log --oneline failed: %d' % (p.returncode),
+                        log=p.stderrdata)
+
       return p.stdoutdata.strip()
 
    def get_config(self, config):
@@ -295,6 +311,7 @@ class Git():
 
       p = RunProcess(cmd)
       if p.returncode != 0:
+         # if the command fails, assume that it's not set and return None
          logger.debug('Failed to get git config for %r: %d' % (config,
                                                                p.returncode))
          return None
@@ -304,6 +321,11 @@ class Git():
    def get_branch(self):
       cmd = ['git', 'branch']
       p = RunProcess(cmd)
+
+      if p.returncode != 0:
+         raise GitError('git branch failed: %d' % (p.returncode),
+                        log=p.stderrdata)
+
       output = p.stdoutdata
 
       # the current branch is prefixed with '*'
@@ -323,7 +345,11 @@ class Git():
 
       cmd = ['git', 'filter-branch', '--force', '--msg-filter', sed_cmd, 'HEAD^..HEAD']
 
-      RunProcess(cmd)
+      p = RunProcess(cmd)
+
+      if p.returncode != 0:
+         raise GitError('git filter-branch failed: %d' % (p.returncode),
+                        log=p.stderrdata)
 
    def cherry_pick(self, commit_id):
       cmd = ['git', 'cherry-pick', commit_id]
@@ -332,14 +358,21 @@ class Git():
             self.output('Dry-run: %s' % str(cmd))
             return
 
-      RunProcess(cmd)
+      p = RunProcess(cmd)
 
-      # FIXME: if the cherry-pick fails (conflicts or whatnot) we
-      # should run git cherry-pick --abort to cleanup
+      if p.returncode != 0:
+         # FIXME: if the cherry-pick fails (conflicts or whatnot) we
+         # should run git cherry-pick --abort to cleanup
+         raise GitError('git cherry-pick failed: %d' % (p.returncode),
+                        log=p.stderrdata)
 
    def checkout(self, branch):
       cmd = ['git', 'checkout', branch]
-      RunProcess(cmd)
+      p = RunProcess(cmd)
+      if p.returncode != 0:
+         raise GitError('git checkout failed: %d' % (p.returncode),
+                        log=p.stderrdata)
+
 
    def am(self, mbox):
       cmd = ['git', 'am', '-s', '-3']
@@ -362,7 +395,8 @@ class Git():
          logger.debug('Cleaning working tree: %s' % clean_cmd)
          RunProcess(clean_cmd)
 
-         raise GitError('%s failed: %s' % (cmd, ret))
+         raise GitError('%s failed: %s' % (cmd, ret),
+                        log=p.stderrdata)
 
    def __init__(self, dry_run, output):
       self.dry_run = dry_run
