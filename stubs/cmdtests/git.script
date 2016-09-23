@@ -40,11 +40,14 @@ import stubs
 def git_am(stub_git, buf):
       cmd = [stub_git, 'am', '-s']
 
-      # FIXME: stdout and stderr are not printed which might hide errors
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                            stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
       (stdoutdata, stderrdata) = p.communicate(input=buf)
+      if len(stdoutdata) > 0:
+            print stdoutdata
+      if len(stderrdata) > 0:
+            print repr(stderrdata)
 
 def main():
       srcdir = os.environ['SRCDIR']
