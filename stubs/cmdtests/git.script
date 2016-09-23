@@ -135,6 +135,11 @@ def main():
                        'sed -e "/foo/d"', 'HEAD^..HEAD'])
       print
 
+      print 'test git am conflict'
+      gitstub.enable_conflict()
+      git_am(stub_git, buf)
+      print
+
       # cleanup
       gitstub.cleanup()
 

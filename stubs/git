@@ -55,11 +55,33 @@ def cmd_branch(args):
       print f.read()
       f.close()
 
+def cmd_am_conflict(args):
+      conflict_msg = '''Applying: foo: conflict patch
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Auto-merging foo/bar.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
+Failed to merge in the changes.
+Patch failed at 0001 foo: conflict patch
+When you have resolved this problem run "git am --resolved".
+If you would prefer to skip this patch, instead run "git am --skip".
+To restore the original branch and stop patching run "git am --abort".'''
+
+      # git 1.7.9.5 prints the whole message to stdout and nothing to stderr
+      sys.stdout.write(conflict_msg)
+
+      sys.exit(1)
+
 def cmd_am(args):
       if not args.s:
-            # -s switch now used, exit
+            # -s switch not used, exit
             sys.exit(0)
 
+      conflict_file = os.path.join(gitdir, 'conflict')
+      if os.path.exists(conflict_file):
+            cmd_am_conflict(args)
+            os.remove(conflict_file)
+      
       objectsdir = os.path.join(gitdir, 'objects')
       commitsfile = os.path.join(objectsdir, 'commits')
 

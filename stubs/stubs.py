@@ -217,6 +217,7 @@ class StgStub():
 class GitStub():
     def __init__(self, smtpport=SMTP_PORT):
         self.gitdir = os.path.join(testdatadir, 'git')
+        self.conflict_file = os.path.join(self.gitdir, 'conflict')
 
         logger.debug('GitStub(): gitdir=%r' % (self.gitdir))
 
@@ -270,6 +271,11 @@ class GitStub():
 
     def cleanup(self):
         shutil.rmtree(self.gitdir)
+
+    def enable_conflict(self):
+        f = open(self.conflict_file, 'w')
+        f.write('enable\n')
+        f.close()
 
 class SmtpdStub():
 

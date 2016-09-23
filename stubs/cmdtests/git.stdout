@@ -23,3 +23,15 @@ fb409caeb2ec foo: test 1
 
 test git filter-branch
 
+test git am conflict
+Applying: foo: conflict patch
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Auto-merging foo/bar.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
+Failed to merge in the changes.
+Patch failed at 0001 foo: conflict patch
+When you have resolved this problem run "git am --resolved".
+If you would prefer to skip this patch, instead run "git am --skip".
+To restore the original branch and stop patching run "git am --abort".
+
