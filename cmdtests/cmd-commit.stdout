@@ -24,7 +24,7 @@ a
 ============================================================
 1 patches applied:
 
-fb409caeb2ec foo: test 1
+b50b875961e9 foo: test 1
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
@@ -50,7 +50,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 Patch applied to data.git, thanks.
 
-fb409caeb2ec foo: test 1
+b50b875961e9 foo: test 1
 
 -- 
 Sent by pwcli

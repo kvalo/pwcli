@@ -25,8 +25,8 @@ a
 ============================================================
 2 patches applied:
 
-fb409caeb2ec foo: test 1
-6cf73d97d329 foo: test 2
+b50b875961e9 foo: test 1
+4c4f098aecd7 foo: test 2
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
@@ -52,8 +52,8 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 2 patches applied to data.git, thanks.
 
-fb409caeb2ec foo: test 1
-6cf73d97d329 foo: test 2
+b50b875961e9 foo: test 1
+4c4f098aecd7 foo: test 2
 
 -- 
 Sent by pwcli

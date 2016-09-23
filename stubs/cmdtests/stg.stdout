@@ -12,17 +12,17 @@ Importing patch "foo-test-2" ... done
 Now at patch "foo-test-2"
 
 test that commit id is stable and a valid git object
-fb409caeb2ec foo: test 1
-6cf73d97d329 foo: test 2
+b50b875961e9 foo: test 1
+4c4f098aecd7 foo: test 2
 
 test series
 foo-test-1
 foo-test-2
 
 test show
-commit 6cf73d97d329764a9732837dac6d5e2f7d4568d6
+commit 4c4f098aecd70050acb5af5177cf394b437c90e3
 Author: Timo Tiger <timo@example.com>
-Date:   Thu,  11 Feb 2011 15:23:31 +0300
+Date:   2011-02-11 15:23:31
    
    Foo commit log. Ignore this text
    
