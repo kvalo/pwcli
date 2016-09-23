@@ -51,5 +51,24 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(pwcli.parse_list(['0-3', '2']), [0, 1, 2, 3])
         self.assertEqual(pwcli.parse_list(['1-4', '0-3', '2', '1-2']), [0, 1, 2, 3, 4])
 
+    def test_shrink(self):
+        f = pwcli.shrink
+        self.assertEqual(f('12345678', 5), '12...')
+        self.assertEqual(f('12345678', 5, ellipsis=False), '12345')
+
+        # last space should be replaced with a dot
+        self.assertEqual(f('yyy kaa koo nee', 11), 'yyy kaa....')
+
+    def test_person(self):
+        p = pwcli.Person
+        self.assertEqual(p('Ed Example <ed@example.com>').get_name(),
+                         'Ed Example')
+        self.assertEqual(p('Ed Example <ed@example.com>').get_email(),
+                         'ed@example.com')
+
+        # if no name the email address should be returned
+        self.assertEqual(p('<ed@example.com>').get_name(),
+                         'ed@example.com')
+
 if __name__ == '__main__':
     unittest.main()

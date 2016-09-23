@@ -42,6 +42,7 @@ import ConfigParser
 import email
 import email.mime.text
 import email.header
+import email.utils
 import smtplib
 import pprint
 import re
@@ -49,6 +50,7 @@ import timeit
 import textwrap
 import collections
 import string
+import datetime
 
 import readline
 assert readline # to shut up pyflakes
@@ -146,6 +148,27 @@ def parse_list(entries):
 
    return ids
 
+def shrink(s, width, ellipsis=True):
+   ELLIPSIS = '...'
+
+   if len(s) <= width:
+      return s
+
+   if not ellipsis:
+      return s[:width]
+
+   s = s[:width - len(ELLIPSIS)]
+
+   # if the last character is a space for readability replace it with
+   # a dot
+   if s[-1] == ' ':
+      s = s[:-1]
+      s += '.'
+
+   s += ELLIPSIS
+
+   return s
+
 class Timer():
 
    def start(self):
@@ -200,6 +223,24 @@ class RunProcess():
       logger.debug('%s took %.1fs: (%r, %r, %r)' %
                    (self, self.timer.get_seconds(), self.returncode,
                     self.stdoutdata, self.stderrdata))
+
+class Person():
+
+   def __init__(self, address):
+      (self.name, self.email) = email.utils.parseaddr(address)
+      if self.name is None or self.email is None:
+         raise Exception('Unparseable address: %r' % (address))
+
+   # returns name if available, otherwise email address to somehow
+   # identify the person
+   def get_name(self):
+      if not self.name:
+         return self.email
+
+      return self.name
+
+   def get_email(self):
+      return self.email
 
 class GitError(Exception):
 
@@ -425,6 +466,15 @@ class Patch():
 
    def get_delegate(self):
       return self.attributes['delegate']
+
+   def get_submitter(self):
+      return self.attributes['submitter']
+
+   def get_date(self):
+      return self.attributes['date']
+
+   def get_datetime(self):
+      return datetime.datetime.strptime(self.get_date(), '%Y-%m-%d %H:%M:%S')
 
    def get_state_id(self):
       return self.attributes['state_id']
@@ -824,7 +874,26 @@ class PWCLI():
          if show_indexes:
             index = '[%3d] ' % (i)
 
-         result += '%s%s %s\n' % (index, patch.get_id(), patch.get_name())
+         WIDTH_NAME = 60
+         WIDTH_DATE = 10
+         WIDTH_SUBMITTER = 12
+
+         name = shrink(patch.get_name(), WIDTH_NAME)
+         date = patch.get_datetime().strftime('%Y-%m-%d')
+         submitter = shrink(Person(patch.get_submitter()).get_name(),
+                                     WIDTH_SUBMITTER, ellipsis=False)
+         state = patch.get_state_name()
+
+         # <patchname> <date> <submitter> <state>
+         formatstr = '%%s%%-%ds %%-%ds %%-%ds %%s\n' % (WIDTH_NAME,
+                                                        WIDTH_DATE,
+                                                        WIDTH_SUBMITTER)
+         result += formatstr % (index, name, date, submitter, state)
+         # result += '%s %-40s %-12s %-10s %s\n' % (index,
+         #                                          patch.get_name(),
+         #                                          'John Doe',
+         #                                          '2012-01-02',
+         #                                          patch.get_state_name())
          if open_browser:
             self.open_browser_url(patch.get_url())
 

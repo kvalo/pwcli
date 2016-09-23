@@ -11,11 +11,11 @@ Deferred      : 1
 Total         : 2
 test-branch@data > list new
 list new
-[  1] 1030 foo: new patch
+[  1] foo: new patch                                               2011-02-11 Timo Tiger   New
 test-branch@data > review 1
 review 1
 Retrieving patches (1/1)
-[  1] 1030 foo: new patch
+[  1] foo: new patch                                               2011-02-11 Timo Tiger   New
 ------------------------------------------------------------
 Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
 a
@@ -24,11 +24,11 @@ u
 Patch set to Under Review
 test-branch@data > list
 list
-[  1] 1030 foo: new patch
+[  1] foo: new patch                                               2011-02-11 Timo Tiger   Under Review
 test-branch@data > commit 1
 commit 1
 Retrieving patches (1/1)
-1030 foo: new patch
+foo: new patch                                               2011-02-11 Timo Tiger   Under Review
 ------------------------------------------------------------
 1 patches
 commit All/commit Individually/aBort? a
