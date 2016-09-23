@@ -1774,7 +1774,14 @@ class PWCLI():
 
          prompt += '> '
 
-         cmd = self.input(prompt)
+         try:
+            cmd = self.input(prompt)
+         except EOFError:
+            logger.debug('CTRL-d from user, exit')
+
+            # add a newline so the shell prompt starts from a clean line
+            self.output('')
+            sys.exit(0)
 
          # argparse is idiotic and exits if there's a parse error,
          # workaround it by catching SystemExit. Idea from:
