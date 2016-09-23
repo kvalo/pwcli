@@ -395,8 +395,20 @@ class Git():
          logger.debug('Cleaning working tree: %s' % clean_cmd)
          RunProcess(clean_cmd)
 
-         raise GitError('%s failed: %s' % (cmd, ret),
-                        log=p.stderrdata)
+         log = p.stderrdata
+
+         # At least with 1.7.9.5 all errors are output just to stdout
+         # so add that to the log. Just remove the help messages from
+         # the end, they don't provide any real value in this case:
+         #
+         #        When you have resolved this problem run "git am --resolved".
+         #        If you would prefer to skip this patch, instead run "git am --skip".
+         #        To restore the original branch and stop patching run "git am --abort".
+         #
+         log += re.sub(r'When you have resolved.*$', '', p.stdoutdata,
+                       flags=re.MULTILINE|re.DOTALL)
+
+         raise GitError('%s failed: %s' % (cmd, ret), log=log)
 
    def __init__(self, dry_run, output):
       self.dry_run = dry_run
@@ -1251,7 +1263,7 @@ class PWCLI():
 
       except GitError as e:
          self.output('Failed to apply the patch: %s' % e)
-         # FIXME: add info to faillog
+         faillog += e.log
 
       if len(applied) == len(patches):
          # all patches were succesfully applied

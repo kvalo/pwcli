@@ -48,6 +48,13 @@ Patch set to Changes Requested.
 
 Reason: Failed to apply
 
+Applying: foo: conflict patch
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Auto-merging foo/bar.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
+Failed to merge in the changes.
+Patch failed at 0001 foo: conflict patch
 
 -- 
 Sent by pwcli
@@ -84,6 +91,13 @@ Patch set to Changes Requested.
 
 Reason: Failed to apply
 
+Applying: foo: conflict patch
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Auto-merging foo/bar.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
+Failed to merge in the changes.
+Patch failed at 0001 foo: conflict patch
 
 -- 
 Sent by pwcli
