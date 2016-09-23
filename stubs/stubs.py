@@ -403,7 +403,7 @@ class EditorStub():
 
 class PwcliWrapper():
     def __init__(self, stgit=False, builder=True, patchworkport=PATCHWORK_PORT,
-                 smtpport=SMTP_PORT):
+                 smtpport=SMTP_PORT, signature=None):
         self.config = ConfigParser.RawConfigParser()
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
@@ -424,7 +424,8 @@ class PwcliWrapper():
             self.config.set(general, 'pending_mode', 'stgit')
             self.config.set(general, 'pending_branch', 'pending')
             self.config.set(general, 'main_branches', 'test-branch')
-            
+
+        self.signature = signature
 
     def start(self):
         self.pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
@@ -445,6 +446,11 @@ class PwcliWrapper():
             os.makedirs(self.dirname)
         elif not os.path.isdir(self.dirname):
             raise Exception('%s exists but is not a directory' % (self.dirname))
+
+        if self.signature:
+            f = open(os.path.join(self.dirname, 'signature'), 'w')
+            f.write(self.signature)
+            f.close()
 
         with open(self.configpath, 'wb') as configfile:
             self.config.write(configfile)

@@ -140,29 +140,41 @@ class StubContext():
         self.editor.stop()
 
     def cleanup(self):
-        self.pwcli.cleanup()
-        self.git.cleanup()
+        if self.pwcli:
+            self.pwcli.cleanup()
+
+        if self.git:
+            self.git.cleanup()
 
         if self.stgit:
             self.stgit = self.stgit.cleanup()
 
-        self.smtpd.cleanup()
-        self.patchwork.cleanup()
-        self.editor.cleanup()
-        self.builder.cleanup()
+        if self.smtpd:
+            self.smtpd.cleanup()
+
+        if self.patchwork:
+            self.patchwork.cleanup()
+
+        if self.editor:
+            self.editor.cleanup()
+
+        if self.builder:
+            self.builder.cleanup()
 
     def stop_and_cleanup(self):
         self.stop()
         self.cleanup()
 
 class PwcliSpawn(pexpect.spawn):
-    def __init__(self, debug=False, stgit=False, builder=True):
+    def __init__(self, debug=False, stgit=False, builder=True,
+                 signature='Sent by pwcli\n$URL\n'):
         cmd = 'pwcli'
 
         if debug:
             cmd += ' --debug'
 
-        self.pwcli_wrapper = stubs.PwcliWrapper(stgit=stgit, builder=builder)
+        self.pwcli_wrapper = stubs.PwcliWrapper(stgit=stgit, builder=builder,
+                                                signature=signature)
         self.pwcli_wrapper.write_config()
 
         # use short timeout so that failures don't take too long to detect

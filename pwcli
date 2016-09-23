@@ -48,6 +48,7 @@ import re
 import timeit
 import textwrap
 import collections
+import string
 
 import readline
 assert readline # to shut up pyflakes
@@ -528,7 +529,7 @@ class Patch():
    def get_email(self):
       return email.message_from_string(self.get_mbox())
 
-   def get_reply_msg(self, from_name, from_email, text=''):
+   def get_reply_msg(self, from_name, from_email, text='', signature=None):
       msg = self.get_email()
 
       (log, sep, patch) = msg.get_payload().partition(LOG_SEPARATOR)
@@ -566,7 +567,10 @@ class Patch():
 
       body += text
 
-      body += '%s\n' % self.get_email_signature()
+      if signature:
+         t = string.Template(signature)
+         s = t.substitute(URL=self.get_url())
+         body += '-- \n%s\n' % (s)
 
       logger.debug('body=%s', repr(body))
 
@@ -611,11 +615,6 @@ class Patch():
       logger.debug('%s().get_reply_msg(): %s', self, repr(quote))
 
       return reply
-
-   def get_email_signature(self):
-      signature = '-- \nSent by pwcli\n%s\n' % (self.get_url())
-
-      return signature
 
    def get_log(self):
       msg = self.get_email()
@@ -1360,7 +1359,7 @@ class PWCLI():
          
       first_patch = patches[0]
       msg = first_patch.get_reply_msg(self.fullname, self.email,
-                                      reply)
+                                      reply, signature=self.signature)
 
       # if the patches are accepted, there's no reason and no need to edit the mail
       if reason:
@@ -1512,7 +1511,7 @@ class PWCLI():
          
       first_patch = patches[0]
       msg = first_patch.get_reply_msg(self.fullname, self.email,
-                                        reply)
+                                      reply, signature=self.signature)
 
       msg = self.edit_email(msg)
       if msg == None:
@@ -1539,7 +1538,7 @@ class PWCLI():
          return
 
       patch = self.patches[i - 1]
-      reply = patch.get_reply_msg(self.fullname, self.email)
+      reply = patch.get_reply_msg(self.fullname, self.email, signature=self.signature)
 
       reply = self.edit_email(reply)
 
@@ -1752,6 +1751,7 @@ class PWCLI():
 
       self.pwcli_dir = os.path.join(self.git_dir, 'pwcli')
       self.config_file = os.path.join(self.pwcli_dir, 'config')
+      self.signature_file = os.path.join(self.pwcli_dir, 'signature')
 
       if not os.path.exists(self.pwcli_dir):
          print '%s does not exist, exiting' % self.pwcli_dir
@@ -1857,6 +1857,13 @@ class PWCLI():
          self.editor = os.environ['EDITOR']
       else:
          self.editor = DEFAULT_EDITOR
+
+      if os.path.exists(self.signature_file):
+         f = open(self.signature_file, 'r')
+         self.signature = f.read()
+         f.close()
+      else:
+         self.signature = None
 
       self.git = Git(self.dry_run, self.output)
       self.stg = Stg(self.dry_run, self.output)
