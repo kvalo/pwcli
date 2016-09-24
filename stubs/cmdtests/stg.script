@@ -71,7 +71,7 @@ def main():
       stgstub.start()
 
       print 'import one patch'
-      stg_import('test-1.patch')
+      stg_import('1001-review-foo-test-1.patch')
       print
 
       print 'check patch was correctly imported'
@@ -79,7 +79,7 @@ def main():
       print
 
       print 'import a second patch'
-      stg_import('test-2.patch')
+      stg_import('1002-review-foo-test-2.patch')
       print
 
       print 'test that commit id is stable and a valid git object'

@@ -80,7 +80,7 @@ def main():
       print
 
       print 'add patches'
-      f = open(os.path.join(patchesdir, 'test-1.patch'), 'r')
+      f = open(os.path.join(patchesdir, '1001-review-foo-test-1.patch'), 'r')
       buf = f.read()
       f.close()
 
@@ -93,7 +93,7 @@ def main():
       #       sys.exit(2)
       # f.close()
 
-      f = open(os.path.join(patchesdir, 'test-2.patch'), 'r')
+      f = open(os.path.join(patchesdir, '1002-review-foo-test-2.patch'), 'r')
       buf = f.read()
       f.close()
 
@@ -107,13 +107,13 @@ def main():
       f = open(os.path.join(gitdir, 'objects', commits[-1]))
       buf2 = f.read()
       if buf != buf2:
-            print 'test-2.patch not correct'
+            print '1002-review-foo-test-2.patch not correct'
             sys.exit(2)
       f.close()
       print
 
       print 'test git log'
-      f = open(os.path.join(patchesdir, '030-new-1.patch'), 'r')
+      f = open(os.path.join(patchesdir, '1030-new-foo-new-patch.patch'), 'r')
       buf = f.read()
       f.close()
       git_am(stub_git, buf)
