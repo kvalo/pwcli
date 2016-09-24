@@ -1207,6 +1207,13 @@ class PWCLI():
                self.patches.remove(patch)
                continue
 
+         if args.submitter:
+            match = re.search(args.submitter[0], patch.get_submitter(),
+                              re.MULTILINE | re.IGNORECASE)
+            if not match:
+               self.patches.remove(patch)
+               continue
+
       self.output(self.create_patchlist_as_string(self.patches,
                                                   show_indexes=True))
 
@@ -1712,6 +1719,9 @@ class PWCLI():
       parser_list.add_argument('--name', '-n',
                                metavar='REGEXP', nargs=1,
                                help='show only patches with name (patch subject) matching REGEXP (case is ignored)')
+      parser_list.add_argument('--submitter', '-s',
+                               metavar='REGEXP', nargs=1,
+                               help='show only patches submitted by matching REGEXP (case is ignored)')
       parser_list.set_defaults(func=self.cmd_list)
 
       parser_commit = subparsers.add_parser('commit',

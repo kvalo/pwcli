@@ -44,6 +44,8 @@ def test_list(ctxt, pwcli):
    pwcli.sendline('list deferred')
    pwcli.expect_prompt()
    pwcli.sendline('list --name foo:.*2')
+   pwcli.expect_prompt()
+   pwcli.sendline('list --submitter timo new')
 
    pwcli.expect_prompt()
    pwcli.sendline('quit')
