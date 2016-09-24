@@ -11,11 +11,11 @@ Total         : 4
 test-branch@data > list
 list
 [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
-[  2] [1/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+[  2] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
 test-branch@data > list review
 list review
 [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
-[  2] [1/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+[  2] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
 test-branch@data > list new
 list new
 [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
@@ -24,5 +24,5 @@ list deferred
 [  1] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
 test-branch@data > list -s foo:.*2
 list -s foo:.*2
-[  1] [1/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+[  1] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
 test-branch@data > quit

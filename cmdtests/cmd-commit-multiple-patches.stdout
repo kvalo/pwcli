@@ -11,12 +11,12 @@ Total         : 4
 test-branch@data > list
 list
 [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
-[  2] [1/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+[  2] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
 test-branch@data > commit 1-2
 commit 1-2
 Retrieving patches (1/2)Retrieving patches (2/2)
 [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
-[1/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+[2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
 ------------------------------------------------------------
 2 patches
 commit All/commit Individually/aBort? a
@@ -26,7 +26,7 @@ a
 2 patches applied:
 
 b50b875961e9 foo: test 1
-4c4f098aecd7 foo: test 2
+1bb57a5d2297 foo: test 2
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
@@ -53,7 +53,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 2 patches applied to data.git, thanks.
 
 b50b875961e9 foo: test 1
-4c4f098aecd7 foo: test 2
+1bb57a5d2297 foo: test 2
 
 -- 
 Sent by pwcli

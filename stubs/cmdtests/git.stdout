@@ -8,10 +8,10 @@ localhost
 5870
 
 add patches
-['b50b875961e94e1bb9b826425f950d405c45c3d5', '4c4f098aecd70050acb5af5177cf394b437c90e3']
+['b50b875961e94e1bb9b826425f950d405c45c3d5', '1bb57a5d22971a425d4d3ef33023087ec99e4d77']
 
 test git log
-4c4f098aecd7 foo: test 2
+1bb57a5d2297 foo: test 2
 81759c88d764 foo: new patch
 
 test git show HEAD
@@ -19,7 +19,7 @@ commit b50b875961e94e1bb9b826425f950d405c45c3d5
 
 test git cherry-pick
 Commit id fb409caeb2ecda7176f3d6af845e87b1c60f6665 not found.
-4c4f098aecd7 foo: test 2
+1bb57a5d2297 foo: test 2
 81759c88d764 foo: new patch
 
 test git filter-branch

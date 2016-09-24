@@ -13,14 +13,14 @@ Now at patch "foo-test-2"
 
 test that commit id is stable and a valid git object
 b50b875961e9 foo: test 1
-4c4f098aecd7 foo: test 2
+1bb57a5d2297 foo: test 2
 
 test series
 foo-test-1
 foo-test-2
 
 test show
-commit 4c4f098aecd70050acb5af5177cf394b437c90e3
+commit 1bb57a5d22971a425d4d3ef33023087ec99e4d77
 Author: Timo Tiger <timo@example.com>
 Date:   2011-02-11 15:23:31
    

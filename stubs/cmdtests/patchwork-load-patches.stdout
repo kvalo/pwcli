@@ -19,7 +19,7 @@
   'filename': '1002-review-foo-test-2.patch',
   'id': 1002,
   'msgid': '<22222@example.com>',
-  'name': '[1/7] foo: test 2',
+  'name': '[2/7] foo: test 2',
   'project': 'Linux Wireless Mailing List',
   'project_id': 15,
   'state': 'Under Review',
