@@ -1200,8 +1200,8 @@ class PWCLI():
       # Filter patches. Make a copy of the list, we can't modify the
       # list we are currently iterating!
       for patch in list(self.patches):
-         if args.subject:
-            match = re.search(args.subject[0], patch.get_name(),
+         if args.name:
+            match = re.search(args.name[0], patch.get_name(),
                               re.MULTILINE | re.IGNORECASE)
             if not match:
                self.patches.remove(patch)
@@ -1709,9 +1709,9 @@ class PWCLI():
                                           description='Fetches patches from patchwork based on various filters and shows the summary with indexes')
       parser_list.add_argument('state', metavar='STATE', nargs='?',
                                help='optional patch state: new, review (default), upstream, deferred')
-      parser_list.add_argument('--subject', '-s',
+      parser_list.add_argument('--name', '-n',
                                metavar='REGEXP', nargs=1,
-                               help='show only patches with subject matching REGEXP (case is ingored)')
+                               help='show only patches with name (patch subject) matching REGEXP (case is ignored)')
       parser_list.set_defaults(func=self.cmd_list)
 
       parser_commit = subparsers.add_parser('commit',
