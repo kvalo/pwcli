@@ -3,9 +3,9 @@ User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
 Branch        : test-branch
-New           : 1
-Review        : 2
+New           : 16
+Review        : 7
 Upstream      : 0
-Deferred      : 1
-Total         : 4
+Deferred      : 5
+Total         : 28
 test-branch@data > 
