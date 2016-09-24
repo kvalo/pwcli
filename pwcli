@@ -1197,8 +1197,9 @@ class PWCLI():
       else:
          self.patches = self.project.get_patches(state, username)
 
-      # filter patches
-      for patch in self.patches:
+      # Filter patches. Make a copy of the list, we can't modify the
+      # list we are currently iterating!
+      for patch in list(self.patches):
          if args.subject:
             match = re.search(args.subject[0], patch.get_name(),
                               re.MULTILINE | re.IGNORECASE)
