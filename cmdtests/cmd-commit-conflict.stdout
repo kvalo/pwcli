@@ -55,11 +55,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Patch set to Changes Requested.
-
-1001 [1/7] foo: test 1
-
-Reason: Failed to apply
+Failed to apply
 
 Applying: foo: conflict patch
 Using index info to reconstruct a base tree...
@@ -68,6 +64,8 @@ Auto-merging foo/bar.c
 CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
 Failed to merge in the changes.
 Patch failed at 0001 foo: conflict patch
+
+Patch set to Changes Requested.
 
 -- 
 Sent by pwcli
@@ -98,11 +96,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Patch set to Changes Requested.
-
-1001 [1/7] foo: test 1
-
-Reason: Failed to apply
+Failed to apply
 
 Applying: foo: conflict patch
 Using index info to reconstruct a base tree...
@@ -111,6 +105,8 @@ Auto-merging foo/bar.c
 CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
 Failed to merge in the changes.
 Patch failed at 0001 foo: conflict patch
+
+Patch set to Changes Requested.
 
 -- 
 Sent by pwcli

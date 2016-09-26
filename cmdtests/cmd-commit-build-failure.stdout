@@ -56,16 +56,14 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Patch set to Changes Requested.
-
-1001 [1/7] foo: test 1
-
-Reason: Compile errors
+Compile errors
 
 foo.c: warning: is suspicious
 bar.c: warning: is suspicious
 aaa.c: warning: is suspicious
 bbb.c: warning: is suspicious
+
+Patch set to Changes Requested.
 
 -- 
 Sent by pwcli
@@ -96,16 +94,14 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Patch set to Changes Requested.
-
-1001 [1/7] foo: test 1
-
-Reason: Compile errors
+Compile errors
 
 foo.c: warning: is suspicious
 bar.c: warning: is suspicious
 aaa.c: warning: is suspicious
 bbb.c: warning: is suspicious
+
+Patch set to Changes Requested.
 
 -- 
 Sent by pwcli

@@ -1456,15 +1456,21 @@ class PWCLI():
             # no reason specified so no need to send any mail either
             return
 
-         reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
-                                         state)
-         reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
-
          reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
-         reply += 'Reason: %s\n\n' % (reason)
+         reply += '%s\n\n' % (reason)
 
          # add possible git and build failures/warnings to the mail
-         reply += '%s\n' % (faillog)
+         faillog = faillog.strip()
+         if len(faillog) > 0:
+            reply += '%s\n\n' % (faillog)
+
+         reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
+                                         state)
+
+         # With one patch no point of adding the list, the patchwork
+         # id and link is already available from the signature.
+         if len(patches) > 1:
+            reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
          
       first_patch = patches[0]
       msg = first_patch.get_reply_msg(self.fullname, self.email,
