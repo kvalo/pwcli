@@ -1355,6 +1355,7 @@ class PWCLI():
 
       except GitError as e:
          self.output('Failed to apply the patch: %s' % e)
+         self.output('%s' % e.log)
          faillog += e.log
 
       if len(applied) == len(patches):
