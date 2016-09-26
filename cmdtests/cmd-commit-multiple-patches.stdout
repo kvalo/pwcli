@@ -26,7 +26,7 @@ commit 1-2
 2 patches
 commit All/commit Individually/aBort? a
 a
-                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build succesful
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 ============================================================
 2 patches applied:
 

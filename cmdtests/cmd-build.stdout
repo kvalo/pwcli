@@ -10,5 +10,5 @@ Deferred      : 5
 Total         : 28
 test-branch@data > build
 build
-                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build succesful
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 test-branch@data > quit

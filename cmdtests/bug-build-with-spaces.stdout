@@ -10,5 +10,5 @@ Deferred      : 5
 Total         : 28
 test-branch@data > build
 build
-                                                                 this is a build script with spaces                                                                 Build succesful
+                                                                 this is a build script with spaces                                                                 Build successful
 test-branch@data > quit

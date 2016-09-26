@@ -1151,9 +1151,9 @@ class PWCLI():
          self.output('Build failed: %d' % (p.returncode))
       elif len(p.stderrdata) > 0:
          self.output(p.stderrdata.strip())
-         self.output('Build failed with warnings')
+         self.output('Build successful with warnings')
       else:
-         self.output('Build succesful')
+         self.output('Build successful')
 
       return p
 
