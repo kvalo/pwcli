@@ -44,12 +44,12 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
+I will never take these.
+
 2 patches set to Rejected.
 
 1001 [1/7] foo: test 1
 1002 [2/7] foo: test 2
-
-Reason: I will never take these.
 
 -- 
 Sent by pwcli
@@ -91,12 +91,12 @@ Dino Dinosaurus <dino@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
+I will never take these.
+
 2 patches set to Rejected.
 
 1001 [1/7] foo: test 1
 1002 [2/7] foo: test 2
-
-Reason: I will never take these.
 
 -- 
 Sent by pwcli

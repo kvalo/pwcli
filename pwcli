@@ -1611,6 +1611,10 @@ class PWCLI():
 
       reply = ''
 
+      reply += '%s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
+
+      # FIXME: add possible git failures and build logs
+
       reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
                                       state)
 
@@ -1620,10 +1624,6 @@ class PWCLI():
       if len(patches) > 1:
          reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
 
-      reply += 'Reason: %s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
-
-      # FIXME: add possible git failures and build logs
-         
       first_patch = patches[0]
       msg = first_patch.get_reply_msg(self.fullname, self.email,
                                       reply, signature=self.signature)
