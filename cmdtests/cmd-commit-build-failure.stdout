@@ -58,7 +58,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 Patch set to Changes Requested.
 
-      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Changes Requested
+1001 [1/7] foo: test 1
 
 Reason: Compile errors
 
@@ -98,7 +98,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 Patch set to Changes Requested.
 
-      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Changes Requested
+1001 [1/7] foo: test 1
 
 Reason: Compile errors
 

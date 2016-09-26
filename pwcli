@@ -881,13 +881,17 @@ class PWCLI():
                                                                        returncode))
 
    def create_patchlist_as_string(self, patches, show_indexes=False,
-                                  open_browser=False):
+                                  open_browser=False, show_ids=False):
       i = 1
       result = ''
 
       for patch in patches:
          if show_indexes:
             index = '[%3d] ' % (i)
+         elif show_ids:
+            # this is not similarly aligned as the others but that
+            # doesn't matter as we should use this only with emails
+            index = '%d ' % (patch.get_id())
          else:
             # For nice alignment add empty columns if indexes are
             # disabled.
@@ -917,6 +921,14 @@ class PWCLI():
             self.open_browser_url(patch.get_url())
 
          i += 1
+
+      return result.strip('\n')
+
+   def create_patchlist_for_mail(self, patches):
+      result = ''
+
+      for patch in patches:
+         result += '%d %s\n' % (patch.get_id(), patch.get_name())
 
       return result.strip('\n')
 
@@ -1446,7 +1458,7 @@ class PWCLI():
 
          reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
                                          state)
-         reply += '%s\n\n' % (self.create_patchlist_as_string(patches))
+         reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
 
          reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
          reply += 'Reason: %s\n\n' % (reason)
@@ -1600,7 +1612,7 @@ class PWCLI():
       # bring any extra value which isn't already in the title or
       # in the signature.
       if len(patches) > 1:
-         reply += '%s\n\n' % (self.create_patchlist_as_string(patches))
+         reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
 
       reply += 'Reason: %s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
 
