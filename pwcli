@@ -1923,7 +1923,7 @@ class PWCLI():
       self.password = self.config.get('general', 'password')
 
       if self.config.has_option('general', 'build-command'):
-         self.build_command = self.config.get('general', 'build-command')
+         self.build_command = self.config.get('general', 'build-command').split(' ')
       else:
          self.build_command = None
 
