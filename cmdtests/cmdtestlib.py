@@ -73,7 +73,7 @@ logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
 class StubContext():
-    def __init__(self, start=False, debug=False, stgit=False):
+    def __init__(self, start=False, debug=False, stgit=False, builder='builder'):
         self.debug = debug
         self.git = stubs.GitStub()
 
@@ -87,6 +87,7 @@ class StubContext():
         self.editor = stubs.EditorStub()
         self.pwcli = None
         self.builder = stubs.BuilderStub()
+        self.builder_cmd = builder
 
         # move to the fake git repository before starting pwcli
         os.chdir(testdatadir)
@@ -95,8 +96,8 @@ class StubContext():
             self.start()
 
     @staticmethod
-    def run_test(func, stgit=False):
-        ctxt = StubContext(start=True, stgit=stgit)
+    def run_test(func, stgit=False, builder='builder'):
+        ctxt = StubContext(start=True, stgit=stgit, builder=builder)
         pwcli = ctxt.pwcli
 
         try:
@@ -123,7 +124,8 @@ class StubContext():
 
             # must be instiated only after daemon stubs are running,
             # as this immediately starts pwcli
-            self.pwcli = PwcliSpawn(debug=self.debug, stgit=stgit)
+            self.pwcli = PwcliSpawn(debug=self.debug, stgit=stgit,
+                                    builder=self.builder_cmd)
         except Exception as e:
             print 'Failed to start stubs: %s' % (e)
             self.stop_and_cleanup()
@@ -166,7 +168,7 @@ class StubContext():
         self.cleanup()
 
 class PwcliSpawn(pexpect.spawn):
-    def __init__(self, debug=False, stgit=False, builder=True,
+    def __init__(self, debug=False, stgit=False, builder='builder',
                  signature='Sent by pwcli\n$URL\n'):
         cmd = 'pwcli'
 
