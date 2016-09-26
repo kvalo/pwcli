@@ -185,6 +185,7 @@ class RunProcess():
    # subprocess.Popen() throws OSError if the command is not found
    def __init__(self, args, stdout_cb=None, input=None):
       self.args = args
+      self.stdout_cb = stdout_cb
       self.input = input
 
       self.returncode = None
@@ -223,6 +224,21 @@ class RunProcess():
       logger.debug('%s took %.1fs: (%r, %r, %r)' %
                    (self, self.timer.get_seconds(), self.returncode,
                     self.stdoutdata, self.stderrdata))
+
+   def __str__(self):
+      if self.input:
+         input_len = '%d B' % (len(self.input))
+      else:
+         input_len = 'None'
+
+      return 'RunProcess(\'%s\', %s, %s)' % (' '.join(self.args),
+                                             self.stdout_cb,
+                                             input_len)
+
+   def __repr__(self):
+      return 'RunProcess(%r, %r, %r)' % (self.args,
+                                         self.stdout_cb,
+                                         self.input)
 
 class Person():
 

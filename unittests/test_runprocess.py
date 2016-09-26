@@ -88,6 +88,18 @@ class TestRunProcess(unittest.TestCase):
         self.assertEqual(p.returncode, 0)
         self.assertEqual(p.stdoutdata, msg)
         self.assertEqual(p.stderrdata, '')
+
+    def test_str(self):
+        p = pwcli.RunProcess(['/bin/echo', 'foo', 'bar'])
+        self.assertEqual(str(p), 'RunProcess(\'/bin/echo foo bar\', None, None)')
+
+    def test_repr(self):
+        msg = 'This is a test'
+
+        p = pwcli.RunProcess(['cat'], input=msg)
+
+        self.assertEqual(repr(p),
+                         'RunProcess([\'cat\'], None, \'This is a test\')')
                          
 if __name__ == '__main__':
     unittest.main()
