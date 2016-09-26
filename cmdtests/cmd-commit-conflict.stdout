@@ -20,7 +20,7 @@ list
 test-branch@data > commit 1
 commit 1
 Retrieving patches (1/1)
-[1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
 ------------------------------------------------------------
 1 patches
 commit All/commit Individually/aBort? a
@@ -57,7 +57,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 Patch set to Changes Requested.
 
-[1/7] foo: test 1                                            2011-02-11 Dino Dinosau Changes Requested
+      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Changes Requested
 
 Reason: Failed to apply
 
@@ -100,7 +100,7 @@ Dino Dinosaurus <dino@example.com> wrote:
 
 Patch set to Changes Requested.
 
-[1/7] foo: test 1                                            2011-02-11 Dino Dinosau Changes Requested
+      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Changes Requested
 
 Reason: Failed to apply
 

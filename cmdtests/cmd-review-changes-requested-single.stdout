@@ -20,7 +20,7 @@ list
 test-branch@data > review 1
 review 1
 Retrieving patches (1/1)
-[1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
 ------------------------------------------------------------
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
 c

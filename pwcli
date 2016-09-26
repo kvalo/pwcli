@@ -883,12 +883,15 @@ class PWCLI():
    def create_patchlist_as_string(self, patches, show_indexes=False,
                                   open_browser=False):
       i = 1
-      index = ''
       result = ''
 
       for patch in patches:
          if show_indexes:
             index = '[%3d] ' % (i)
+         else:
+            # For nice alignment add empty columns if indexes are
+            # disabled.
+            index = '      '
 
          WIDTH_NAME = 60
          WIDTH_DATE = 10
