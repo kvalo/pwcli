@@ -324,7 +324,7 @@ class SmtpdStub():
     def get_mails(self):
         mails = []
 
-        mailfiles = os.listdir(self.smtpddir)
+        mailfiles = sorted(os.listdir(self.smtpddir))
         logger.debug('SmtpdStub(): mailfiles=%r' % (mailfiles))
 
         for filename in mailfiles:
