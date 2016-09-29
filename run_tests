@@ -36,6 +36,32 @@ import subprocess
 import sys
 import argparse
 
+CMDTEST_DIRECTORIES = ['cmdtests', 'stubs/cmdtests']
+
+ACTUAL_PREFIX = '-actual'
+
+def update_cmdtest_outputdir(args, directory):
+    for filename in os.listdir(directory):
+        path = os.path.join(directory, filename)
+        if not path.endswith(ACTUAL_PREFIX):
+            continue
+
+        # skip empty files, cmdtest doesn't need them and the can be discarded
+        if os.stat(path).st_size == 0:
+            continue
+
+        strip = len(ACTUAL_PREFIX)
+        new_name = path[:-strip]
+
+        print '%s -> %s' % (path, new_name)
+        os.rename(path, new_name)
+
+def update_cmdtest_outputs(args):
+    for directory in CMDTEST_DIRECTORIES:
+        update_cmdtest_outputdir(args, directory)
+
+    sys.exit(0)
+
 def main():
     parser = argparse.ArgumentParser(description='Run all sort of pwcli tests')
     parser.add_argument('suite', metavar='SUITE', nargs='?',
@@ -43,8 +69,11 @@ def main():
                         choices=('stubs', 'cmdtests', 'unittests'))
     parser.add_argument('test', metavar='TEST', nargs='*',
                         help='Run a specific test (or tests) from a test suite')
+    parser.add_argument('--update-cmdtest-outputs', action='store_true',
+                        help='Update cmdtest output files to match the new test output. Run this only when the test outputs have changed as planned and you have verified that the output is as expected.')
 
     args = parser.parse_args()
+    print args
 
     pythonpath = 'stubs'
 
@@ -52,6 +81,9 @@ def main():
         pythonpath += ':%s' % (os.environ['PYTHONPATH'])
 
     os.environ['PYTHONPATH'] = pythonpath
+
+    if args.update_cmdtest_outputs:
+        return update_cmdtest_outputs(args)
 
     try:
         if not args.suite or args.suite == 'unittests':
