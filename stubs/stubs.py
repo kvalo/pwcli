@@ -403,7 +403,7 @@ class EditorStub():
 
 class PwcliWrapper():
     def __init__(self, stgit=False, builder='builder', patchworkport=PATCHWORK_PORT,
-                 smtpport=SMTP_PORT, signature=None):
+                 smtpport=SMTP_PORT, signature=None, censor=True):
         self.config = ConfigParser.RawConfigParser()
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
@@ -426,6 +426,9 @@ class PwcliWrapper():
             self.config.set(general, 'main_branches', 'test-branch')
 
         self.signature = signature
+
+        if censor:
+            os.environ['PWCLI_CENSOR_USER_AGENT'] = '1'
 
     def start(self):
         self.pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],

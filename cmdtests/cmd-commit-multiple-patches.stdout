@@ -49,6 +49,8 @@ In-Reply-To: <11111@example.com>
 References: <11111@example.com>
 To: Dino Dinosaurus <dino@example.com>
 Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Dino Dinosaurus <dino@example.com> wrote:
 > 

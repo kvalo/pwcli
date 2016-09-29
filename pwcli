@@ -51,11 +51,16 @@ import textwrap
 import collections
 import string
 import datetime
+import platform
 
 import readline
 assert readline # to shut up pyflakes
 
 PWCLI_VERSION='0.0.0-git'
+PWCLI_PROJECT_URL = 'https://github.com/kvalo/pwcli/'
+PWCLI_USER_AGENT = 'pwcli/%s (%s) Python/%s' % (PWCLI_VERSION,
+                                                PWCLI_PROJECT_URL,
+                                                platform.python_version())
 
 PWCLI_EDIT_FILE = '.pwcli-edit'
 
@@ -679,6 +684,19 @@ class Patch():
 
       if len(cc_hdr) > 0:
          reply['Cc'] = cc_hdr
+
+      user_agent = PWCLI_USER_AGENT
+
+      if 'PWCLI_CENSOR_USER_AGENT' in os.environ:
+         # censor the string from all changing version numbers (pwcli
+         # _and_ python) so that it doesn't change the test output
+         user_agent = re.sub(r'(pwcli/)[0-9\.\-git]+' , r'\1<censored>',
+                             user_agent)
+         user_agent = re.sub(r'(Python/)[0-9\.]+' , r'\1<censored>',
+                             user_agent)
+
+      reply['User-Agent'] = user_agent
+
 
       logger.debug('%s().get_reply_msg(): %s', self, repr(quote))
 

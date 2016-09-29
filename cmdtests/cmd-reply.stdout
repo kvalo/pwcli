@@ -41,6 +41,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -68,6 +70,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -118,6 +122,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com, john@example.org, zoe@example.org
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -145,6 +151,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com, john@example.org, zoe@example.org
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -195,6 +203,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com, list-second@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -222,6 +232,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com, list-second@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -252,6 +264,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -275,6 +289,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com, john@example.org, zoe@example.org
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
@@ -298,6 +314,8 @@ In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
 Cc: list@example.com, list-second@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
 
 Timo Tiger <timo@example.com> wrote:
 > 
