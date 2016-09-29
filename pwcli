@@ -55,6 +55,8 @@ import datetime
 import readline
 assert readline # to shut up pyflakes
 
+PWCLI_VERSION='0.0.0-git'
+
 PWCLI_EDIT_FILE = '.pwcli-edit'
 
 DEFAULT_EDITOR = 'nano'
@@ -1735,7 +1737,7 @@ class PWCLI():
    def run_shell(self):
       index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
 
-      self.parser = argparse.ArgumentParser(description='pwcli - patchwork client shell. More help for individual commands with --help switch',
+      self.parser = argparse.ArgumentParser(description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
                                             prog='',
                                             add_help=False)
    
@@ -1899,6 +1901,9 @@ class PWCLI():
 
       parser.add_argument('--dry-run', action='store_true',
                           help='Don\'t modify anything')
+
+      parser.add_argument('--version', action='version',
+                          version='%(prog)s ' + PWCLI_VERSION)
 
       args = parser.parse_args()
 
