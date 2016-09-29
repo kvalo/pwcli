@@ -34,12 +34,7 @@
 import cmdtestlib
 import os
 
-def test_reply(ctxt, pwcli):
-   pwcli.expect_prompt()
-   pwcli.sendline('list review')
-   pwcli.expect_prompt()
-   pwcli.sendline('reply 1')
-
+def send_mail(pwcli):
    # Edit
    pwcli.expect(cmdtestlib.PROMPT_REPLY)
    pwcli.sendline('e')
@@ -48,10 +43,32 @@ def test_reply(ctxt, pwcli):
    pwcli.expect(cmdtestlib.PROMPT_REPLY)
    pwcli.sendline('s')
 
+def test_reply(ctxt, pwcli):
+   print '* make sure that the list is also CCed'
+   pwcli.expect_prompt()
+   pwcli.sendline('list new')
+   pwcli.expect_prompt()
+   pwcli.sendline('reply 1')
+   send_mail(pwcli)
+
+   print '* list and two persons CCed'
+   pwcli.expect_prompt()
+   pwcli.sendline('list new')
+   pwcli.expect_prompt()
+   pwcli.sendline('reply 2')
+   send_mail(pwcli)
+
+   print '* two lists CCed'
+   pwcli.expect_prompt()
+   pwcli.sendline('list new')
+   pwcli.expect_prompt()
+   pwcli.sendline('reply 3')
+   send_mail(pwcli)
+
    pwcli.expect_prompt()
    pwcli.sendline('quit')
 
-   print 'received mails:'
+   # to avoid any races print the mails only after pwcli has stopped
    print ctxt.smtpd.get_mails_as_string()
 
 if __name__ == "__main__":
