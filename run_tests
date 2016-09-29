@@ -75,7 +75,6 @@ def main():
                         help='Update cmdtest output files to match the new test output. Run this only when the test outputs have changed as planned and you have verified that the output is as expected.')
 
     args = parser.parse_args()
-    print args
 
     pythonpath = 'stubs'
 
