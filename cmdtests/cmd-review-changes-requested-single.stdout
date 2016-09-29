@@ -3,11 +3,11 @@ User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
 Branch        : test-branch
-New           : 16
+New           : 18
 Review        : 7
 Upstream      : 0
 Deferred      : 5
-Total         : 28
+Total         : 30
 test-branch@data > list
 list
 [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
@@ -63,11 +63,11 @@ User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
 Branch        : test-branch
-New           : 16
+New           : 18
 Review        : 6
 Upstream      : 0
 Deferred      : 5
-Total         : 27
+Total         : 29
 test-branch@data > quit
 mail 0:
 ----------------------------------------------------------------------
