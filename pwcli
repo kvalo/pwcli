@@ -651,18 +651,18 @@ class Patch():
       if 'To' in msg:
          persons += msg['To'].split(',')
 
-      cc = []
       if 'Cc' in msg:
         persons += msg['Cc'].split(',')
 
-        for person in persons:
-           person = clean(person)
+      cc = []
+      for person in persons:
+         person = clean(person)
 
-           # don't add my email in cc field
-           if person.count(from_email) > 0:
-              continue
+         # don't add my email in cc field
+         if person.count(from_email) > 0:
+            continue
 
-           cc.append(person)
+         cc.append(person)
 
       from_hdr = '%s <%s>' % (from_name, from_email)
       subject_hdr = 'Re: %s' % clean(msg['Subject'])

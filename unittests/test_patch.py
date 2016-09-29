@@ -73,11 +73,17 @@ class TestPatch(unittest.TestCase):
         patch.get_email = mock.Mock(return_value=email.message_from_string(TEST_MBOX))
         patch.get_url = mock.Mock(return_value='http://localhost:8000/1001/')
 
-        reply = patch.get_reply_msg('Timo Testi', 'test@example.com')
+        from_name = 'Matt Edmond'
+        from_email = 'me@example.com'
+        reply = patch.get_reply_msg(from_name, from_email)
 
-        self.assertEqual(reply['From'], 'Timo Testi <test@example.com>')
+        self.assertEqual(reply['From'], '%s <%s>' % (from_name, from_email))
         self.assertEqual(reply['To'], 'Dino Dinosaurus <dino@example.com>')
-        self.assertFalse('Cc' in reply)
+
+        # make sure that our email is not in CC
+        self.assertIn('Cc', reply)
+        self.assertEquals(reply['Cc'].count(from_email), 0)
+
         self.assertEqual(reply['Subject'], 'Re: [1/7] foo')
 
     def test_get_mbox_for_stgit(self):

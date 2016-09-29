@@ -62,7 +62,7 @@ Patch set to Accepted
 test-branch@data > quit
 mail 0:
 ----------------------------------------------------------------------
-test@example.com -> timo@example.com
+test@example.com -> timo@example.com, list@example.com
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -71,6 +71,7 @@ From: Timo Testi <test@example.com>
 In-Reply-To: <22222@example.com>
 References: <22222@example.com>
 To: Timo Tiger <timo@example.com>
+Cc: list@example.com
 
 Timo Tiger <timo@example.com> wrote:
 > 

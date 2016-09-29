@@ -49,6 +49,7 @@ From: Timo Testi <test@example.com>
 In-Reply-To: <11111@example.com>
 References: <11111@example.com>
 To: Dino Dinosaurus <dino@example.com>
+Cc: list@example.com
 
 Dino Dinosaurus <dino@example.com> wrote:
 > 
@@ -72,13 +73,13 @@ http://localhost:8105/1001/
 
 ============================================================
 Envelope From: Timo Testi <test@example.com>
-Envelope To: ['Dino Dinosaurus <dino@example.com>']
+Envelope To: ['Dino Dinosaurus <dino@example.com>', 'list@example.com']
 Send/Edit/aBort? s
 s
 test-branch@data > quit
 mail 0:
 ----------------------------------------------------------------------
-test@example.com -> dino@example.com
+test@example.com -> dino@example.com, list@example.com
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -87,6 +88,7 @@ From: Timo Testi <test@example.com>
 In-Reply-To: <11111@example.com>
 References: <11111@example.com>
 To: Dino Dinosaurus <dino@example.com>
+Cc: list@example.com
 
 Dino Dinosaurus <dino@example.com> wrote:
 > 
