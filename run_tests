@@ -69,6 +69,8 @@ def main():
                         choices=('stubs', 'cmdtests', 'unittests'))
     parser.add_argument('test', metavar='TEST', nargs='*',
                         help='Run a specific test (or tests) from a test suite')
+    parser.add_argument('--ignore-errors', action='store_true',
+                        help='Continue running tests even if there are errors.')
     parser.add_argument('--update-cmdtest-outputs', action='store_true',
                         help='Update cmdtest output files to match the new test output. Run this only when the test outputs have changed as planned and you have verified that the output is as expected.')
 
@@ -85,41 +87,46 @@ def main():
     if args.update_cmdtest_outputs:
         return update_cmdtest_outputs(args)
 
-    try:
-        if not args.suite or args.suite == 'unittests':
-            print '* Running unit tests'
+    if not args.suite or args.suite == 'unittests':
+        print '* Running unit tests'
 
-            os.chdir('unittests')
-            subprocess.check_call(['./run'])
-            os.chdir('..')
+        os.chdir('unittests')
+        returncode = subprocess.call(['./run'])
+        os.chdir('..')
 
-        if not args.suite or args.suite == 'cmdtests':
-            print
-            print '* Running pwcli cmdtests'
+        if returncode != 0 and not args.ignore_errors:
+            sys.exit(1)
 
-            cmd = ['cmdtest', 'cmdtests']
+    if not args.suite or args.suite == 'cmdtests':
+        print
+        print '* Running pwcli cmdtests'
 
-            for test in args.test:
-                cmd += ['--test', test]
+        cmd = ['cmdtest', 'cmdtests']
 
-            subprocess.check_call(cmd)
+        for test in args.test:
+            cmd += ['--test', test]
 
-        if not args.suite or args.suite == 'stubs':
-            print
-            print '* Running stub cmdtests'
+        returncode = subprocess.call(cmd)
 
-            cmd = ['cmdtest', 'stubs/cmdtests']
+        if returncode != 0 and not args.ignore_errors:
+            sys.exit(1)
 
-            for test in args.test:
-                cmd += ['--test', test]
+    if not args.suite or args.suite == 'stubs':
+        print
+        print '* Running stub cmdtests'
 
-            subprocess.check_call(cmd)
+        cmd = ['cmdtest', 'stubs/cmdtests']
 
-    except subprocess.CalledProcessError:
-        sys.exit(1)
+        for test in args.test:
+            cmd += ['--test', test]
 
-    # show OK only when all tests are run
-    if args.suite:
+        returncode = subprocess.call(cmd)
+
+        if returncode != 0 and not args.ignore_errors:
+            sys.exit(1)
+
+    # show OK only when all tests are run and we are not ignoring errors
+    if args.suite or args.ignore_errors:
         sys.exit(0)
 
     try:
