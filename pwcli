@@ -68,6 +68,7 @@ DEFAULT_EDITOR = 'nano'
 
 # global variables
 logger = logging.getLogger('pwcli')
+logger.setLevel(logging.INFO)
 
 LOG_SEPARATOR = '\n---\n'
 MAIL_BODY_WIDTH = 72
@@ -1940,6 +1941,10 @@ class PWCLI():
 
       self.config.read(self.config_file)
 
+      if self.config.has_option('general', 'log-level'):
+         if self.config.get('general', 'log-level') == 'debug':
+            logger.setLevel(logging.DEBUG)
+
       # read settings from pwcli config file
       self.url = self.config.get('general', 'url')
       self.username = self.config.get('general', 'username')
@@ -2061,6 +2066,8 @@ class PWCLI():
       self.patches = None
 
       self.show_info()
+
+      logger.info('pwcli %s started' % PWCLI_VERSION)
 
 def main():
    pwcli = PWCLI()
