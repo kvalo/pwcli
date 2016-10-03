@@ -1,0 +1,102 @@
+Connecting to http://localhost:8105/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Main branches : test-branch
+Pending branch: pending
+New           : 18
+Review        : 0
+Upstream      : 0
+Deferred      : 5
+Total         : 23
+test-branch@data > list new
+list new
+[  1] foo: new patch                                               2011-02-11 Timo Tiger   New
+[  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
+[  3] foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
+[  4] [1/15] bar: blah blah blah 1                                 2011-02-11 Dino Dinosau New
+[  5] [2/15] bar: blah blah blah 2                                 2011-02-11 Dino Dinosau New
+[  6] [3/15] bar: blah blah blah 3                                 2011-02-11 Dino Dinosau New
+[  7] [4/15] bar: blah blah blah 4                                 2011-02-11 Dino Dinosau New
+[  8] [5/15] bar: blah blah blah 5                                 2011-02-11 Dino Dinosau New
+[  9] [6/15] bar: blah blah blah 6                                 2011-02-11 Dino Dinosau New
+[ 10] [7/15] bar: blah blah blah 7                                 2011-02-11 Dino Dinosau New
+[ 11] [8/15] bar: blah blah blah 8                                 2011-02-11 Dino Dinosau New
+[ 12] [9/15] bar: blah blah blah 9                                 2011-02-11 Dino Dinosau New
+[ 13] [10/15] bar: blah blah blah 10                               2011-02-11 Dino Dinosau New
+[ 14] [11/15] bar: blah blah blah 11                               2011-02-11 Dino Dinosau New
+[ 15] [12/15] bar: blah blah blah 12                               2011-02-11 Dino Dinosau New
+[ 16] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
+[ 17] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
+[ 18] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
+test-branch@data > review 1
+review 1
+Retrieving patches (1/1)
+      foo: new patch                                               2011-02-11 Timo Tiger   New
+------------------------------------------------------------
+Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
+a
+Failed to apply patch: ['stg', 'import', '--mbox', '--sign'] failed: 2
+error: patch failed: drivers/net/wireless/foo/core.c:1714
+error: drivers/net/wireless/foo/core.c: patch does not apply
+error: patch failed: drivers/net/wireless/foo/core.h:635
+error: drivers/net/wireless/foo/core.h: patch does not apply
+error: patch failed: drivers/net/wireless/foo/debug.c:1427
+error: drivers/net/wireless/foo/debug.c: patch does not apply
+error: patch failed: drivers/net/wireless/foo/debug.h:59
+error: drivers/net/wireless/foo/debug.h: patch does not apply
+error: patch failed: drivers/net/wireless/foo/mac.c:6924
+error: drivers/net/wireless/foo/mac.c: patch does not apply
+stg import: Diff does not apply cleanly
+
+Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicabble/rFc/aBort? c
+c
+Patch set to Changes Requested
+Reason (RET for no mail): Failed to import
+Failed to import
+============================================================
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: foo: new patch
+From: Timo Testi <test@example.com>
+In-Reply-To: <22222@example.com>
+References: <22222@example.com>
+To: Timo Tiger <timo@example.com>
+Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
+
+Timo Tiger <timo@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Failed to import
+
+error: patch failed: drivers/net/wireless/foo/core.c:1714
+error: drivers/net/wireless/foo/core.c: patch does not apply
+error: patch failed: drivers/net/wireless/foo/core.h:635
+error: drivers/net/wireless/foo/core.h: patch does not apply
+error: patch failed: drivers/net/wireless/foo/debug.c:1427
+error: drivers/net/wireless/foo/debug.c: patch does not apply
+error: patch failed: drivers/net/wireless/foo/debug.h:59
+error: drivers/net/wireless/foo/debug.h: patch does not apply
+error: patch failed: drivers/net/wireless/foo/mac.c:6924
+error: drivers/net/wireless/foo/mac.c: patch does not apply
+stg import: Diff does not apply cleanly
+
+Patch set to Changes Requested.
+
+-- 
+Sent by pwcli
+http://localhost:8105/1030/
+
+
+============================================================
+Envelope From: Timo Testi <test@example.com>
+Envelope To: ['Timo Tiger <timo@example.com>', 'list@example.com']
+Send/Edit/aBort? s
+s
+test-branch@data > quit

@@ -1556,6 +1556,7 @@ class PWCLI():
       self.output('------------------------------------------------------------')
 
       applied = []
+      faillog = ''
 
       if self.pending_mode == 'stgit':
          while True:
@@ -1577,14 +1578,14 @@ class PWCLI():
             self.git.checkout(self.pending_branch)
          
             for patch in patches:
-               # stg import --sign
-               # FIXME: catch GitError
                try:
                   self.stg.import_patch(patch.get_mbox_for_stgit())
                   applied.append(patch)
                except GitError as e:
                   self.output('Failed to apply patch: %s' % e)
-
+                  self.output('%s' % e.log)
+                  faillog += e.log
+                  
             # FIXME: run build command
          # Skip
          elif answer == 's':
@@ -1596,7 +1597,13 @@ class PWCLI():
 
       # need to use ordered dict so that the list is shown in correct order
       state_table = collections.OrderedDict()
-      state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+
+      # In pending mode Under Review state should be shown only if the
+      # patches were succesfully applied to the pending branch and
+      # there were no errors
+      if (self.pending_mode != 'stgit') or (len(patches) == len(applied)):
+         state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+
       state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
       state_table['Rejected'] =           PATCH_STATE_REJECTED
       state_table['New'] =                PATCH_STATE_NEW
@@ -1634,7 +1641,10 @@ class PWCLI():
 
       reply += '%s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
 
-      # FIXME: add possible git failures and build logs
+      # add possible git and build failures/warnings to the mail
+      faillog = faillog.strip()
+      if len(faillog) > 0:
+         reply += '%s\n\n' % (faillog)
 
       reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
                                       state)
