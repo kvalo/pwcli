@@ -60,6 +60,8 @@ def stg_import(filename):
 
       (stdoutdata, stderrdata) = p.communicate(input=buf)
 
+      return p.returncode
+
 def main():
       os.chdir(datadir)
 
@@ -92,6 +94,14 @@ def main():
 
       print 'test show'
       subprocess.call([stub_stg, 'show', 'foo-test-2'])
+
+      print 'import should fail'
+      stgstub.set_import_failure(True)
+      returncode = stg_import('1002-review-foo-test-2.patch')
+      if returncode != 2:
+            print 'wrong return code: %d' % (returncode)
+            sys.exit(1)
+      print
       
       # cleanup
       stgstub.cleanup()

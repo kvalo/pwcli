@@ -115,7 +115,7 @@ class StubContext():
 
             if self.stgit:
                 stgit = True
-                self.stgit = self.stgit.start()
+                self.stgit.start()
 
             self.smtpd.start()
             self.patchwork.start()

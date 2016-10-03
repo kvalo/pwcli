@@ -59,6 +59,10 @@ patchesfile = None
 #
 # StgStub.get_patches(): patches['foo-patch-name'] = '<full patch>'
 
+IMPORT_FAIL = 'import-fail'
+
+IMPORT_FAILED_MSG = 'error: patch failed: drivers/net/wireless/foo/core.c:1714\nerror: drivers/net/wireless/foo/core.c: patch does not apply\nerror: patch failed: drivers/net/wireless/foo/core.h:635\nerror: drivers/net/wireless/foo/core.h: patch does not apply\nerror: patch failed: drivers/net/wireless/foo/debug.c:1427\nerror: drivers/net/wireless/foo/debug.c: patch does not apply\nerror: patch failed: drivers/net/wireless/foo/debug.h:59\nerror: drivers/net/wireless/foo/debug.h: patch does not apply\nerror: patch failed: drivers/net/wireless/foo/mac.c:6924\nerror: drivers/net/wireless/foo/mac.c: patch does not apply\nstg import: Diff does not apply cleanly\n'
+
 def get_patches():
       patches = {}
 
@@ -129,6 +133,10 @@ def cmd_import(args):
       # which is added by email.message.Message.as_string(unixfrom=True)
       buf_cleaned = re.sub(r'^From nobody.*\n', 'From nobody\n', buf)
       commit_id = hashlib.sha1(buf_cleaned).hexdigest()
+
+      if os.path.exists(os.path.join(stgdir, IMPORT_FAIL)):
+            sys.stderr.write(IMPORT_FAILED_MSG)
+            sys.exit(2)
 
       f = open(patchesfile, 'a')
       f.write('%s\t%s\n' % (commit_id, patch_name))

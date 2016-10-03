@@ -127,6 +127,8 @@ class BuilderStub():
         return count
 
 class StgStub():
+    IMPORT_FAIL = 'import-fail'
+
     def __init__(self):
         self.gitdir = os.path.join(testdatadir, 'git')
         self.objectsdir = os.path.join(self.gitdir, 'objects')
@@ -213,6 +215,22 @@ class StgStub():
             msgs.append(email.message_from_string(patch))
 
         return msgs
+
+    def set_import_failure(self, enabled):
+        path = os.path.join(self.stgdir, self.IMPORT_FAIL)
+        if enabled:
+            f = open(path, 'w')
+            f.write('1')
+            f.close()
+        else:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+    def get_import_failure(self, enabled):
+        path = os.path.join(self.stgdir, self.IMPORT_FAIL)
+        return os.path.exists(path)
 
 class GitStub():
     def __init__(self, smtpport=SMTP_PORT):
