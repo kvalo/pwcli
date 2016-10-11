@@ -1557,6 +1557,7 @@ class PWCLI():
 
       applied = []
       faillog = ''
+      builder = None
 
       if self.pending_mode == 'stgit':
          while True:
@@ -1586,7 +1587,12 @@ class PWCLI():
                   self.output('%s' % e.log)
                   faillog += e.log
                   
-            # FIXME: run build command
+            # run a build test
+            builder = self.run_build_script()
+
+            if len(builder.stderrdata) > 0:
+               faillog += builder.stderrdata
+
          # Skip
          elif answer == 's':
             # do nothing, just continue to state handling
@@ -1601,7 +1607,9 @@ class PWCLI():
       # In pending mode Under Review state should be shown only if the
       # patches were succesfully applied to the pending branch and
       # there were no errors
-      if (self.pending_mode != 'stgit') or (len(patches) == len(applied)):
+      if (self.pending_mode != 'stgit') or \
+             ((len(patches) == len(applied)) and \
+                 (builder and builder.returncode == 0)):
          state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
 
       state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
