@@ -1400,7 +1400,7 @@ class PWCLI():
          # run a build test
          builder = self.run_build_script()
 
-         if len(builder.stderrdata) > 0:
+         if builder and len(builder.stderrdata) > 0:
             faillog += builder.stderrdata
 
          # show summary in the shell
@@ -1415,7 +1415,7 @@ class PWCLI():
 
       # Accepted state should not be shown if any of the patches
       # failed apply or the build failed
-      if (len(patches) == len(applied)) and (builder and builder.returncode == 0):
+      if (len(patches) == len(applied)) and (builder == None or builder.returncode == 0):
          state_table['Accepted'] =           PATCH_STATE_ACCEPTED
 
       state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
@@ -1590,7 +1590,7 @@ class PWCLI():
             # run a build test
             builder = self.run_build_script()
 
-            if len(builder.stderrdata) > 0:
+            if builder and len(builder.stderrdata) > 0:
                faillog += builder.stderrdata
 
          # Skip
@@ -1609,7 +1609,7 @@ class PWCLI():
       # there were no errors
       if (self.pending_mode != 'stgit') or \
              ((len(patches) == len(applied)) and \
-                 (builder and builder.returncode == 0)):
+                 (builder == None or builder.returncode == 0)):
          state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
 
       state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
