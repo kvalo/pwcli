@@ -58,6 +58,7 @@ PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
 PROMPT_COMMIT_ACCEPT = 'aPplicable/rFc/aBort\? '
 
 PROMPT_REPLY = 'Send/Edit/aBort?'
+PROMPT_REPLY_RETRY = 'Retry/aBort?'
 PROMPT_REVIEW_ACCEPT = 'Apply \d+ patches to the pending branch\? \[Apply/Skip/aBort\]'
 
 # the toplevel source directory

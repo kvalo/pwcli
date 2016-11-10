@@ -52,6 +52,7 @@ import collections
 import string
 import datetime
 import platform
+import socket
 
 import readline
 assert readline # to shut up pyflakes
@@ -1021,20 +1022,34 @@ class PWCLI():
          self.output('Dry-run: %s -> %s' % (envelope_from, envelope_to))
          return
 
-      try:
-         server = smtplib.SMTP(self.smtp_host, self.smtp_port)
+      done = False
 
-         if self.smtp_encryption == 'tls':
-            server.starttls()
+      while not done:
+         try:
+            server = smtplib.SMTP(self.smtp_host, self.smtp_port)
 
-         if self.smtp_username != None and self.smtp_password != None:
-            server.login(self.smtp_username, self.smtp_password)
+            if self.smtp_encryption == 'tls':
+               server.starttls()
 
-         server.sendmail(envelope_from, envelope_to, msg.as_string())
-         server.quit()
-      except smtplib.SMTPException as e:
-         self.output('Failed to send email via %s: %s' % (self.smtp_host, e))
-         return
+            if self.smtp_username != None and self.smtp_password != None:
+               server.login(self.smtp_username, self.smtp_password)
+
+            server.sendmail(envelope_from, envelope_to, msg.as_string())
+            server.quit()
+
+            done = True
+         except (smtplib.SMTPException, socket.error) as e:
+            self.output('Failed to send email via %s: %s' % (self.smtp_host, e))
+
+            ANSWER_RETRY = 'Retry'
+            ANSWER_ABORT = 'aBort'
+
+            answer = self.show_choose_list([ANSWER_RETRY, ANSWER_ABORT])
+
+            if answer == ANSWER_RETRY:
+               continue
+            elif answer == ANSWER_ABORT:
+               return
 
       logger.debug('email sent to %s:%s' % (self.smtp_host, self.smtp_port))
 
