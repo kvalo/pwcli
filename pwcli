@@ -1252,10 +1252,15 @@ class PWCLI():
       # FIXME: add "progress bar" as patches are retrieved from the
       # server and can take sometime
       for stg_commit_name in stg_series:
-         c = self.stg.get_commit(stg_commit_name)
+         if not stg_commit_name in self.stg_cache:
+            c = self.stg.get_commit(stg_commit_name)
 
-         if c == None:
-            continue
+            if c == None:
+               continue
+
+            self.stg_cache[stg_commit_name] = c
+         else:
+            c = self.stg_cache[stg_commit_name]
 
          patchwork_id = int(c['patchwork_id'])
 
@@ -1265,7 +1270,7 @@ class PWCLI():
                break
 
          if not patch:
-            self.output('Patch id %s not found' % (c['patchwork_id']))
+            self.output('Patch id %s not found' % (patchwork_id))
             continue
 
          # patches in pending branch can be applied, tests or
@@ -1275,6 +1280,11 @@ class PWCLI():
 
          # store the commit id so that we can use it when cherry picking
          # the patch
+         #
+         # FIXME: As we cache the commit id we should somehow check
+         # that it's still valid. If the patch is edited after added
+         # to the cache the commit id will change and we would
+         # erroneously commit an older version of the patch!
          patch.set_temp_ref(c['commit_id'])
 
          patches.append(patch)
@@ -2106,6 +2116,7 @@ class PWCLI():
 
       self.git = Git(self.dry_run, self.output)
       self.stg = Stg(self.dry_run, self.output)
+      self.stg_cache = {}
 
       # read settings from git
       self.fullname = self.git.get_config('user.name')
