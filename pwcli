@@ -1209,7 +1209,11 @@ class PWCLI():
             continue
 
          patchwork_id = int(c['patchwork_id'])
-         patch = self.project.get_patch(patchwork_id)
+
+         for project in self.projects:
+            patch = project.get_patch(patchwork_id)
+            if patch:
+               break
 
          if not patch:
             self.output('Patch id %s not found' % (c['patchwork_id']))
