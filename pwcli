@@ -53,6 +53,7 @@ import string
 import datetime
 import platform
 import socket
+import functools
 
 import readline
 assert readline # to shut up pyflakes
@@ -481,6 +482,7 @@ class Git():
       self.dry_run = dry_run
       self.output = output
 
+@functools.total_ordering
 class Patch():
 
    def get_name(self):
@@ -712,6 +714,42 @@ class Patch():
 
       return log.strip()
 
+   # Tries to guess the patch number (eg 5 from 5/10) from the name
+   # and returns that as int. If no index found returns None.
+   def get_patch_index(self):
+      # Note: '.*?' is a non-greedy version of '.*'
+
+      match = re.search(r'^\s*\[.*?(\d+)/\d+.*?]', self.get_name())
+
+      if match == None:
+         return None
+
+      return int(match.group(1))
+      
+   def __eq__(self, other):
+      if self.get_datetime() == other.get_datetime() and \
+         self.get_name() == other.get_name():
+            return True
+
+      return False
+
+   def __lt__(self, other):
+      if self.get_datetime() < other.get_datetime():
+         return True
+
+      # if the date is same due some simple comparison based on
+      # subject name
+      if self.get_datetime() == other.get_datetime():
+         self_index = self.get_patch_index()
+         other_index = other.get_patch_index()
+
+         if self_index and other_index:
+            return self_index < other_index
+         
+         return self.get_name() < other.get_name()
+
+      return False
+      
    def __str__(self):
        return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
 
@@ -1343,6 +1381,9 @@ class PWCLI():
             if not match:
                self.patches.remove(patch)
                continue
+
+      # sort the patches, for now just simple sorting
+      self.patches = sorted(self.patches)
 
       self.output(self.create_patchlist_as_string(self.patches,
                                                   show_indexes=True))

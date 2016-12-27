@@ -127,5 +127,25 @@ class TestPatch(unittest.TestCase):
         self.assertEqual(c('[] [A] [B] [   PATCH 1/100000  ] bar: use [] in array[]'),
                          'bar: use [] in array[]')
 
+    def test_get_patch_index(self):
+        attributes = FAKE_ATTRIBUTES
+        patch = pwcli.Patch(None, attributes, False)
+
+        # mock get_name() method for easier testing
+        m = mock.Mock()
+        patch.get_name = m
+
+        m.return_value = 'foo: bar'
+        self.assertEqual(patch.get_patch_index(), None)
+
+        m.return_value = '[1/2] foo: bar'
+        self.assertEqual(patch.get_patch_index(), 1)
+
+        m.return_value = '[99/200] foo: bar'
+        self.assertEqual(patch.get_patch_index(), 99)
+
+        m.return_value = '[for-3.4 200/200] foo: bar'
+        self.assertEqual(patch.get_patch_index(), 200)
+
 if __name__ == '__main__':
     unittest.main()
