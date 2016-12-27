@@ -743,18 +743,25 @@ class Project():
       return results
 
    def get_patches(self, state=PATCH_STATE_UNDER_REVIEW, username=None):
-      filters = {}
-      filters['project_id'] = self.id
+      patches = []
 
-      if state != None:
-         filters['state_id'] = self.pw.get_state_id(state)
+      for patch in self.cache.values():
+         if state != None and patch.get_state_name() != state:
+            continue
 
-      return self._get_patches(filters, username)
+         if username != None and patch.get_delegate() != username:
+            continue
+
+         patches.append(patch)
+
+      return patches
 
    def get_patch(self, patchwork_id):
+      if patchwork_id in self.cache:
+         return self.cache[patchwork_id]
+
       filters = {}
       filters['id'] = patchwork_id
-
       results = self._get_patches(filters)
 
       if len(results) > 1:
@@ -764,7 +771,48 @@ class Project():
          logger.debug('patchwork id %s not found' % (patchwork_id))
          return None
 
-      return results[0]
+      # add patch to cache
+      patch = results[0]
+      self.cache[patchwork_id] = patch
+
+      return patch
+
+   def update_cache(self):
+      patches = []
+      username = None
+      filters = {}
+      filters['project_id'] = self.id
+
+      for state in [PATCH_STATE_NEW,
+                    PATCH_STATE_UNDER_REVIEW,
+                    PATCH_STATE_AWAITING_UPSTREAM,
+                    PATCH_STATE_DEFERRED]:
+         filters['state_id'] = self.pw.get_state_id(state)
+         patches += self._get_patches(filters, username)
+
+      # make a copy of the old cache
+      old_cache = dict(self.cache)
+      
+      for new_patch in patches:
+         pid = new_patch.get_id()
+
+         if not pid in self.cache:
+            # patch is not in cache, add it
+            self.cache[pid] = new_patch
+            continue
+
+         # patch already exists in the cache
+         patch = self.cache[pid]
+         del old_cache[pid]
+
+         # check the state and update it if changed
+         if patch.get_state_name() != new_patch.get_state_name():
+            patch.set_state_name(new_patch.get_state_name())
+
+      # Delete patches from cache which are not in one of active
+      # states anymore.
+      for old_patch in old_cache:
+         del self.cache[old_patch.get_id()]
 
    def __str__(self):
        return 'Project(name=%s, id=%s)' % (self.name, self.id)
@@ -774,6 +822,7 @@ class Project():
       self.id = None
       self.pw = pw
       self.dry_run = dry_run
+      self.cache = {}
 
       logger.debug('project_list(%s, %d)' % (self.name, 0))
       projects = pw.rpc.project_list(self.name, 0)
@@ -2092,7 +2141,9 @@ class PWCLI():
 
       self.projects = []
       for project_name in self.project_names:
-         self.projects.append(Project(project_name, self.pw, self.dry_run))
+         project = Project(project_name, self.pw, self.dry_run)
+         project.update_cache()
+         self.projects.append(project)
 
       # select the first project as initial project
       self.project = self.projects[0]
