@@ -55,7 +55,7 @@ a
 ============================================================
 1 patches applied:
 
-789cd297e1e1 foo: new patch
+627a93a4aa38 foo: new patch
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
@@ -84,7 +84,7 @@ Timo Tiger <timo@example.com> wrote:
 
 Patch applied to data.git, thanks.
 
-789cd297e1e1 foo: new patch
+627a93a4aa38 foo: new patch
 
 -- 
 Sent by pwcli

@@ -12,7 +12,7 @@ add patches
 
 test git log
 1bb57a5d2297 foo: test 2
-81759c88d764 foo: new patch
+9e57ad58266c foo: new patch
 
 test git show HEAD
 commit b50b875961e94e1bb9b826425f950d405c45c3d5
@@ -20,7 +20,7 @@ commit b50b875961e94e1bb9b826425f950d405c45c3d5
 test git cherry-pick
 Commit id fb409caeb2ecda7176f3d6af845e87b1c60f6665 not found.
 1bb57a5d2297 foo: test 2
-81759c88d764 foo: new patch
+9e57ad58266c foo: new patch
 
 test git filter-branch
 
