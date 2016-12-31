@@ -35,12 +35,10 @@ import argparse
 import sys
 import os
 import os.path
-import ConfigParser
-import hashlib
-import email
-import re
+import stubslib
 
 gitdir = None
+gitrepo = None
 
 # stub repository directory layout, location defined in
 # STUB_GIT_DATADIR:
@@ -51,9 +49,7 @@ gitdir = None
 # config - config file, almost same format as in real git but using ConfigParser
 
 def cmd_branch(args):
-      f = open(os.path.join(gitdir, 'branches'), 'r')
-      print f.read()
-      f.close()
+      print '\n'.join(gitrepo.get_branches())
 
 def cmd_am_conflict(args):
       conflict_msg = '''Applying: foo: conflict patch
@@ -77,27 +73,11 @@ def cmd_am(args):
             # -s switch not used, exit
             sys.exit(0)
 
-      conflict_file = os.path.join(gitdir, 'conflict')
-      if os.path.exists(conflict_file):
+      if gitrepo.is_conflict_enabled():
             cmd_am_conflict(args)
-            os.remove(conflict_file)
+            gitrepo.remove_conflict_file()
       
-      objectsdir = os.path.join(gitdir, 'objects')
-      commitsfile = os.path.join(objectsdir, 'commits')
-
-      if not os.path.isdir(objectsdir):
-            os.mkdir(objectsdir)
-
-      buf = sys.stdin.read()
-      sha1sum = hashlib.sha1(buf).hexdigest()
-
-      f = open(commitsfile, 'a')
-      f.write(sha1sum + '\n')
-      f.close()
-
-      f = open(os.path.join(objectsdir, sha1sum), 'w')
-      f.write(buf)
-      f.close()
+      gitrepo.add_commit(sys.stdin.read())
 
 def cmd_config(args):
       if not args.get:
@@ -108,43 +88,16 @@ def cmd_config(args):
       section = names[0]
       name = names[1]
 
-      config = ConfigParser.RawConfigParser()
-      config.read(os.path.join(gitdir, 'config'))
-
-      if not config.has_option(section, name):
-            print '%s not found' % name
+      try:
+            print gitrepo.get_config(section, name)
+      except ValueError:
+            print '%s not found' % (name)
             sys.exit(1)
-
-      print config.get(section, name)
-
-def get_commit_subject(commit):
-      objectsdir = os.path.join(gitdir, 'objects')
-
-      f = open(os.path.join(objectsdir, commit), 'r')
-      buf = f.read()
-      f.close()
-
-      msg = email.message_from_string(buf)
-
-      subject = msg['Subject']
-
-      # remove all '[foo]' tags
-      subject = re.sub('\[.*\]', '', subject)
-      subject = subject.strip()
-
-      return subject
 
 def cmd_log(args):
       # FIXME: only support --oneline and --max-count for now
 
-      objectsdir = os.path.join(gitdir, 'objects')
-      commitsfile = os.path.join(objectsdir, 'commits')
-
-      f = open(commitsfile, 'r')
-      buf = f.read()
-      f.close()
-
-      commits = buf.splitlines()
+      commits = gitrepo.get_head_commits()
 
       if len(args.max_count) > 0:
             max_count = int(args.max_count[0])
@@ -154,9 +107,7 @@ def cmd_log(args):
             commits = commits[-max_count:]
 
             for commit in commits:
-                  subject = get_commit_subject(commit)
-
-                  print '%.12s %s' % (commit, subject)
+                  print commit.get_oneline()
 
 def cmd_show(args):
       # FIXME: only support HEAD for now
@@ -164,31 +115,13 @@ def cmd_show(args):
             print 'Unsupported commit id: %s' % (args.commitid)
             return
 
-      objectsdir = os.path.join(gitdir, 'objects')
-      commitsfile = os.path.join(objectsdir, 'commits')
-
-      f = open(commitsfile, 'r')
-      buf = f.read()
-      f.close()
-
-      commits = buf.splitlines()
-
-      print 'commit %s' % (commits[0])
+      print 'commit %s' % (gitrepo.get_head_commits()[0].id)
 
 def cmd_cherry_pick(args):
-      objectsdir = os.path.join(gitdir, 'objects')
-      commitsfile = os.path.join(objectsdir, 'commits')
-
-      commit_id = args.commit_id
-      commit_path = os.path.join(objectsdir, commit_id)
-
-      if not os.path.exists(commit_path):
-            print 'Commit id %s not found.' % (commit_id)
-            sys.exit(1)
-
-      f = open(commitsfile, 'a')
-      f.write(commit_id + '\n')
-      f.close()
+      try:
+            gitrepo.cherry_pick(args.commit_id)
+      except ValueError:
+            print 'Commit id %s not found.' % (args.commit_id)
 
 def cmd_checkout(args):
       # FIXME: just a dummy command for now
@@ -200,11 +133,14 @@ def cmd_filter_branch(args):
 
 def main():
       global gitdir
+      global gitrepo
 
       if 'STUB_GIT_DATADIR' in os.environ:
             gitdir = os.environ['STUB_GIT_DATADIR']
       else:
             gitdir = '.'
+
+      gitrepo = stubslib.GitRepository(gitdir)
 
       parser = argparse.ArgumentParser(description='git-stub', prog='',
                                        add_help=False)

@@ -79,6 +79,12 @@ def main():
       subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserverport'])
       print
 
+      print 'check return value from a config field which does not exist'
+      returncode = subprocess.call([stub_git, 'config', '--get', 'no.existance'])
+      if returncode == 0:
+            print 'Wrong return value from no.existance: %d' % (returncode)
+      print
+
       print 'add patches'
       f = open(os.path.join(patchesdir, '1001-review-foo-test-1.patch'), 'r')
       buf = f.read()
