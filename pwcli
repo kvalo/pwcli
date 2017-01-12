@@ -2058,6 +2058,9 @@ class PWCLI():
       parser.add_argument('--dry-run', action='store_true',
                           help='Don\'t modify anything')
 
+      parser.add_argument('--no-browser', action='store_true',
+                          help='do not open any patchwork pages on browser')
+
       parser.add_argument('--version', action='version',
                           version='%(prog)s ' + PWCLI_VERSION)
 
@@ -2106,7 +2109,7 @@ class PWCLI():
       else:
          self.default_filter_delegated = True
 
-      if self.config.has_option('general', 'browser'):
+      if self.config.has_option('general', 'browser') and not args.no_browser:
          self.browser = self.config.get('general', 'browser')
       else:
          self.browser = None
