@@ -36,6 +36,7 @@ import os.path
 import sys
 import subprocess
 import stubs
+import stubslib
 
 srcdir = os.environ['SRCDIR']
 datadir = os.environ['DATADIR']
@@ -70,6 +71,7 @@ def main():
       sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
       stgstub = stubs.StgStub()
+      gitdir = stgstub.gitdir
       stgstub.start()
 
       print 'import one patch'
@@ -77,7 +79,8 @@ def main():
       print
 
       print 'check patch was correctly imported'
-      print stgstub.get_patches_as_msg()[0]['Subject']
+      gitrepo = stubslib.GitRepository.load(gitdir)
+      print gitrepo.get_head_commits()[-1].get_subject()
       print
 
       print 'import a second patch'
@@ -96,7 +99,8 @@ def main():
       subprocess.call([stub_stg, 'show', 'foo-test-2'])
 
       print 'import should fail'
-      stgstub.set_import_failure(True)
+      gitrepo = stubslib.GitRepository.load(gitdir)
+      gitrepo.set_stg_import_failure(True)
       returncode = stg_import('1002-review-foo-test-2.patch')
       if returncode != 2:
             print 'wrong return code: %d' % (returncode)

@@ -4,7 +4,7 @@ Importing patch "foo-test-1" ... done
 Now at patch "foo-test-1"
 
 check patch was correctly imported
-[1/7] foo: test 1
+foo: test 1
 
 import a second patch
 Checking for changes in the working directory ... done

@@ -76,7 +76,7 @@ def main():
 
     args = parser.parse_args()
 
-    pythonpath = 'stubs'
+    pythonpath = os.path.join(os.getcwd(), 'stubs')
 
     if 'PYTHONPATH' in os.environ:
         pythonpath += ':%s' % (os.environ['PYTHONPATH'])

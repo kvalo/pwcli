@@ -34,114 +34,142 @@ import os
 import ConfigParser
 import email
 import re
+import pickle
+import collections
+
+GIT_DB_NAME = 'db.pickle'
 
 class GitCommit():
-    def __init__(self, commit_id, mbox):
+    def __init__(self, commit_id, mbox, stg_name=None):
         self.id = commit_id
         self.abbrev_id = '%.12s' % (self.id)
         self.mbox = mbox
+        self.stg_name = stg_name
 
-    def get_subject(self):
-        msg = email.message_from_string(self.mbox)
+        msg = email.message_from_string(mbox)
 
         subject = msg['Subject']
 
         # remove all '[foo]' tags
         subject = re.sub('\[.*\]', '', subject)
-        subject = subject.strip()
 
-        return subject
+        self.subject = subject.strip()
+        self.author = msg['From']
+        self.date = msg['Date']
+        self.body = msg.get_payload()
+
+    def get_subject(self):
+        return self.subject
 
     def get_oneline(self):
         return '%s %s' % (self.abbrev_id, self.get_subject())
-        
+
 class GitRepository():
+    @staticmethod
+    def load(gitdir):
+        path = os.path.join(gitdir, GIT_DB_NAME)
+        if not os.path.exists(path):
+            return GitRepository(gitdir)
+
+        f = open(path, 'r')
+        repo = pickle.load(f)
+        f.close()
+
+        return repo
+
     def __init__(self, gitdir):
         self.gitdir = gitdir
-        self.conflict_file = os.path.join(self.gitdir, 'conflict')
-        self.objectsdir = os.path.join(self.gitdir, 'objects')
-        self.commitsfile = os.path.join(self.objectsdir, 'commits')
 
         self.config = ConfigParser.RawConfigParser()
         self.config.read(os.path.join(gitdir, 'config'))
 
-        self.head = 'master'
+        # FIXME: default branch name should be 'master'
+        self.head = 'test-branch'
 
         # a dict where key is name of the branch and value is list of
         # GitCommit objects
         self.branches = {}
+        self.branches[self.head] = []
+
+        # TODO: this should per branch, not one for all branches
+        self.stg_patches = collections.OrderedDict()
 
         # all commits in a repository, key is commit id as string and
         # value is GitCommit object
         self.commits = {}
 
-        self.load_commits()
+        self.conflict = False
 
-    def load_commits(self):
-        self.branches[self.head] = []
+        self.stg_import_failure = False
 
-        # in case the repository is not initialised
-        if not os.path.exists(self.commitsfile):
-            return
-
-        f = open(self.commitsfile, 'r')
-        buf = f.read()
+    def dump(self):
+        path = os.path.join(self.gitdir, GIT_DB_NAME)
+        
+        f = open(path, 'w')
+        pickle.dump(self, f)
         f.close()
 
-        commit_ids = buf.splitlines()
-
-        for commit_id in commit_ids:
-            f = open(os.path.join(self.objectsdir, commit_id), 'r')
-            mbox = f.read()
-            f.close()
-
-            commit = GitCommit(commit_id, mbox)
-            self.commits[commit_id] = commit
-            self.branches[self.head].append(commit)
-
+    # FIXME: rename get_commits(self, branch='master')
     def get_head_commits(self):
         return self.branches[self.head]
 
     def get_branches(self):
-        f = open(os.path.join(self.gitdir, 'branches'), 'r')
-        branches = f.readlines()
-        f.close()
-
         # strip newline from all lines
         result = []
-        for branch in branches:
-            result.append(branch.strip())
+        for branch in self.branches:
+            if branch == self.head:
+                head = '*'
+            else:
+                head = ' '
+
+            s = '%c %s' % (head, branch.strip())
+            result.append(s)
 
         return result
 
     def is_conflict_enabled(self):
-        return os.path.exists(self.conflict_file)
+        return self.conflict
+
+    def enable_conflict(self):
+        self.conflict = True
+        self.dump()
 
     def remove_conflict_file(self):
-        os.remove(self.conflict_file)
+        self.conflict = False
+        self.dump()
 
-    def add_commit(self, buf):
-        if not os.path.isdir(self.objectsdir):
-            os.mkdir(self.objectsdir)
+    def _add_commit(self, commit_id, mbox, stg_name=None):
+        commit = GitCommit(commit_id, mbox, stg_name)
+        self.commits[commit_id] = commit
+        self.branches[self.head].append(commit)
 
-        sha1sum = hashlib.sha1(buf).hexdigest()
+        self.dump()
 
-        f = open(self.commitsfile, 'a')
-        f.write(sha1sum + '\n')
-        f.close()
+        return commit
 
-        f = open(os.path.join(self.objectsdir, sha1sum), 'w')
-        f.write(buf)
-        f.close()
+    def add_commit(self, mbox):
+        commit_id = hashlib.sha1(mbox).hexdigest()
+        return self._add_commit(commit_id, mbox)
+
+    def create_branch(self, branch):
+        self.branches[branch] = []
+        self.dump()
+
+    def change_branch(self, branch):
+        if branch not in self.branches:
+            raise ValueError('Branch %s does not exist')
+
+        self.head = branch
+        self.dump()
 
     # FIXME: this looks incomplete
     def cherry_pick(self, commit_id):
         if commit_id not in self.commits:
             raise ValueError('Commit %s not found.' % (commit_id))
 
-        f = open(self.commitsfile, 'a')
-        f.write(commit_id + '\n')
-        f.close()
+        commit = self.commits[commit_id]
+
+        self.branches[self.head].append(commit)
         
     def get_config(self, section, name):
         if not self.config.has_option(section, name):
@@ -149,3 +177,40 @@ class GitRepository():
 
         return self.config.get(section, name)
         
+    def import_stg_commit(self, mbox):
+
+        if self.stg_import_failure:
+            self.stg_import_failure = False
+            self.dump()
+            raise ValueError('stg_import_failure is set')
+
+        # create stgit name for the patch
+        msg = email.message_from_string(mbox)
+        patch_name = msg['Subject']
+        patch_name = patch_name.lower()
+
+        # remove all tags ("[foo]") before the title
+        patch_name = re.sub(r'^\s*(\[.*?\]\s*)*', '', patch_name)
+
+        # replace all non-alphanumeric characters with a hyphen
+        patch_name = re.sub(r'\W+', '-', patch_name)
+
+        # FIXME: Check if there's already a patch with that name and in
+        # that case append a number suffix patch_name with a number.
+
+        # strip out the date ('From nobody <date>') from the first line,
+        # which is added by email.message.Message.as_string(unixfrom=True)
+        buf_cleaned = re.sub(r'^From nobody.*\n', 'From nobody\n', mbox)
+        commit_id = hashlib.sha1(buf_cleaned).hexdigest()
+
+        commit = self._add_commit(commit_id, mbox, patch_name)
+        self.stg_patches[patch_name] = commit
+
+        self.dump()
+
+        return commit
+
+    def set_stg_import_failure(self, val):
+        self.stg_import_failure = val
+
+        self.dump()

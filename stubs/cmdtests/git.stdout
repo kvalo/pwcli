@@ -11,8 +11,6 @@ check return value from a config field which does not exist
 existance not found
 
 add patches
-['b50b875961e94e1bb9b826425f950d405c45c3d5', '1bb57a5d22971a425d4d3ef33023087ec99e4d77']
-
 test git log
 1bb57a5d2297 foo: test 2
 9e57ad58266c foo: new patch

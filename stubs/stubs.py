@@ -39,6 +39,7 @@ import time
 import logging
 import ConfigParser
 import email
+import stubslib
 
 # logging
 logging.basicConfig()
@@ -178,74 +179,18 @@ class StgStub():
             # the directory was not empty, ignore the error
             pass
 
-    def get_patches(self):
-        result = []
-
-        if not os.path.exists(self.stgpatchesfile):
-            return result
-
-        f = open(self.stgpatchesfile, 'r')
-        buf = f.read()
-        f.close()
-
-        patches = {}
-        for line in buf.splitlines():
-            l = line.split('\t')
-            if len(l) != 2:
-                raise Exception('Invalid format in %s' % (self.patchesfile))
-
-            commit_id = l[0]
-            patch_name = l[1]
-
-            patches[patch_name] = commit_id
-
-        for commit_id in patches.values():
-            path = os.path.join(self.objectsdir, commit_id)
-            f = open(path, 'r')
-            buf = f.read()
-            result.append(buf)
-            f.close()
-
-        return result
-
-    def get_patches_as_msg(self):
-        msgs = []
-
-        for patch in self.get_patches():
-            msgs.append(email.message_from_string(patch))
-
-        return msgs
-
     def set_import_failure(self, enabled):
-        path = os.path.join(self.stgdir, self.IMPORT_FAIL)
-        if enabled:
-            f = open(path, 'w')
-            f.write('1')
-            f.close()
-        else:
-            try:
-                os.remove(path)
-            except OSError:
-                pass
-
-    def get_import_failure(self, enabled):
-        path = os.path.join(self.stgdir, self.IMPORT_FAIL)
-        return os.path.exists(path)
-
+        gitrepo = stubslib.GitRepository.load(self.gitdir)
+        gitrepo.set_stg_import_failure(True)
+    
 class GitStub():
     def __init__(self, smtpport=SMTP_PORT):
         self.gitdir = os.path.join(testdatadir, 'git')
-        self.conflict_file = os.path.join(self.gitdir, 'conflict')
 
         logger.debug('GitStub(): gitdir=%r' % (self.gitdir))
 
         os.mkdir(self.gitdir)
         
-        # create branches file
-        f = open(os.path.join(self.gitdir, 'branches'), 'w')
-        f.write('* test-branch')
-        f.close()
-
         # create the config file
         self.config = ConfigParser.RawConfigParser()
         user = 'user'
@@ -291,9 +236,8 @@ class GitStub():
         shutil.rmtree(self.gitdir)
 
     def enable_conflict(self):
-        f = open(self.conflict_file, 'w')
-        f.write('enable\n')
-        f.close()
+        gitrepo = stubslib.GitRepository.load(self.gitdir)
+        gitrepo.enable_conflict()
 
 class SmtpdStub():
 

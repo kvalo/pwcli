@@ -125,6 +125,7 @@ def cmd_cherry_pick(args):
 
 def cmd_checkout(args):
       # FIXME: just a dummy command for now
+      # gitrepo.change_branch(args.branch)
       pass
 
 def cmd_filter_branch(args):
@@ -140,7 +141,7 @@ def main():
       else:
             gitdir = '.'
 
-      gitrepo = stubslib.GitRepository(gitdir)
+      gitrepo = stubslib.GitRepository.load(gitdir)
 
       parser = argparse.ArgumentParser(description='git-stub', prog='',
                                        add_help=False)

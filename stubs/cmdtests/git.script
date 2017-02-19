@@ -36,6 +36,7 @@ import os.path
 import sys
 import subprocess
 import stubs
+import stubslib
 
 def git_am(stub_git, buf):
       cmd = [stub_git, 'am', '-s']
@@ -93,11 +94,10 @@ def main():
       git_am(stub_git, buf)
 
       # verify patch
-      # f = open(os.path.join(gitdir, 'stub-git-am-s'), 'r')
-      # if buf != f.read():
-      #       print 'test-1.patch not correct'
-      #       sys.exit(2)
-      # f.close()
+      gitrepo = stubslib.GitRepository.load(gitdir)
+      if buf != gitrepo.get_head_commits()[0].mbox:
+            print 'test-1.patch not correct'
+            sys.exit(2)
 
       f = open(os.path.join(patchesdir, '1002-review-foo-test-2.patch'), 'r')
       buf = f.read()
@@ -105,18 +105,11 @@ def main():
 
       git_am(stub_git, buf)
 
-      # verify
-      f = open(os.path.join(gitdir, 'objects', 'commits'), 'r')
-      commits = f.read().splitlines()
-      print commits
-      f.close()
-      f = open(os.path.join(gitdir, 'objects', commits[-1]))
-      buf2 = f.read()
-      if buf != buf2:
-            print '1002-review-foo-test-2.patch not correct'
+      # verify patch
+      gitrepo = stubslib.GitRepository.load(gitdir)
+      if buf != gitrepo.get_head_commits()[-1].mbox:
+            print 'test-2.patch not correct'
             sys.exit(2)
-      f.close()
-      print
 
       print 'test git log'
       f = open(os.path.join(patchesdir, '1030-new-foo-new-patch.patch'), 'r')

@@ -38,6 +38,7 @@ import os
 import shutil
 import logging
 import hashlib
+import stubslib
 
 from pwcli import Git
 
@@ -63,12 +64,13 @@ class TestGit(unittest.TestCase):
         shutil.rmtree(self.datadir)
 
     def test_get_branch(self):
-        f = open(os.path.join(self.datadir, 'branches'), 'w')
-        f.write('  aaa\n')
-        f.write('  bbb\n')
-        f.write('* foo\n')
-        f.write('  ccc\n')
-        f.close()
+        gitrepo = stubslib.GitRepository.load(self.datadir)
+
+        gitrepo.create_branch('bbb')
+        gitrepo.create_branch('foo')
+        gitrepo.create_branch('ccc')
+
+        gitrepo.change_branch('foo')
 
         git = Git(False, self.dummy_output)
         branch = git.get_branch()
@@ -76,22 +78,28 @@ class TestGit(unittest.TestCase):
         self.assertEqual(branch, 'foo')
 
     def test_am(self):
-        mbox = 'dummy mbox file'
+        mbox = '''From nobody
+From: Ed Example <ed@example.com
+Subject: [PATCH] dummy test
+Date: Date: Thu,  10 Feb 2011 15:23:31 +0300
+
+foo body
+'''
         sha1sum = hashlib.sha1(mbox).hexdigest()
 
         git = Git(False, self.dummy_output)
         git.am(mbox)
 
-        f = open(os.path.join(self.datadir, 'objects', sha1sum), 'r')
-        self.assertEquals(f.read(), mbox)
-        f.close()
+        gitrepo = stubslib.GitRepository.load(self.datadir)
+        self.assertEquals(gitrepo.get_head_commits()[0].mbox, mbox)
 
     def test_am_dry_run(self):
         mbox = 'dummy mbox file'
         git = Git(True, self.dummy_output)
         git.am(mbox)
 
-        self.assertFalse(os.path.exists(os.path.join(self.datadir, 'stub-git-am-s')))
+        gitrepo = stubslib.GitRepository.load(self.datadir)
+        self.assertEquals(len(gitrepo.get_head_commits()), 0)
 
 if __name__ == '__main__':
     unittest.main()
