@@ -1,0 +1,71 @@
+Connecting to http://localhost:8105/
+User          : test (7477, 30052, 118371)
+Projects      : stub-test
+Tree          : data
+Branch        : test-branch
+New           : 18
+Review        : 7
+Upstream      : 0
+Deferred      : 5
+Total         : 30
+test-branch@data > list
+list
+[  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+[  2] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+[  3] [3/7] foo: test 3                                            2011-02-11 Timo Tiger   Under Review
+[  4] [4/7] foo: test 4                                            2011-02-11 Timo Tiger   Under Review
+[  5] [5/7] foo: test 5                                            2011-02-11 Timo Tiger   Under Review
+[  6] [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
+[  7] [7/7] foo: test 7                                            2011-02-11 Timo Tiger   Under Review
+test-branch@data > commit 1
+commit 1
+Retrieving patches (1/1)
+      [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+------------------------------------------------------------
+1 patches
+commit All/commit Individually/aBort? a
+a
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 foo.c: warning: is suspicious
+bar.c: warning: is suspicious
+aaa.c: warning: is suspicious
+bbb.c: warning: is suspicious
+Build successful with warnings
+============================================================
+1 patches applied:
+
+b50b875961e9 foo: test 1
+
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+a
+Patch set to Accepted
+test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> dino@example.com, list@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+References: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Patch applied to data.git, thanks.
+
+b50b875961e9 foo: test 1
+
+-- 
+Sent by pwcli
+http://localhost:8105/1001/
+----------------------------------------------------------------------
+
