@@ -44,13 +44,13 @@ def test_commit(ctxt, pwcli):
    pwcli.expect(cmdtestlib.PROMPT_COMMIT_ALL)
    pwcli.sendline('a')
 
-   # TODO: Accept patches
+   # Accept patches
    pwcli.expect(cmdtestlib.PROMPT_COMMIT_ACCEPT)
-   pwcli.sendline('c')
-   pwcli.expect(cmdtestlib.PROMPT_REVIEW_REASON)
-   pwcli.sendline()
+   pwcli.sendline('a')
 
-   # Confirm that we really want to accept
+   # Yes, we are sure
+   pwcli.expect_exact(cmdtestlib.PROMPT_ACCEPT_CONFIRM)
+   pwcli.sendline('y')
 
    pwcli.expect_prompt()
    pwcli.sendline('quit')

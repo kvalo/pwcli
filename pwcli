@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2015-2016, The Linux Foundation.
+# Copyright (c) 2015-2017, The Linux Foundation.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -1533,8 +1533,8 @@ class PWCLI():
       state_table = collections.OrderedDict()
 
       # Accepted state should not be shown if any of the patches
-      # failed apply or the build failed
-      if (len(patches) == len(applied)) and (builder == None or builder.returncode == 0):
+      # failed apply
+      if len(patches) == len(applied):
          state_table['Accepted'] =           PATCH_STATE_ACCEPTED
 
       state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
@@ -1548,8 +1548,31 @@ class PWCLI():
       state_table['rFc'] =                PATCH_STATE_RFC
       state_table['aBort'] =              STATE_ABORTED
 
-      state = self.show_choose_list(state_table)
+      while True:
+         state = self.show_choose_list(state_table)
+         result = None
 
+         if builder is not None:
+            if builder.returncode != 0:
+               result = 'Build FAILED!'
+            elif len(builder.stderrdata) > 0:
+               result = 'Build had WARNINGS!'
+
+         if state != PATCH_STATE_ACCEPTED or not result:
+            # no problems with patches
+            break
+
+         # patches had problems and user chose to ACCEPT them
+         self.output(result)
+
+         answer = self.input('Are you sure want to ACCEPT these patches [y/N]: ')
+         answer = answer.lower()
+         if answer == 'y':
+            # user is sure
+            break
+
+         # user it not sure, ask for the state again
+            
       if state != PATCH_STATE_ACCEPTED:
          # FIXME: git revert all patches in applied list as the user
          # didn't accept them
@@ -1726,6 +1749,9 @@ class PWCLI():
       # In pending mode Under Review state should be shown only if the
       # patches were succesfully applied to the pending branch and
       # there were no errors
+      #
+      # TODO: make it possible to accept patches even if builds
+      # fails/warns, just like cmd_commit() already does.
       if (self.pending_mode != 'stgit') or \
              ((len(patches) == len(applied)) and \
                  (builder == None or builder.returncode == 0)):

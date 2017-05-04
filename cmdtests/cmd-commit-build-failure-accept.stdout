@@ -32,10 +32,40 @@ Build failed: 1
 
 b50b875961e9 foo: test 1
 
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
-c
-Patch set to Changes Requested
-Reason (RET for no mail): 
-
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+a
+Build FAILED!
+Are you sure want to ACCEPT these patches [y/N]: y
+y
+Patch set to Accepted
 test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> dino@example.com, list@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/7] foo: test 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+References: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
+
+Dino Dinosaurus <dino@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Patch applied to data.git, thanks.
+
+b50b875961e9 foo: test 1
+
+-- 
+Sent by pwcli
+http://localhost:8105/1001/
+----------------------------------------------------------------------
 
