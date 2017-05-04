@@ -61,6 +61,7 @@ PROMPT_REPLY = 'Send/Edit/aBort?'
 PROMPT_REPLY_RETRY = 'Retry/aBort?'
 PROMPT_REVIEW_ACCEPT = 'Apply \d+ patches to the pending branch\? \[Apply/Skip/aBort\]'
 PROMPT_ACCEPT_CONFIRM = 'Are you sure want to ACCEPT these patches [y/N]: '
+PROMPT_UNDER_REVIEW_CONFIRM = 'Are you sure want to set these patches to UNDER REVIEW? [y/N]: '
 
 # the toplevel source directory
 srcdir = os.environ['SRCDIR']
