@@ -36,6 +36,7 @@ review 1
 ------------------------------------------------------------
 Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
 a
+Importing patches (1/1)
 Failed to apply patch: ['stg', 'import', '--mbox', '--sign'] failed: 2
 error: patch failed: drivers/net/wireless/foo/core.c:1714
 error: drivers/net/wireless/foo/core.c: patch does not apply
