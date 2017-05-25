@@ -1005,7 +1005,12 @@ class PWCLI():
 
       for patch in patches:
          if show_indexes:
-            index = '[%3d] ' % (i)
+            if patch.get_temp_ref():
+               pending = '*'
+            else:
+               pending = ' '
+
+            index = '%s[%3d] ' % (pending, i)
          elif show_ids:
             # this is not similarly aligned as the others but that
             # doesn't matter as we should use this only with emails
