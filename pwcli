@@ -91,6 +91,16 @@ PATCH_ACTIVE_STATES = [ PATCH_STATE_NEW,
                         PATCH_STATE_AWAITING_UPSTREAM,
                         PATCH_STATE_DEFERRED ]
 
+PATCH_STATE_KEYWORD_MAP = {
+   'review' :   [PATCH_STATE_UNDER_REVIEW],
+   'upstream' : [PATCH_STATE_AWAITING_UPSTREAM],
+   'new' :      [PATCH_STATE_NEW],
+   'deferred':  [PATCH_STATE_DEFERRED],
+
+   # "magic" state handled separately
+   'pending':   [],
+}
+
 STATE_ABORTED = 'Aborted'
 
 def utf8(buf):
@@ -1357,23 +1367,33 @@ class PWCLI():
    def cmd_list(self, args):
       logger.debug('cmd_list(args=%s)' % repr(args))
 
-      if args.state == 'review':
-         states = [PATCH_STATE_UNDER_REVIEW]
-      elif args.state == 'upstream':
-         states = [PATCH_STATE_AWAITING_UPSTREAM]
-      elif args.state == 'new':
-         states = [PATCH_STATE_NEW]
-      elif args.state == 'deferred':
-         states = [PATCH_STATE_DEFERRED]
-      elif args.state == 'pending':
-         # this magic state is handled separately below
-         states = []
-      elif args.state == None:
-         # default
-         states = PATCH_ACTIVE_STATES
+      state_filter = None
+      title_filter = None
+
+      if args.title is not None:
+         title_filter = args.title[0]
+
+      if args.state is not None:
+         state_filter = args.state[0]
+
+      # Note: the general filter overrules both title and state
+      # filters, so this needs to be last.
+      if args.filter is not None:
+         if PATCH_STATE_KEYWORD_MAP.has_key(args.filter):
+            state_filter = args.filter
+         else:
+            title_filter = args.filter
+         
+      if state_filter is not None:
+         if not PATCH_STATE_KEYWORD_MAP.has_key(state_filter):
+            self.output('Unknown state: %s' % state_filter)
+            return
+         
+         # user defined a state
+         states = PATCH_STATE_KEYWORD_MAP[state_filter]
       else:
-         self.output('Unknown state: %s' % args.state)
-         return
+         # no state defined, use all active states
+         states = PATCH_ACTIVE_STATES
 
       if self.default_filter_delegated:
          username = self.username
@@ -1387,7 +1407,7 @@ class PWCLI():
       if self.pending_mode == 'stgit':
          pending_patches = self.get_pending_branch_patches()
 
-         if args.state == 'pending':
+         if state_filter == 'pending':
             # Only show patches in pending branch, discard the rest.
             patches = pending_patches
             states = PATCH_ACTIVE_STATES
@@ -1408,8 +1428,8 @@ class PWCLI():
       # Filter patches. Make a copy of the list, we can't modify the
       # list we are currently iterating!
       for patch in list(patches):
-         if args.name:
-            match = re.search(args.name[0], patch.get_name(),
+         if title_filter:
+            match = re.search(title_filter, patch.get_name(),
                               re.MULTILINE | re.IGNORECASE)
             if not match:
                patches.remove(patch)
@@ -1424,7 +1444,7 @@ class PWCLI():
 
 
       # sort the patches
-      if args.state == 'pending':
+      if state_filter == 'pending':
          # sort based on order they are in the pending branch
          self.patches = sorted(patches, key=lambda x: x.stg_index)
       else:
@@ -2036,14 +2056,15 @@ class PWCLI():
       parser_list = subparsers.add_parser('list', 
                                           help='list patches from patchwork',
                                           description='Fetches patches from patchwork based on various filters and shows the summary with indexes')
-      parser_list.add_argument('state', metavar='STATE', nargs='?',
-                               help='optional patch state: new, review (default), upstream, deferred')
-      parser_list.add_argument('--name', '-n',
-                               metavar='REGEXP', nargs=1,
-                               help='show only patches with name (patch subject) matching REGEXP (case is ignored)')
-      parser_list.add_argument('--submitter', '-s',
-                               metavar='REGEXP', nargs=1,
-                               help='show only patches submitted by matching REGEXP (case is ignored)')
+      parser_list.add_argument('filter', nargs='?',
+                               help='filter either based state name (see --state) or regexp for patch title')
+      parser_list.add_argument('--state', '-s', nargs=1,
+                               help='filter list based on states: new, review, upstream, deferred')
+      parser_list.add_argument('--title', '-t', nargs=1,
+                               help='show only patches with title (subject) matching TITLE (regexp, case is ignored)')
+      parser_list.add_argument('--from', '-f', nargs=1,
+                               dest='submitter', metavar='FROM',
+                               help='show only patches submitted by FROM (regexp, case is ignored)')
       parser_list.set_defaults(func=self.cmd_list)
 
       parser_commit = subparsers.add_parser('commit',

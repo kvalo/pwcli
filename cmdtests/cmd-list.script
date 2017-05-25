@@ -43,11 +43,39 @@ def test_list(ctxt, pwcli):
    pwcli.expect_prompt()
    pwcli.sendline('list deferred')
    pwcli.expect_prompt()
-   pwcli.sendline('list --name foo:.*2')
-   pwcli.expect_prompt()
-   pwcli.sendline('list --submitter timo new')
 
+   # --state switch
+   pwcli.sendline('list --state deferred')
    pwcli.expect_prompt()
+
+   # --title switch
+   pwcli.sendline('list --title foo:.*2')
+   pwcli.expect_prompt()
+
+   # --from switch
+   pwcli.sendline('list --from timo new')
+   pwcli.expect_prompt()
+
+   # show only patches which 'blah' in title
+   pwcli.sendline('list blah')
+   pwcli.expect_prompt()
+
+   # from 'D.no and in review state
+   pwcli.sendline('list -f D.no review')
+   pwcli.expect_prompt()
+
+   # from 'D.no and in review state, but with -s switch
+   pwcli.sendline('list -f D.no -s review')
+   pwcli.expect_prompt()
+
+   # from timo, in review state and with "6" in title
+   pwcli.sendline('list --from Timo --state review --title 6')
+   pwcli.expect_prompt()
+
+   # from timo, in review state and with "6" in title but with general filter
+   pwcli.sendline('list --from Timo --title 6 review')
+   pwcli.expect_prompt()
+
    pwcli.sendline('quit')
 
 if __name__ == "__main__":

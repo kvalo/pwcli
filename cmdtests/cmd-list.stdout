@@ -53,12 +53,48 @@ list deferred
  [  3] [3/4] koo: yyy bbb cc 3                                      2011-02-11 Dino Dinosau Deferred
  [  4] [4/4] koo: yyy bbb cc 4                                      2011-02-11 Dino Dinosau Deferred
  [  5] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
-test-branch@data > list --name foo:.*2
-list --name foo:.*2
+test-branch@data > list --state deferred
+list --state deferred
+ [  1] [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
+ [  2] [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
+ [  3] [3/4] koo: yyy bbb cc 3                                      2011-02-11 Dino Dinosau Deferred
+ [  4] [4/4] koo: yyy bbb cc 4                                      2011-02-11 Dino Dinosau Deferred
+ [  5] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
+test-branch@data > list --title foo:.*2
+list --title foo:.*2
  [  1] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
-test-branch@data > list --submitter timo new
-list --submitter timo new
+test-branch@data > list --from timo new
+list --from timo new
  [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
  [  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
  [  3] foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
+test-branch@data > list blah
+list blah
+ [  1] [1/15] bar: blah blah blah 1                                 2011-02-11 Dino Dinosau New
+ [  2] [2/15] bar: blah blah blah 2                                 2011-02-11 Dino Dinosau New
+ [  3] [3/15] bar: blah blah blah 3                                 2011-02-11 Dino Dinosau New
+ [  4] [4/15] bar: blah blah blah 4                                 2011-02-11 Dino Dinosau New
+ [  5] [5/15] bar: blah blah blah 5                                 2011-02-11 Dino Dinosau New
+ [  6] [6/15] bar: blah blah blah 6                                 2011-02-11 Dino Dinosau New
+ [  7] [7/15] bar: blah blah blah 7                                 2011-02-11 Dino Dinosau New
+ [  8] [8/15] bar: blah blah blah 8                                 2011-02-11 Dino Dinosau New
+ [  9] [9/15] bar: blah blah blah 9                                 2011-02-11 Dino Dinosau New
+ [ 10] [10/15] bar: blah blah blah 10                               2011-02-11 Dino Dinosau New
+ [ 11] [11/15] bar: blah blah blah 11                               2011-02-11 Dino Dinosau New
+ [ 12] [12/15] bar: blah blah blah 12                               2011-02-11 Dino Dinosau New
+ [ 13] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
+ [ 14] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
+ [ 15] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
+test-branch@data > list -f D.no review
+list -f D.no review
+ [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+test-branch@data > list -f D.no -s review
+list -f D.no -s review
+ [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+test-branch@data > list --from Timo --state review --title 6
+list --from Timo --state review --title 6
+ [  1] [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
+test-branch@data > list --from Timo --title 6 review
+list --from Timo --title 6 review
+ [  1] [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
 test-branch@data > quit
