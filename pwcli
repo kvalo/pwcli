@@ -294,6 +294,19 @@ class GitError(Exception):
 
 class Stg():
 
+   def rollback(self):
+      cmd = ['stg', 'delete', '--top']
+
+      logger.debug('stg.rollback():')
+
+      p = RunProcess(cmd)
+
+      ret = p.returncode
+      logger.debug('%s returned: %s' % (cmd, ret))
+
+      if ret != 0:
+         raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
+      
    def import_patch(self, mbox):
       cmd = ['stg', 'import', '--mbox', '--sign']
 
@@ -359,6 +372,19 @@ class Stg():
 
 class Git():
 
+   def rollback(self):
+      cmd = ['git', 'reset', '--hard', 'HEAD^']
+
+      logger.debug('git.rollback():')
+
+      p = RunProcess(cmd)
+
+      ret = p.returncode
+      logger.debug('%s returned: %s' % (cmd, ret))
+
+      if ret != 0:
+         raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
+   
    def get_commit(self, commitid):
       result = {}
       cmd = ['git', 'show', commitid]
@@ -1607,6 +1633,10 @@ class PWCLI():
          self.output('')
          self.output(self.git.log_oneline(len(applied)))
          self.output('')
+      else:
+         # not all patches were applied due to a problem, remove the already applied
+         for i in range(len(applied)):
+            self.git.rollback()
 
       # need to use ordered dict so that the list is shown in correct order
       state_table = collections.OrderedDict()
@@ -1831,6 +1861,9 @@ class PWCLI():
                self.output('Failed to apply patch: %s' % e)
                self.output('%s' % e.log)
                faillog += e.log
+
+               for i in range(len(applied)):
+                  self.stg.rollback()
 
          # Skip
          elif answer == 's':
