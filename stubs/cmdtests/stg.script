@@ -100,7 +100,7 @@ def main():
 
       print 'import should fail'
       gitrepo = stubslib.GitRepository.load(gitdir)
-      gitrepo.set_stg_import_failure(True)
+      gitrepo.set_stg_import_failure(1)
       returncode = stg_import('1002-review-foo-test-2.patch')
       if returncode != 2:
             print 'wrong return code: %d' % (returncode)

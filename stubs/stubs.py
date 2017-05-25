@@ -179,9 +179,9 @@ class StgStub():
             # the directory was not empty, ignore the error
             pass
 
-    def set_import_failure(self, enabled):
+    def set_import_failure(self, val):
         gitrepo = stubslib.GitRepository.load(self.gitdir)
-        gitrepo.set_stg_import_failure(True)
+        gitrepo.set_stg_import_failure(val)
     
 class GitStub():
     def __init__(self, smtpport=SMTP_PORT):

@@ -100,7 +100,7 @@ class GitRepository():
 
         self.conflict = False
 
-        self.stg_import_failure = False
+        self.stg_import_failure = 0
 
     def dump(self):
         path = os.path.join(self.gitdir, GIT_DB_NAME)
@@ -179,10 +179,13 @@ class GitRepository():
         
     def import_stg_commit(self, mbox):
 
-        if self.stg_import_failure:
-            self.stg_import_failure = False
+        if self.stg_import_failure > 0:
+            self.stg_import_failure -= 1
             self.dump()
-            raise ValueError('stg_import_failure is set')
+
+            if self.stg_import_failure == 0:
+                # this import should fail
+                raise ValueError('stg_import_failure is set')
 
         # create stgit name for the patch
         msg = email.message_from_string(mbox)
@@ -210,6 +213,8 @@ class GitRepository():
 
         return commit
 
+    # An integer which patch import should fail (3 = the third import
+    # fails)
     def set_stg_import_failure(self, val):
         self.stg_import_failure = val
 

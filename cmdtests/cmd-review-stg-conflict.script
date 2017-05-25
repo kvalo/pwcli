@@ -40,7 +40,7 @@ def test_stg(ctxt, pwcli):
    pwcli.sendline('review 1')
 
    # the next stg import must fail
-   ctxt.stgit.set_import_failure(True)
+   ctxt.stgit.set_import_failure(1)
 
    # Apply
    pwcli.expect(cmdtestlib.PROMPT_REVIEW_ACCEPT)
