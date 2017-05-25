@@ -106,6 +106,10 @@ def main():
             print 'wrong return code: %d' % (returncode)
             sys.exit(1)
       print
+
+      print 'test delete'
+      subprocess.call([stub_stg, 'delete', '--top'])
+      subprocess.call([stub_stg, 'show'])
       
       # cleanup
       stgstub.cleanup()

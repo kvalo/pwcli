@@ -213,6 +213,12 @@ class GitRepository():
 
         return commit
 
+    def delete_stg_top_commit(self):
+        # remote the last item from the dict
+        self.stg_patches.popitem()
+        self.branches[self.head].pop()
+        self.dump()
+
     # An integer which patch import should fail (3 = the third import
     # fails)
     def set_stg_import_failure(self, val):
