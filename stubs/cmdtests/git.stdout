@@ -16,7 +16,7 @@ test git log
 9e57ad58266c foo: new patch
 
 test git show HEAD
-commit b50b875961e94e1bb9b826425f950d405c45c3d5
+commit 9e57ad58266c61353ba72be37a13b74163add18b
 
 test git cherry-pick
 Commit id fb409caeb2ecda7176f3d6af845e87b1c60f6665 not found.
@@ -36,4 +36,7 @@ Patch failed at 0001 foo: conflict patch
 When you have resolved this problem run "git am --resolved".
 If you would prefer to skip this patch, instead run "git am --skip".
 To restore the original branch and stop patching run "git am --abort".
+
+test git reset
+commit 1bb57a5d22971a425d4d3ef33023087ec99e4d77
 

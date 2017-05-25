@@ -151,6 +151,10 @@ class GitRepository():
         commit_id = hashlib.sha1(mbox).hexdigest()
         return self._add_commit(commit_id, mbox)
 
+    def delete_top_commit(self):
+        self.branches[self.head].pop()
+        self.dump()
+    
     def create_branch(self, branch):
         self.branches[branch] = []
         self.dump()
@@ -216,8 +220,7 @@ class GitRepository():
     def delete_stg_top_commit(self):
         # remote the last item from the dict
         self.stg_patches.popitem()
-        self.branches[self.head].pop()
-        self.dump()
+        self.delete_top_commit()
 
     # An integer which patch import should fail (3 = the third import
     # fails)

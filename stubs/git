@@ -115,7 +115,7 @@ def cmd_show(args):
             print 'Unsupported commit id: %s' % (args.commitid)
             return
 
-      print 'commit %s' % (gitrepo.get_head_commits()[0].id)
+      print 'commit %s' % (gitrepo.get_head_commits()[-1].id)
 
 def cmd_cherry_pick(args):
       try:
@@ -131,6 +131,17 @@ def cmd_checkout(args):
 def cmd_filter_branch(args):
       # FIXME: just a dummy command for now
       pass
+
+def cmd_reset(args):
+      if not args.hard:
+            print 'Only --reset switch is supported'
+            sys.exit(1)
+
+      if args.commit != 'HEAD^':
+            print 'Only HEAD^ commit is supported'
+            sys.exit(1)
+
+      gitrepo.delete_top_commit()
 
 def main():
       global gitdir
@@ -182,6 +193,11 @@ def main():
       parser_filter_branch.add_argument('--force', action='store_true')
       parser_filter_branch.add_argument('--msg-filter', nargs=2)
       parser_filter_branch.set_defaults(func=cmd_filter_branch)
+
+      parser_reset_branch = subparsers.add_parser('reset')
+      parser_reset_branch.add_argument('--hard', action='store_true')
+      parser_reset_branch.add_argument('commit')
+      parser_reset_branch.set_defaults(func=cmd_reset)
 
       args = parser.parse_args()
 

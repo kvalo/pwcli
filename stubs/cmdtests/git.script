@@ -139,6 +139,11 @@ def main():
       git_am(stub_git, buf)
       print
 
+      print 'test git reset'
+      subprocess.call([stub_git, 'reset', '--hard', 'HEAD^'])
+      subprocess.call([stub_git, 'show', 'HEAD'])
+      print
+
       # cleanup
       gitstub.cleanup()
 
