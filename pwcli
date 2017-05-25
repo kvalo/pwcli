@@ -1356,6 +1356,9 @@ class PWCLI():
          states = [PATCH_STATE_NEW]
       elif args.state == 'deferred':
          states = [PATCH_STATE_DEFERRED]
+      elif args.state == 'pending':
+         # this magic state is handled separately below
+         states = []
       elif args.state == None:
          # default
          states = PATCH_ACTIVE_STATES
@@ -1371,23 +1374,27 @@ class PWCLI():
       patches = []
       for state in states:
          patches += self.project.get_patches(state, username)
-         
+
       if self.pending_mode == 'stgit':
          pending_patches = self.get_pending_branch_patches()
 
-         # pending branch can contain patches from the projects than
-         # the currently selected, include those patches also to the
-         # results.
-         for patch in pending_patches:
-            if patch in patches:
-               # the patch is already in list
-               break
+         if args.state == 'pending':
+            # Only show patches in pending branch, discard the rest.
+            patches = pending_patches
+            states = PATCH_ACTIVE_STATES
+         else:
+            # As pending branch can contain patches from the projects
+            # other than the currently selected, include those patches
+            # also to the results.
+            for patch in pending_patches:
+               if patch in patches:
+                  # the patch is already in list
+                  break
 
-            if patch.get_state_name() not in states:
-               break
+               if patch.get_state_name() not in states:
+                  break
             
-            patches.append(patch)
-
+               patches.append(patch)
 
       # Filter patches. Make a copy of the list, we can't modify the
       # list we are currently iterating!
