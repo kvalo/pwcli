@@ -35,7 +35,7 @@ import cmdtestlib
 
 def test_review(ctxt, pwcli):
    pwcli.expect_prompt()
-   pwcli.sendline('list')
+   pwcli.sendline('list review')
 
    pwcli.expect_prompt()
    pwcli.sendline('review 1-2')

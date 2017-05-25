@@ -86,6 +86,11 @@ PATCH_STATE_AWAITING_UPSTREAM = 'Awaiting Upstream'
 PATCH_STATE_SUPERSEDED = 'Superseded'
 PATCH_STATE_DEFERRED = 'Deferred'
 
+PATCH_ACTIVE_STATES = [ PATCH_STATE_NEW,
+                        PATCH_STATE_UNDER_REVIEW,
+                        PATCH_STATE_AWAITING_UPSTREAM,
+                        PATCH_STATE_DEFERRED ]
+
 STATE_ABORTED = 'Aborted'
 
 def utf8(buf):
@@ -1291,8 +1296,6 @@ class PWCLI():
 
       stg_series = self.stg.get_series()
 
-      # FIXME: add "progress bar" as patches are retrieved from the
-      # server and can take sometime
       for stg_commit_name in stg_series:
          if not stg_commit_name in self.stg_cache:
             c = self.stg.get_commit(stg_commit_name)
@@ -1306,6 +1309,7 @@ class PWCLI():
 
          patchwork_id = int(c['patchwork_id'])
 
+         # the patch can be in any of the projects configured
          for project in self.projects:
             patch = project.get_patch(patchwork_id)
             if patch:
@@ -1345,16 +1349,16 @@ class PWCLI():
       logger.debug('cmd_list(args=%s)' % repr(args))
 
       if args.state == 'review':
-         state = PATCH_STATE_UNDER_REVIEW
+         states = [PATCH_STATE_UNDER_REVIEW]
       elif args.state == 'upstream':
-         state = PATCH_STATE_AWAITING_UPSTREAM
+         states = [PATCH_STATE_AWAITING_UPSTREAM]
       elif args.state == 'new':
-         state = PATCH_STATE_NEW
+         states = [PATCH_STATE_NEW]
       elif args.state == 'deferred':
-         state = PATCH_STATE_DEFERRED
+         states = [PATCH_STATE_DEFERRED]
       elif args.state == None:
          # default
-         state = PATCH_STATE_UNDER_REVIEW
+         states = PATCH_ACTIVE_STATES
       else:
          self.output('Unknown state: %s' % args.state)
          return
@@ -1364,30 +1368,46 @@ class PWCLI():
       else:
          username = None
 
-      if self.pending_mode == 'stgit' and state == PATCH_STATE_UNDER_REVIEW:
-         self.patches = self.get_pending_branch_patches()
-      else:
-         self.patches = self.project.get_patches(state, username)
+      patches = []
+      for state in states:
+         patches += self.project.get_patches(state, username)
+         
+      if self.pending_mode == 'stgit':
+         pending_patches = self.get_pending_branch_patches()
+
+         # pending branch can contain patches from the projects than
+         # the currently selected, include those patches also to the
+         # results.
+         for patch in pending_patches:
+            if patch in patches:
+               # the patch is already in list
+               break
+
+            if patch.get_state_name() not in states:
+               break
+            
+            patches.append(patch)
+
 
       # Filter patches. Make a copy of the list, we can't modify the
       # list we are currently iterating!
-      for patch in list(self.patches):
+      for patch in list(patches):
          if args.name:
             match = re.search(args.name[0], patch.get_name(),
                               re.MULTILINE | re.IGNORECASE)
             if not match:
-               self.patches.remove(patch)
+               patches.remove(patch)
                continue
 
          if args.submitter:
             match = re.search(args.submitter[0], patch.get_submitter(),
                               re.MULTILINE | re.IGNORECASE)
             if not match:
-               self.patches.remove(patch)
+               patches.remove(patch)
                continue
 
       # sort the patches, for now just simple sorting
-      self.patches = sorted(self.patches)
+      self.patches = sorted(patches)
 
       self.output(self.create_patchlist_as_string(self.patches,
                                                   show_indexes=True))

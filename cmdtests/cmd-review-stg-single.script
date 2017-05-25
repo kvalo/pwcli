@@ -44,7 +44,7 @@ def test_stg(ctxt, pwcli):
    pwcli.sendline('u')
 
    pwcli.expect_prompt()
-   pwcli.sendline('list')
+   pwcli.sendline('list review')
 
    pwcli.expect_prompt()
    pwcli.sendline('commit 1')
