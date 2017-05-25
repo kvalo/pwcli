@@ -765,6 +765,7 @@ class Patch():
 
       self.mbox = None
       self.temp_ref = None
+      self.stg_index = None
 
 class Project():
    def _get_patches(self, filters, username=None):
@@ -1301,6 +1302,7 @@ class PWCLI():
 
       stg_series = self.stg.get_series()
 
+      i = 0
       for stg_commit_name in stg_series:
          if not stg_commit_name in self.stg_cache:
             c = self.stg.get_commit(stg_commit_name)
@@ -1337,8 +1339,10 @@ class PWCLI():
          # to the cache the commit id will change and we would
          # erroneously commit an older version of the patch!
          patch.set_temp_ref(c['commit_id'])
+         patch.stg_index = i
 
          patches.append(patch)
+         i += 1
 
       return patches
 
@@ -1418,8 +1422,14 @@ class PWCLI():
                patches.remove(patch)
                continue
 
-      # sort the patches, for now just simple sorting
-      self.patches = sorted(patches)
+
+      # sort the patches
+      if args.state == 'pending':
+         # sort based on order they are in the pending branch
+         self.patches = sorted(patches, key=lambda x: x.stg_index)
+      else:
+         # for now just simple sorting
+         self.patches = sorted(patches)
 
       self.output(self.create_patchlist_as_string(self.patches,
                                                   show_indexes=True))
