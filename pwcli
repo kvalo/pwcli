@@ -845,6 +845,10 @@ class Project():
 
          # check the state and update it if changed
          if patch.get_state_name() != new_patch.get_state_name():
+            # FIXME: Doesn't set_state_name() also make an unnecessary
+            # rpc call to ther server here? That's wasting time. Ok,
+            # currently this doesn't apply as update_cache() is called
+            # only once during startup.
             patch.set_state_name(new_patch.get_state_name())
 
       # Delete patches from cache which are not in one of active
@@ -1452,7 +1456,13 @@ class PWCLI():
       builder = None
 
       try:
+         i = 1
          for patch in patches:
+            # show progressbar if applying all patches in one go
+            if not commit_individually:
+               self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
+                           newline=False)
+               
 
             # edit can be chosen multiple times, that's why the loop
             while commit_individually:
@@ -1507,8 +1517,15 @@ class PWCLI():
             patch.set_temp_ref(c['commit_id'])
 
             applied.append(patch)
+            i += 1
 
+         # newline to clear the "progress bar"
+         self.output('')
+         
       except GitError as e:
+         # newline to clear the "progress bar"
+         self.output('')
+
          self.output('Failed to apply the patch: %s' % e)
          self.output('%s' % e.log)
          faillog += e.log

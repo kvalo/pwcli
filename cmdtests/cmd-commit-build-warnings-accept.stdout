@@ -25,6 +25,7 @@ commit 1
 1 patches
 commit All/commit Individually/aBort? a
 a
+Commiting patches (1/1)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 foo.c: warning: is suspicious
 bar.c: warning: is suspicious
 aaa.c: warning: is suspicious
