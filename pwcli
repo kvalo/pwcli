@@ -1720,20 +1720,21 @@ class PWCLI():
             # git checkout self.pending_branch
             self.git.checkout(self.pending_branch)
          
-            for patch in patches:
-               try:
+            try:
+               for patch in patches:
                   self.stg.import_patch(patch.get_mbox_for_stgit())
                   applied.append(patch)
-               except GitError as e:
-                  self.output('Failed to apply patch: %s' % e)
-                  self.output('%s' % e.log)
-                  faillog += e.log
                   
-            # run a build test
-            builder = self.run_build_script()
+               # run a build test
+               builder = self.run_build_script()
 
-            if builder and len(builder.stderrdata) > 0:
-               faillog += builder.stderrdata
+               if builder and len(builder.stderrdata) > 0:
+                  faillog += builder.stderrdata
+
+            except GitError as e:
+               self.output('Failed to apply patch: %s' % e)
+               self.output('%s' % e.log)
+               faillog += e.log
 
          # Skip
          elif answer == 's':

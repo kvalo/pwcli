@@ -29,12 +29,16 @@ list new
 [ 16] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
 [ 17] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
 [ 18] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
-test-branch@data > review 1
-review 1
-Retrieving patches (1/1)
+test-branch@data > review 1-5
+review 1-5
+Retrieving patches (1/5)Retrieving patches (2/5)Retrieving patches (3/5)Retrieving patches (4/5)Retrieving patches (5/5)
       foo: new patch                                               2011-02-11 Timo Tiger   New
+      foo: minor change with CC                                    2011-02-11 Timo Tiger   New
+      foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
+      [1/15] bar: blah blah blah 1                                 2011-02-11 Dino Dinosau New
+      [2/15] bar: blah blah blah 2                                 2011-02-11 Dino Dinosau New
 ------------------------------------------------------------
-Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
+Apply 5 patches to the pending branch? [Apply/Skip/aBort] a
 a
 Failed to apply patch: ['stg', 'import', '--mbox', '--sign'] failed: 2
 error: patch failed: drivers/net/wireless/foo/core.c:1714
@@ -51,9 +55,9 @@ stg import: Diff does not apply cleanly
 
 Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicabble/rFc/aBort? c
 c
-Patch set to Changes Requested
-Reason (RET for no mail): Failed to import
-Failed to import
+5 patches set to Changes Requested
+Reason (RET for no mail): Patch 3 did not apply:
+Patch 3 did not apply:
 ============================================================
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
@@ -73,7 +77,7 @@ Timo Tiger <timo@example.com> wrote:
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
 
-Failed to import
+Patch 3 did not apply:
 
 error: patch failed: drivers/net/wireless/foo/core.c:1714
 error: drivers/net/wireless/foo/core.c: patch does not apply
@@ -87,7 +91,13 @@ error: patch failed: drivers/net/wireless/foo/mac.c:6924
 error: drivers/net/wireless/foo/mac.c: patch does not apply
 stg import: Diff does not apply cleanly
 
-Patch set to Changes Requested.
+5 patches set to Changes Requested.
+
+1030 foo: new patch
+1031 foo: minor change with CC
+1032 foo: another minor change with multiple To
+1040 [1/15] bar: blah blah blah 1
+1041 [2/15] bar: blah blah blah 2
 
 -- 
 Sent by pwcli
@@ -100,3 +110,51 @@ Envelope To: ['Timo Tiger <timo@example.com>', 'list@example.com']
 Send/Edit/aBort? s
 s
 test-branch@data > quit
+mail 0:
+----------------------------------------------------------------------
+test@example.com -> timo@example.com, list@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: foo: new patch
+From: Timo Testi <test@example.com>
+In-Reply-To: <22222@example.com>
+References: <22222@example.com>
+To: Timo Tiger <timo@example.com>
+Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
+
+Timo Tiger <timo@example.com> wrote:
+> 
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+Patch 3 did not apply:
+
+error: patch failed: drivers/net/wireless/foo/core.c:1714
+error: drivers/net/wireless/foo/core.c: patch does not apply
+error: patch failed: drivers/net/wireless/foo/core.h:635
+error: drivers/net/wireless/foo/core.h: patch does not apply
+error: patch failed: drivers/net/wireless/foo/debug.c:1427
+error: drivers/net/wireless/foo/debug.c: patch does not apply
+error: patch failed: drivers/net/wireless/foo/debug.h:59
+error: drivers/net/wireless/foo/debug.h: patch does not apply
+error: patch failed: drivers/net/wireless/foo/mac.c:6924
+error: drivers/net/wireless/foo/mac.c: patch does not apply
+stg import: Diff does not apply cleanly
+
+5 patches set to Changes Requested.
+
+1030 foo: new patch
+1031 foo: minor change with CC
+1032 foo: another minor change with multiple To
+1040 [1/15] bar: blah blah blah 1
+1041 [2/15] bar: blah blah blah 2
+
+-- 
+Sent by pwcli
+http://localhost:8105/1030/
+----------------------------------------------------------------------
+
