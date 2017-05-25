@@ -1599,14 +1599,21 @@ class PWCLI():
          self.output('Aborted.')
          return
 
+      i = 1
       for patch in patches:
+         self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
+                     newline=False)
          patch.set_state_name(state)
+         i += 1
 
          if state == PATCH_STATE_ACCEPTED:
             # Set commit_ref so that the commit id is visible in the
             # web interface and it's possible to find the patchwork id
             # based on commit id.
             patch.set_commit_ref(patch.get_temp_ref())
+
+      # newline to clear the "progress bar"
+      self.output('')
 
       self.output('%s set to %s' % (get_patches_plural(len(patches)),
                                     state))
@@ -1818,8 +1825,14 @@ class PWCLI():
          self.output('Aborted.')
          return
 
+      i = 1
       for patch in patches:
+         self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
+                     newline=False)
          patch.set_state_name(state)
+
+      # newline to clear the "progress bar"
+      self.output('')
 
       self.output('%s set to %s' % (get_patches_plural(len(patches)),
                                     state))

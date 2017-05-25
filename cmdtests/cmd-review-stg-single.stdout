@@ -40,6 +40,7 @@ a
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
 u
+Setting patch state (1/1)
 Patch set to Under Review
 test-branch@data > list
 list
@@ -61,6 +62,7 @@ a
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
+Setting patch state (1/1)
 Patch set to Accepted
 test-branch@data > quit
 mail 0:

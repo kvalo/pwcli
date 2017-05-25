@@ -46,6 +46,7 @@ a
 Build had WARNINGS!
 Are you sure want to ACCEPT these patches [y/N]: Y
 Y
+Setting patch state (1/1)
 Patch set to Accepted
 test-branch@data > quit
 mail 0:

@@ -38,6 +38,7 @@ a
 Build FAILED!
 Are you sure want to ACCEPT these patches [y/N]: y
 y
+Setting patch state (1/1)
 Patch set to Accepted
 test-branch@data > quit
 mail 0:

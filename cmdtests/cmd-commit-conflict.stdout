@@ -37,6 +37,7 @@ Patch failed at 0001 foo: conflict patch
 
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
 c
+Setting patch state (1/1)
 Patch set to Changes Requested
 Reason (RET for no mail): Failed to apply
 Failed to apply

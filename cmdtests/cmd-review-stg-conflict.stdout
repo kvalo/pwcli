@@ -52,6 +52,7 @@ stg import: Diff does not apply cleanly
 
 Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicabble/rFc/aBort? c
 c
+Setting patch state (1/1)
 Patch set to Changes Requested
 Reason (RET for no mail): Failed to import
 Failed to import
