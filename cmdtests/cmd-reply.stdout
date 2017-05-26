@@ -3,13 +3,13 @@ Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
-Branch        : test-branch
+Branch        : master
 New           : 18
 Review        : 7
 Upstream      : 0
 Deferred      : 5
 Total         : 30
-test-branch@data > list new
+master@data > list new
 list new
  [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
  [  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
@@ -29,7 +29,7 @@ list new
  [ 16] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
  [ 17] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
  [ 18] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
-test-branch@data > reply 1
+master@data > reply 1
 reply 1
 ============================================================
 Content-Type: text/plain; charset="utf-8"
@@ -90,7 +90,7 @@ Envelope To: ['Timo Tiger <timo@example.com>', 'list@example.com']
 Send/Edit/aBort? s
 * list and two persons CCed
 s
-test-branch@data > list new
+master@data > list new
 list new
  [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
  [  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
@@ -110,7 +110,7 @@ list new
  [ 16] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
  [ 17] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
  [ 18] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
-test-branch@data > reply 2
+master@data > reply 2
 reply 2
 ============================================================
 Content-Type: text/plain; charset="utf-8"
@@ -171,7 +171,7 @@ Envelope To: ['Timo Tiger <timo@example.com>', 'list@example.com', 'john@example
 Send/Edit/aBort? s
 * two lists CCed
 s
-test-branch@data > list new
+master@data > list new
 list new
  [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
  [  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
@@ -191,7 +191,7 @@ list new
  [ 16] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
  [ 17] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
  [ 18] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
-test-branch@data > reply 3
+master@data > reply 3
 reply 3
 ============================================================
 Content-Type: text/plain; charset="utf-8"
@@ -251,7 +251,7 @@ Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Timo Tiger <timo@example.com>', 'list@example.com', 'list-second@example.com']
 Send/Edit/aBort? s
 s
-test-branch@data > quit
+master@data > quit
 mail 0:
 ----------------------------------------------------------------------
 test@example.com -> timo@example.com, list@example.com

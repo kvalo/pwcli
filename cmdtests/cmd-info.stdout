@@ -2,21 +2,21 @@ Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
-Branch        : test-branch
+Branch        : master
 New           : 18
 Review        : 7
 Upstream      : 0
 Deferred      : 5
 Total         : 30
-test-branch@data > info
+master@data > info
 info
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
-Branch        : test-branch
+Branch        : master
 New           : 18
 Review        : 7
 Upstream      : 0
 Deferred      : 5
 Total         : 30
-test-branch@data > quit
+master@data > quit

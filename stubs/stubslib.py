@@ -83,8 +83,8 @@ class GitRepository():
         self.config = ConfigParser.RawConfigParser()
         self.config.read(os.path.join(gitdir, 'config'))
 
-        # FIXME: default branch name should be 'master'
-        self.head = 'test-branch'
+        # default branch name
+        self.head = 'master'
 
         # a dict where key is name of the branch and value is list of
         # GitCommit objects

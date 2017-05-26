@@ -2,14 +2,14 @@ Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
-Main branches : test-branch
+Main branches : master
 Pending branch: pending
 New           : 18
 Review        : 0
 Upstream      : 0
 Deferred      : 5
 Total         : 23
-test-branch@data > list new
+master@data > list new
 list new
  [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
  [  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
@@ -29,7 +29,7 @@ list new
  [ 16] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
  [ 17] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
  [ 18] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
-test-branch@data > review 1
+master@data > review 1
 review 1
 Retrieving patches (1/1)
       foo: new patch                                               2011-02-11 Timo Tiger   New
@@ -42,10 +42,10 @@ Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstrea
 u
 Setting patch state (1/1)
 Patch set to Under Review
-test-branch@data > list pending
+master@data > list pending
 list pending
 *[  1] foo: new patch                                               2011-02-11 Timo Tiger   Under Review
-test-branch@data > commit 1
+master@data > commit 1
 commit 1
 Retrieving patches (1/1)
       foo: new patch                                               2011-02-11 Timo Tiger   Under Review
@@ -64,7 +64,7 @@ Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitin
 a
 Setting patch state (1/1)
 Patch set to Accepted
-test-branch@data > quit
+master@data > quit
 mail 0:
 ----------------------------------------------------------------------
 test@example.com -> timo@example.com, list@example.com

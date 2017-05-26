@@ -2,13 +2,13 @@ Connecting to http://localhost:8105/
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
-Branch        : test-branch
+Branch        : master
 New           : 18
 Review        : 7
 Upstream      : 0
 Deferred      : 5
 Total         : 30
-test-branch@data > list review
+master@data > list review
 list review
  [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
  [  2] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
@@ -17,7 +17,7 @@ list review
  [  5] [5/7] foo: test 5                                            2011-02-11 Timo Tiger   Under Review
  [  6] [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
  [  7] [7/7] foo: test 7                                            2011-02-11 Timo Tiger   Under Review
-test-branch@data > review 1-2
+master@data > review 1-2
 review 1-2
 Retrieving patches (1/2)Retrieving patches (2/2)
       [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
@@ -65,18 +65,18 @@ Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Dino Dinosaurus <dino@example.com>', 'list@example.com']
 Send/Edit/aBort? s
 s
-test-branch@data > info
+master@data > info
 info
 User          : test (7477, 30052, 118371)
 Projects      : stub-test
 Tree          : data
-Branch        : test-branch
+Branch        : master
 New           : 18
 Review        : 5
 Upstream      : 0
 Deferred      : 5
 Total         : 28
-test-branch@data > quit
+master@data > quit
 mail 0:
 ----------------------------------------------------------------------
 test@example.com -> dino@example.com, list@example.com

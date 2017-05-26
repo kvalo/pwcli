@@ -46,7 +46,7 @@ logger = logging.getLogger('cmdtestlib')
 
 # Note: these prompts are regexps, escape accordingly!
 
-PROMPT = 'test-branch@data >'
+PROMPT = 'master@data >'
 
 # there's some odd word wrapping happening (pexpect?) so had to cut this
 PROMPT_REVIEW_STATE = 'aPplicable/rFc/aBort\? '
