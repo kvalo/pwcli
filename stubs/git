@@ -97,17 +97,9 @@ def cmd_config(args):
 def cmd_log(args):
       # FIXME: only support --oneline and --max-count for now
 
-      commits = gitrepo.get_commits()
-
       if len(args.max_count) > 0:
             max_count = int(args.max_count[0])
-
-            # The commits file is in reversed order, HEAD is in the
-            # bottom so need to take the last commits.
-            commits = commits[-max_count:]
-
-            for commit in commits:
-                  print commit.get_oneline()
+            print gitrepo.get_commits_oneline(max_count)
 
 def cmd_show(args):
       # FIXME: only support HEAD for now

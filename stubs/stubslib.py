@@ -112,6 +112,19 @@ class GitRepository():
     def get_commits(self, branch='master'):
         return self.branches[branch]
 
+    # returns commits in oneline format as string
+    def get_commits_oneline(self, count, branch='master'):
+        result = ''
+
+        # The commits file is in reversed order, HEAD is in the
+        # bottom so need to take the last commits.
+        commits = self.get_commits(branch)[-count:]
+
+        for commit in commits:
+            result += commit.get_oneline() + '\n'
+
+        return result.strip()
+    
     def get_branches(self):
         # strip newline from all lines
         result = []
