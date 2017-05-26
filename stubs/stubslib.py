@@ -109,9 +109,8 @@ class GitRepository():
         pickle.dump(self, f)
         f.close()
 
-    # FIXME: rename get_commits(self, branch='master')
-    def get_head_commits(self):
-        return self.branches[self.head]
+    def get_commits(self, branch='master'):
+        return self.branches[branch]
 
     def get_branches(self):
         # strip newline from all lines

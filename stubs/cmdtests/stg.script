@@ -80,7 +80,7 @@ def main():
 
       print 'check patch was correctly imported'
       gitrepo = stubslib.GitRepository.load(gitdir)
-      print gitrepo.get_head_commits()[-1].get_subject()
+      print gitrepo.get_commits()[-1].get_subject()
       print
 
       print 'import a second patch'

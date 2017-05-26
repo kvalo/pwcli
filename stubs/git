@@ -97,7 +97,7 @@ def cmd_config(args):
 def cmd_log(args):
       # FIXME: only support --oneline and --max-count for now
 
-      commits = gitrepo.get_head_commits()
+      commits = gitrepo.get_commits()
 
       if len(args.max_count) > 0:
             max_count = int(args.max_count[0])
@@ -115,7 +115,7 @@ def cmd_show(args):
             print 'Unsupported commit id: %s' % (args.commitid)
             return
 
-      print 'commit %s' % (gitrepo.get_head_commits()[-1].id)
+      print 'commit %s' % (gitrepo.get_commits()[-1].id)
 
 def cmd_cherry_pick(args):
       try:

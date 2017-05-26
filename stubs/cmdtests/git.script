@@ -95,7 +95,7 @@ def main():
 
       # verify patch
       gitrepo = stubslib.GitRepository.load(gitdir)
-      if buf != gitrepo.get_head_commits()[0].mbox:
+      if buf != gitrepo.get_commits()[0].mbox:
             print 'test-1.patch not correct'
             sys.exit(2)
 
@@ -107,7 +107,7 @@ def main():
 
       # verify patch
       gitrepo = stubslib.GitRepository.load(gitdir)
-      if buf != gitrepo.get_head_commits()[-1].mbox:
+      if buf != gitrepo.get_commits()[-1].mbox:
             print 'test-2.patch not correct'
             sys.exit(2)
 
