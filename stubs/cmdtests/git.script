@@ -135,7 +135,7 @@ def main():
       print
 
       print 'test git am conflict'
-      gitstub.enable_conflict()
+      gitstub.set_commit_failure(1)
       git_am(stub_git, buf)
       print
 

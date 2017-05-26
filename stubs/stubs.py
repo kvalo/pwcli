@@ -235,9 +235,9 @@ class GitStub():
     def cleanup(self):
         shutil.rmtree(self.gitdir)
 
-    def enable_conflict(self):
+    def set_commit_failure(self, val):
         gitrepo = stubslib.GitRepository.load(self.gitdir)
-        gitrepo.enable_conflict()
+        gitrepo.set_commit_failure(val)
 
 class SmtpdStub():
 

@@ -73,9 +73,8 @@ def cmd_am(args):
             # -s switch not used, exit
             sys.exit(0)
 
-      if gitrepo.is_conflict_enabled():
+      if gitrepo.need_commit_failure():
             cmd_am_conflict(args)
-            gitrepo.remove_conflict_file()
       
       gitrepo.add_commit(sys.stdin.read())
 

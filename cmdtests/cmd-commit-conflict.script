@@ -39,7 +39,7 @@ def test_commit(ctxt, pwcli):
    pwcli.expect_prompt()
 
    # the next git am command must fail
-   ctxt.git.enable_conflict()
+   ctxt.git.set_commit_failure(1)
 
    pwcli.sendline('commit 1')
 

@@ -98,7 +98,7 @@ class GitRepository():
         # value is GitCommit object
         self.commits = {}
 
-        self.conflict = False
+        self.commit_failure_count = 0
 
         self.stg_import_failure = 0
 
@@ -139,15 +139,16 @@ class GitRepository():
 
         return result
 
-    def is_conflict_enabled(self):
-        return self.conflict
+    def need_commit_failure(self):
+        if self.commit_failure_count == 0:
+            return False
 
-    def enable_conflict(self):
-        self.conflict = True
+        self.commit_failure_count -= 1
         self.dump()
+        return self.commit_failure_count == 0
 
-    def remove_conflict_file(self):
-        self.conflict = False
+    def set_commit_failure(self, val):
+        self.commit_failure_count = val
         self.dump()
 
     def _add_commit(self, commit_id, mbox, stg_name=None):
