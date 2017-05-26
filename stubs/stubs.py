@@ -239,6 +239,10 @@ class GitStub():
         gitrepo = stubslib.GitRepository.load(self.gitdir)
         gitrepo.set_commit_failure(val)
 
+    def get_commits_oneline(self, val):
+        gitrepo = stubslib.GitRepository.load(self.gitdir)
+        return gitrepo.get_commits_oneline(val)
+        
 class SmtpdStub():
 
     def __init__(self, port=SMTP_PORT):
