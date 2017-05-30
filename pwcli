@@ -92,13 +92,13 @@ PATCH_ACTIVE_STATES = [PATCH_STATE_NEW,
                        PATCH_STATE_DEFERRED]
 
 PATCH_STATE_KEYWORD_MAP = {
-    'review':   [PATCH_STATE_UNDER_REVIEW],
-   'upstream': [PATCH_STATE_AWAITING_UPSTREAM],
-   'new':      [PATCH_STATE_NEW],
-   'deferred':  [PATCH_STATE_DEFERRED],
+    'review': [PATCH_STATE_UNDER_REVIEW],
+    'upstream': [PATCH_STATE_AWAITING_UPSTREAM],
+    'new': [PATCH_STATE_NEW],
+    'deferred': [PATCH_STATE_DEFERRED],
 
-   # "magic" state handled separately
-   'pending':   [],
+    # "magic" state handled separately
+    'pending': [],
 }
 
 STATE_ABORTED = 'Aborted'
@@ -895,7 +895,7 @@ class Project():
         for new_patch in patches:
             pid = new_patch.get_id()
 
-            if not pid in self.cache:
+            if pid not in self.cache:
                 # patch is not in cache, add it
                 self.cache[pid] = new_patch
                 continue
@@ -1349,10 +1349,10 @@ class PWCLI():
             return
 
         empty_line = '                                                                 '
-        stdout_cb = lambda line: self.output('\r%s\r%s' % (empty_line,
-                                                           line.replace(
-                                                               '\n', '')),
-                                             newline=False)
+
+        def stdout_cb(line):
+            self.output('\r%s\r%s' % (empty_line, line.replace('\n', '')),
+                        newline=False)
 
         p = RunProcess(cmd, stdout_cb=stdout_cb)
 
@@ -1379,7 +1379,7 @@ class PWCLI():
 
         i = 0
         for stg_commit_name in stg_series:
-            if not stg_commit_name in self.stg_cache:
+            if stg_commit_name not in self.stg_cache:
                 c = self.stg.get_commit(stg_commit_name)
 
                 if c is None:
@@ -1444,13 +1444,13 @@ class PWCLI():
         # Note: the general filter overrules both title and state
         # filters, so this needs to be last.
         if args.filter is not None:
-            if PATCH_STATE_KEYWORD_MAP.has_key(args.filter):
+            if args.filter in PATCH_STATE_KEYWORD_MAP:
                 state_filter = args.filter
             else:
                 title_filter = args.filter
 
         if state_filter is not None:
-            if not PATCH_STATE_KEYWORD_MAP.has_key(state_filter):
+            if state_filter not in PATCH_STATE_KEYWORD_MAP:
                 self.output('Unknown state: %s' % state_filter)
                 return
 
@@ -1588,8 +1588,7 @@ class PWCLI():
             for patch in patches:
                 # show progressbar if applying all patches in one go
                 if not commit_individually:
-                    self.output(
-                        '\rCommiting patches (%d/%d)' % (i, len(patches)),
+                    self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
                                 newline=False)
 
                 # edit can be chosen multiple times, that's why the loop
@@ -1604,8 +1603,8 @@ class PWCLI():
 
                     answer = self.show_choose_list(
                         [ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
-                                                   prefix='[%d/%d] ' % (len(applied) + 1,
-                                                                        len(patches)))
+                        prefix='[%d/%d] ' % (len(applied) + 1,
+                                             len(patches)))
 
                     if answer == ANSWER_ABORT:
                         self.output('Commit command aborted')
@@ -1887,8 +1886,7 @@ class PWCLI():
                 try:
                     i = 1
                     for patch in patches:
-                        self.output(
-                            '\rImporting patches (%d/%d)' % (i, len(patches)),
+                        self.output('\rImporting patches (%d/%d)' % (i, len(patches)),
                                     newline=False)
                         self.stg.import_patch(patch.get_mbox_for_stgit())
                         applied.append(patch)
@@ -2125,10 +2123,9 @@ class PWCLI():
         index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
 
         self.parser = argparse.ArgumentParser(
-            description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (
-                PWCLI_VERSION),
-                                              prog='',
-                                              add_help=False)
+            description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
+            prog='',
+            add_help=False)
 
         subparsers = self.parser.add_subparsers()
 
