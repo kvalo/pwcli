@@ -56,9 +56,9 @@ import socket
 import functools
 
 import readline
-assert readline # to shut up pyflakes
+assert readline  # to shut up pyflakes
 
-PWCLI_VERSION='0.0.0-git'
+PWCLI_VERSION = '0.0.0-git'
 PWCLI_PROJECT_URL = 'https://github.com/kvalo/pwcli/'
 PWCLI_USER_AGENT = 'pwcli/%s (%s) Python/%s' % (PWCLI_VERSION,
                                                 PWCLI_PROJECT_URL,
@@ -86,15 +86,15 @@ PATCH_STATE_AWAITING_UPSTREAM = 'Awaiting Upstream'
 PATCH_STATE_SUPERSEDED = 'Superseded'
 PATCH_STATE_DEFERRED = 'Deferred'
 
-PATCH_ACTIVE_STATES = [ PATCH_STATE_NEW,
-                        PATCH_STATE_UNDER_REVIEW,
-                        PATCH_STATE_AWAITING_UPSTREAM,
-                        PATCH_STATE_DEFERRED ]
+PATCH_ACTIVE_STATES = [PATCH_STATE_NEW,
+                       PATCH_STATE_UNDER_REVIEW,
+                       PATCH_STATE_AWAITING_UPSTREAM,
+                       PATCH_STATE_DEFERRED]
 
 PATCH_STATE_KEYWORD_MAP = {
-    'review' :   [PATCH_STATE_UNDER_REVIEW],
-   'upstream' : [PATCH_STATE_AWAITING_UPSTREAM],
-   'new' :      [PATCH_STATE_NEW],
+    'review':   [PATCH_STATE_UNDER_REVIEW],
+   'upstream': [PATCH_STATE_AWAITING_UPSTREAM],
+   'new':      [PATCH_STATE_NEW],
    'deferred':  [PATCH_STATE_DEFERRED],
 
    # "magic" state handled separately
@@ -103,16 +103,20 @@ PATCH_STATE_KEYWORD_MAP = {
 
 STATE_ABORTED = 'Aborted'
 
+
 def utf8(buf):
     return unicode(buf).encode('utf-8')
+
 
 def clean(buf):
     buf = buf.translate(None, '\n\t')
     buf = buf.strip()
     return buf
 
+
 def pretty(obj):
     return pprint.pformat(obj, indent=4)
+
 
 def get_patches_plural(count, capitalize=True):
     if count > 1:
@@ -126,6 +130,8 @@ def get_patches_plural(count, capitalize=True):
     return single
 
 # parses a string like '1-3,5' and returns the indexes in a list [1, 2, 3, 5]
+
+
 def parse_list(entries):
 
     ids = []
@@ -173,6 +179,7 @@ def parse_list(entries):
 
     return ids
 
+
 def shrink(s, width, ellipsis=True):
     ELLIPSIS = '...'
 
@@ -194,6 +201,7 @@ def shrink(s, width, ellipsis=True):
 
     return s
 
+
 class Timer():
 
     def start(self):
@@ -205,9 +213,11 @@ class Timer():
     def get_seconds(self):
         return self.end_time - self.start_time
 
+
 class RunProcess():
 
     # subprocess.Popen() throws OSError if the command is not found
+
     def __init__(self, args, stdout_cb=None, input=None):
         self.args = args
         self.stdout_cb = stdout_cb
@@ -265,6 +275,7 @@ class RunProcess():
                                            self.stdout_cb,
                                            self.input)
 
+
 class Person():
 
     def __init__(self, address):
@@ -283,6 +294,7 @@ class Person():
     def get_email(self):
         return self.email
 
+
 class GitError(Exception):
 
     def __str__(self):
@@ -291,6 +303,7 @@ class GitError(Exception):
     def __init__(self, msg, log=None):
         self.msg = msg
         self.log = log
+
 
 class Stg():
 
@@ -369,6 +382,7 @@ class Stg():
     def __init__(self, dry_run, output):
         self.dry_run = dry_run
         self.output = output
+
 
 class Git():
 
@@ -452,7 +466,8 @@ class Git():
         # --force switch is to work around error "Cannot create a new backup.
         # --A previous backup already exists in refs/original/"
 
-        cmd = ['git', 'filter-branch', '--force', '--msg-filter', sed_cmd, 'HEAD^..HEAD']
+        cmd = ['git', 'filter-branch', '--force',
+               '--msg-filter', sed_cmd, 'HEAD^..HEAD']
 
         p = RunProcess(cmd)
 
@@ -481,7 +496,6 @@ class Git():
         if p.returncode != 0:
             raise GitError('git checkout failed: %d' % (p.returncode),
                            log=p.stderrdata)
-
 
     def am(self, mbox):
         cmd = ['git', 'am', '-s', '-3']
@@ -515,13 +529,14 @@ class Git():
             #        To restore the original branch and stop patching run "git am --abort".
             #
             log += re.sub(r'When you have resolved.*$', '', p.stdoutdata,
-                          flags=re.MULTILINE|re.DOTALL)
+                          flags=re.MULTILINE | re.DOTALL)
 
             raise GitError('%s failed: %s' % (cmd, ret), log=log)
 
     def __init__(self, dry_run, output):
         self.dry_run = dry_run
         self.output = output
+
 
 @functools.total_ordering
 class Patch():
@@ -552,7 +567,8 @@ class Patch():
 
     def set_state_name(self, state_name):
         if self.dry_run:
-            logger.debug('dry-run: %s().set_state_name(%s)' % (self, state_name))
+            logger.debug('dry-run: %s().set_state_name(%s)' %
+                         (self, state_name))
             return
 
         state_id = self.pw.get_state_id(state_name)
@@ -571,7 +587,8 @@ class Patch():
 
     def set_commit_ref(self, commit_ref):
         if self.dry_run:
-            logger.debug('dry-run: %s().set_commit_ref(%s)' % (self, commit_ref))
+            logger.debug('dry-run: %s().set_commit_ref(%s)' %
+                         (self, commit_ref))
             return
 
         params = {}
@@ -735,13 +752,12 @@ class Patch():
         if 'PWCLI_CENSOR_USER_AGENT' in os.environ:
             # censor the string from all changing version numbers (pwcli
             # _and_ python) so that it doesn't change the test output
-            user_agent = re.sub(r'(pwcli/)[0-9\.\-git]+' , r'\1<censored>',
+            user_agent = re.sub(r'(pwcli/)[0-9\.\-git]+', r'\1<censored>',
                                 user_agent)
-            user_agent = re.sub(r'(Python/)[0-9\.]+' , r'\1<censored>',
+            user_agent = re.sub(r'(Python/)[0-9\.]+', r'\1<censored>',
                                 user_agent)
 
         reply['User-Agent'] = user_agent
-
 
         logger.debug('%s().get_reply_msg(): %s', self, repr(quote))
 
@@ -803,7 +819,9 @@ class Patch():
         self.temp_ref = None
         self.stg_index = None
 
+
 class Project():
+
     def _get_patches(self, filters, username=None):
         results = []
 
@@ -845,7 +863,8 @@ class Project():
         results = self._get_patches(filters)
 
         if len(results) > 1:
-            logger.debug('Multiple patches found with same patchwork id %s' % (patchwork_id))
+            logger.debug(
+                'Multiple patches found with same patchwork id %s' % (patchwork_id))
             return None
         elif len(results) == 0:
             logger.debug('patchwork id %s not found' % (patchwork_id))
@@ -922,7 +941,9 @@ class Project():
 
         logger.debug(self)
 
+
 class AuthTransport(xmlrpclib.SafeTransport):
+
     def send_auth(self, connection):
         creds = base64.encodestring('%s:%s' % (self.username,
                                                self.password)).strip()
@@ -941,14 +962,16 @@ class AuthTransport(xmlrpclib.SafeTransport):
         else:
             return xmlrpclib.Transport.make_connection(self, host)
 
-    def __init__(self, username = None, password = None, https = False):
+    def __init__(self, username=None, password=None, https=False):
         xmlrpclib.SafeTransport.__init__(self)
 
         self.username = username
         self.password = password
         self.https = https
 
+
 class Patchwork():
+
     def update_state_list(self):
         logger.debug('patch_state_list()')
         self.states = self.rpc.state_list('', 0)
@@ -961,7 +984,8 @@ class Patchwork():
 
     def get_user_ids(self, username):
         persons = self.rpc.person_list(username, 0)
-        logger.debug('%s().get_user_id(%s):\n%s' % (self, username, pretty(persons)))
+        logger.debug('%s().get_user_id(%s):\n%s' %
+                     (self, username, pretty(persons)))
 
         ids = []
 
@@ -976,15 +1000,17 @@ class Patchwork():
         self.patch_url = url.replace('/xmlrpc/', '/patch/')
         https = url.startswith('https')
         transport = AuthTransport(username, password, https)
-        self.rpc = xmlrpclib.Server(url, transport = transport)
+        self.rpc = xmlrpclib.Server(url, transport=transport)
 
         logger.debug('connected to %s (username %s)' % (url, username))
 
         self.update_state_list()
 
+
 class PWCLI():
 
     # retrieve all mbox files in one for "smoother user experience"
+
     def prefetch_patches(self, patches):
         i = 1
         for patch in patches:
@@ -1110,7 +1136,8 @@ class PWCLI():
             # find the one char shortcut
             match = re.search('([A-Z])', name)
             if len(match.groups()) != 1:
-                raise Exception('Invalid number (%d) of upper case letters in choose list: %s' % (len(match.groups()), name))
+                raise Exception('Invalid number (%d) of upper case letters in choose list: %s' %
+                                (len(match.groups()), name))
             shortcut = match.group(0).lower()
             valid[shortcut] = table[name]
 
@@ -1122,8 +1149,9 @@ class PWCLI():
             if answer in valid:
                 return valid[answer]
 
-            self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                          ', '.join(valid)))
+            self.output(
+                'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                  ', '.join(valid)))
 
         # should not be reached
         assert(False)
@@ -1177,7 +1205,8 @@ class PWCLI():
 
                 done = True
             except (smtplib.SMTPException, socket.error) as e:
-                self.output('Failed to send email via %s: %s' % (self.smtp_host, e))
+                self.output('Failed to send email via %s: %s' %
+                            (self.smtp_host, e))
 
                 ANSWER_RETRY = 'Retry'
                 ANSWER_ABORT = 'aBort'
@@ -1214,9 +1243,11 @@ class PWCLI():
                 for person in msg['Cc'].split(','):
                     envelope_to.append(clean(person))
 
-            self.output('============================================================')
+            self.output(
+                '============================================================')
             self.output(msg.as_string())
-            self.output('============================================================')
+            self.output(
+                '============================================================')
 
             self.output('Envelope From: %s' % envelope_from)
             self.output('Envelope To: %s' % envelope_to)
@@ -1225,7 +1256,8 @@ class PWCLI():
             ANSWER_EDIT = 'Edit'
             ANSWER_ABORT = 'aBort'
 
-            answer = self.show_choose_list([ANSWER_SEND, ANSWER_EDIT, ANSWER_ABORT])
+            answer = self.show_choose_list(
+                [ANSWER_SEND, ANSWER_EDIT, ANSWER_ABORT])
 
             if answer == ANSWER_SEND:
                 # Send
@@ -1258,11 +1290,14 @@ class PWCLI():
         return new_buf
 
     def show_patch(self, patch):
-        self.output('============================================================')
+        self.output(
+            '============================================================')
         self.output(patch.get_name())
         self.output('')
-        self.output('%s%s%s' % (patch.get_log(), LOG_SEPARATOR, patch.get_diffstat()))
-        self.output('============================================================')
+        self.output('%s%s%s' %
+                    (patch.get_log(), LOG_SEPARATOR, patch.get_diffstat()))
+        self.output(
+            '============================================================')
 
     def show_info(self):
         user_ids = ', '.join(str(v) for v in self.user_ids)
@@ -1286,11 +1321,14 @@ class PWCLI():
         if self.pending_mode == 'stgit':
             review = len(self.get_pending_branch_patches())
         else:
-            review = len(self.project.get_patches(PATCH_STATE_UNDER_REVIEW, username))
+            review = len(self.project.get_patches(
+                PATCH_STATE_UNDER_REVIEW, username))
 
         new = len(self.project.get_patches(PATCH_STATE_NEW, username))
-        upstream = len(self.project.get_patches(PATCH_STATE_AWAITING_UPSTREAM, username))
-        deferred = len(self.project.get_patches(PATCH_STATE_DEFERRED, username))
+        upstream = len(self.project.get_patches(
+            PATCH_STATE_AWAITING_UPSTREAM, username))
+        deferred = len(
+            self.project.get_patches(PATCH_STATE_DEFERRED, username))
         total = new + review + upstream + deferred
 
         self.print_header(PATCH_STATE_NEW, new)
@@ -1312,7 +1350,8 @@ class PWCLI():
 
         empty_line = '                                                                 '
         stdout_cb = lambda line: self.output('\r%s\r%s' % (empty_line,
-                                                           line.replace('\n', '')),
+                                                           line.replace(
+                                                               '\n', '')),
                                              newline=False)
 
         p = RunProcess(cmd, stdout_cb=stdout_cb)
@@ -1468,7 +1507,6 @@ class PWCLI():
                     patches.remove(patch)
                     continue
 
-
         # sort the patches
         if state_filter == 'pending':
             # sort based on order they are in the pending branch
@@ -1508,7 +1546,8 @@ class PWCLI():
                                                     show_indexes=False,
                                                     open_browser=True))
 
-        self.output('------------------------------------------------------------')
+        self.output(
+            '------------------------------------------------------------')
         self.output('%d patches' % len(patches))
 
         while True:
@@ -1520,8 +1559,9 @@ class PWCLI():
             if answer in valid:
                 break
 
-            self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                          ', '.join(valid)))
+            self.output(
+                'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                  ', '.join(valid)))
 
         if answer == 'a':
             # commit All
@@ -1548,9 +1588,9 @@ class PWCLI():
             for patch in patches:
                 # show progressbar if applying all patches in one go
                 if not commit_individually:
-                    self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
+                    self.output(
+                        '\rCommiting patches (%d/%d)' % (i, len(patches)),
                                 newline=False)
-
 
                 # edit can be chosen multiple times, that's why the loop
                 while commit_individually:
@@ -1562,7 +1602,8 @@ class PWCLI():
                     ANSWER_EDIT = 'Edit'
                     ANSWER_ABORT = 'aBort'
 
-                    answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
+                    answer = self.show_choose_list(
+                        [ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
                                                    prefix='[%d/%d] ' % (len(applied) + 1,
                                                                         len(patches)))
 
@@ -1628,13 +1669,15 @@ class PWCLI():
                 faillog += builder.stderrdata
 
             # show summary in the shell
-            self.output('============================================================')
+            self.output(
+                '============================================================')
             self.output('%d patches applied:' % len(applied))
             self.output('')
             self.output(self.git.log_oneline(len(applied)))
             self.output('')
         else:
-            # not all patches were applied due to a problem, remove the already applied
+            # not all patches were applied due to a problem, remove the already
+            # applied
             for i in range(len(applied)):
                 self.git.rollback()
 
@@ -1644,18 +1687,18 @@ class PWCLI():
         # Accepted state should not be shown if any of the patches
         # failed apply
         if len(patches) == len(applied):
-            state_table['Accepted'] =           PATCH_STATE_ACCEPTED
+            state_table['Accepted'] = PATCH_STATE_ACCEPTED
 
-        state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
-        state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
-        state_table['Rejected'] =           PATCH_STATE_REJECTED
-        state_table['New'] =                PATCH_STATE_NEW
-        state_table['Deferred'] =           PATCH_STATE_DEFERRED
-        state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
-        state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
-        state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
-        state_table['rFc'] =                PATCH_STATE_RFC
-        state_table['aBort'] =              STATE_ABORTED
+        state_table['Under review'] = PATCH_STATE_UNDER_REVIEW
+        state_table['Changes requested'] = PATCH_STATE_CHANGES_REQUESTED
+        state_table['Rejected'] = PATCH_STATE_REJECTED
+        state_table['New'] = PATCH_STATE_NEW
+        state_table['Deferred'] = PATCH_STATE_DEFERRED
+        state_table['Superseded'] = PATCH_STATE_SUPERSEDED
+        state_table['aWaiting upstream'] = PATCH_STATE_AWAITING_UPSTREAM
+        state_table['not aPplicable'] = PATCH_STATE_NOT_APPLICABLE
+        state_table['rFc'] = PATCH_STATE_RFC
+        state_table['aBort'] = STATE_ABORTED
 
         while True:
             state = self.show_choose_list(state_table)
@@ -1674,7 +1717,8 @@ class PWCLI():
             # patches had problems and user chose to ACCEPT them
             self.output(result)
 
-            answer = self.input('Are you sure want to ACCEPT these patches [y/N]: ')
+            answer = self.input(
+                'Are you sure want to ACCEPT these patches [y/N]: ')
             answer = answer.lower()
             if answer == 'y':
                 # user is sure
@@ -1755,7 +1799,8 @@ class PWCLI():
         msg = first_patch.get_reply_msg(self.fullname, self.email,
                                         reply, signature=self.signature)
 
-        # if the patches are accepted, there's no reason and no need to edit the mail
+        # if the patches are accepted, there's no reason and no need to edit
+        # the mail
         if reason:
             msg = self.edit_email(msg)
             if msg == None:
@@ -1811,7 +1856,8 @@ class PWCLI():
                                                     show_indexes=False,
                                                     open_browser=True))
 
-        self.output('------------------------------------------------------------')
+        self.output(
+            '------------------------------------------------------------')
 
         applied = []
         faillog = ''
@@ -1819,7 +1865,8 @@ class PWCLI():
 
         if self.pending_mode == 'stgit':
             while True:
-                choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(patches)
+                choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(
+                    patches)
                 answer = self.input(choises)
                 answer = answer.lower()
 
@@ -1828,8 +1875,9 @@ class PWCLI():
                 if answer in valid:
                     break
 
-                self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                              ', '.join(valid)))
+                self.output(
+                    'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                      ', '.join(valid)))
 
             # Apply
             if answer == 'a':
@@ -1839,7 +1887,8 @@ class PWCLI():
                 try:
                     i = 1
                     for patch in patches:
-                        self.output('\rImporting patches (%d/%d)' % (i, len(patches)),
+                        self.output(
+                            '\rImporting patches (%d/%d)' % (i, len(patches)),
                                     newline=False)
                         self.stg.import_patch(patch.get_mbox_for_stgit())
                         applied.append(patch)
@@ -1879,17 +1928,17 @@ class PWCLI():
         # In pending mode Under Review state should be shown only if the
         # patches were succesfully applied to the pending branch
         if self.pending_mode != 'stgit' or len(patches) == len(applied):
-            state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+            state_table['Under review'] = PATCH_STATE_UNDER_REVIEW
 
-        state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
-        state_table['Rejected'] =           PATCH_STATE_REJECTED
-        state_table['New'] =                PATCH_STATE_NEW
-        state_table['Deferred'] =           PATCH_STATE_DEFERRED
-        state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
-        state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
-        state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
-        state_table['rFc'] =                PATCH_STATE_RFC
-        state_table['aBort'] =              STATE_ABORTED
+        state_table['Changes requested'] = PATCH_STATE_CHANGES_REQUESTED
+        state_table['Rejected'] = PATCH_STATE_REJECTED
+        state_table['New'] = PATCH_STATE_NEW
+        state_table['Deferred'] = PATCH_STATE_DEFERRED
+        state_table['Superseded'] = PATCH_STATE_SUPERSEDED
+        state_table['aWaiting upstream'] = PATCH_STATE_AWAITING_UPSTREAM
+        state_table['not aPplicable'] = PATCH_STATE_NOT_APPLICABLE
+        state_table['rFc'] = PATCH_STATE_RFC
+        state_table['aBort'] = STATE_ABORTED
 
         while True:
             state = self.show_choose_list(state_table)
@@ -1908,7 +1957,8 @@ class PWCLI():
             # patches had problems and user chose to UNDER_REVIEW them
             self.output(result)
 
-            answer = self.input('Are you sure want to set these patches to UNDER REVIEW? [y/N]: ')
+            answer = self.input(
+                'Are you sure want to set these patches to UNDER REVIEW? [y/N]: ')
             answer = answer.lower()
             if answer == 'y':
                 # user is sure
@@ -1990,7 +2040,8 @@ class PWCLI():
             return
 
         patch = self.patches[i - 1]
-        reply = patch.get_reply_msg(self.fullname, self.email, signature=self.signature)
+        reply = patch.get_reply_msg(
+            self.fullname, self.email, signature=self.signature)
 
         reply = self.edit_email(reply)
 
@@ -2067,12 +2118,15 @@ class PWCLI():
 
         self.selected_main_branch = self.main_branches[index]
 
-        self.output('Switched main branch to: %s' % (self.selected_main_branch))
+        self.output('Switched main branch to: %s' %
+                    (self.selected_main_branch))
 
     def run_shell(self):
         index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
 
-        self.parser = argparse.ArgumentParser(description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
+        self.parser = argparse.ArgumentParser(
+            description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (
+                PWCLI_VERSION),
                                               prog='',
                                               add_help=False)
 
@@ -2231,7 +2285,8 @@ class PWCLI():
         logging.basicConfig(filename=os.path.join(self.pwcli_dir, 'log'),
                             format='%(asctime)s %(levelname)s: %(message)s')
 
-        parser = argparse.ArgumentParser(description='Patchwork Command-Line Interface')
+        parser = argparse.ArgumentParser(
+            description='Patchwork Command-Line Interface')
         parser.add_argument('-d', '--debug', action='store_true',
                             help='enable debug messages')
 
@@ -2271,7 +2326,8 @@ class PWCLI():
         self.password = self.config.get('general', 'password')
 
         if self.config.has_option('general', 'build-command'):
-            self.build_command = self.config.get('general', 'build-command').split(' ')
+            self.build_command = self.config.get(
+                'general', 'build-command').split(' ')
         else:
             self.build_command = None
 
@@ -2302,14 +2358,16 @@ class PWCLI():
         self.main_branches = None
 
         if self.config.has_option('general', 'pending_mode'):
-            self.pending_mode = self.config.get('general', 'pending_mode').lower()
+            self.pending_mode = self.config.get(
+                'general', 'pending_mode').lower()
 
         if self.pending_mode not in pending_modes:
             self.output('Invalid stgit.mode "%s"' % self.pending_mode)
             sys.exit(1)
 
         if self.config.has_option('general', 'pending_branch'):
-            self.pending_branch = self.config.get('general', 'pending_branch').lower()
+            self.pending_branch = self.config.get(
+                'general', 'pending_branch').lower()
 
         if self.config.has_option('general', 'main_branches'):
             branches = self.config.get('general', 'main_branches').lower()
@@ -2391,6 +2449,7 @@ class PWCLI():
         self.show_info()
 
         logger.info('pwcli %s started' % PWCLI_VERSION)
+
 
 def main():
     pwcli = PWCLI()
