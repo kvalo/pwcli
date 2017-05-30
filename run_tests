@@ -36,7 +36,7 @@ import subprocess
 import sys
 import argparse
 
-SUITES = ('stubs', 'cmdtests', 'unittests')
+SUITES = ('stubs', 'cmdtests', 'unittests', 'checks')
 
 CMDTEST_DIRECTORIES = ['cmdtests', 'stubs/cmdtests']
 
@@ -87,6 +87,22 @@ def main():
 
     if args.update_outputs:
         return update_cmdtest_outputs(args)
+
+    if not args.suite or args.suite == 'checks':
+        print '* Running code checkers'
+
+        # TODO: run these checkers on _all_ python scripts in the repo
+
+        returncode = subprocess.call(['pyflakes', 'pwcli'])
+        if returncode != 0 and not args.ignore_errors:
+            sys.exit(1)
+
+        # ignore E501 long line warnings, not really seeing the
+        # benefit from trying to make lines with user messages short
+        # (just like kernel style works)
+        returncode = subprocess.call(['pep8', '--ignore', 'E501', 'pwcli'])
+        if returncode != 0 and not args.ignore_errors:
+            sys.exit(1)
 
     if not args.suite or args.suite == 'unittests':
         print '* Running unit tests'
