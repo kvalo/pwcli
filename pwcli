@@ -366,13 +366,13 @@ class Stg():
         output = p.stdoutdata.strip()
 
         match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
-        if match == None:
+        if match is None:
             raise GitError('Commit id not found from patch: %s' % patchname)
 
         result['commit_id'] = match.group(1)
 
         match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', output, re.MULTILINE)
-        if match == None:
+        if match is None:
             raise GitError('Patchwork id not found from patch: %s' % patchname)
 
         result['patchwork_id'] = match.group(1)
@@ -411,7 +411,7 @@ class Git():
         output = p.stdoutdata.strip()
 
         match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
-        if match == None:
+        if match is None:
             raise GitError('Commit id not found from patch: %s' % commitid)
 
         result['commit_id'] = match.group(1)
@@ -609,7 +609,7 @@ class Patch():
         return '%s%s/' % (self.pw.patch_url, self.get_id())
 
     def get_mbox(self):
-        if self.mbox == None:
+        if self.mbox is None:
             logger.debug('patch_get_mbox(%s)' % self.get_id())
             self.mbox = self.pw.rpc.patch_get_mbox(self.get_id())
             logger.debug(repr(self.mbox))
@@ -682,7 +682,7 @@ class Patch():
 
         # FIXME: what if charset is something else (iso-8859-1 etc), can
         # we use that still?
-        if charset == 'utf-8' or charset == None:
+        if charset == 'utf-8' or charset is None:
             who = header_from
         else:
             who = None
@@ -778,7 +778,7 @@ class Patch():
 
         match = re.search(r'^\s*\[.*?(\d+)/\d+.*?]', self.get_name())
 
-        if match == None:
+        if match is None:
             return None
 
         return int(match.group(1))
@@ -832,7 +832,7 @@ class Project():
         for p in patches:
             patch = Patch(self.pw, p, self.dry_run)
 
-            if username != None and patch.get_delegate() != username:
+            if username is not None and patch.get_delegate() != username:
                 continue
 
             results.append(patch)
@@ -844,10 +844,10 @@ class Project():
         patches = []
 
         for patch in self.cache.values():
-            if state != None and patch.get_state_name() != state:
+            if state is not None and patch.get_state_name() != state:
                 continue
 
-            if username != None and patch.get_delegate() != username:
+            if username is not None and patch.get_delegate() != username:
                 continue
 
             patches.append(patch)
@@ -936,7 +936,7 @@ class Project():
             if project['linkname'] == self.name:
                 self.id = project['id']
 
-        if self.id == None:
+        if self.id is None:
             raise Exception('No project id found for %s' % self.name)
 
         logger.debug(self)
@@ -953,7 +953,7 @@ class AuthTransport(xmlrpclib.SafeTransport):
     def send_host(self, connection, host):
         xmlrpclib.Transport.send_host(self, connection, host)
 
-        if self.username != None and self.password != None:
+        if self.username is not None and self.password is not None:
             self.send_auth(connection)
 
     def make_connection(self, host):
@@ -1023,7 +1023,7 @@ class PWCLI():
     def get_patches_from_ids(self, ids):
         indexes = parse_list(ids)
 
-        if self.patches == None:
+        if self.patches is None:
             raise Exception('No patches listed, forgot to run list command?')
 
         if len(self.patches) == 0:
@@ -1197,7 +1197,7 @@ class PWCLI():
                 if self.smtp_encryption == 'tls':
                     server.starttls()
 
-                if self.smtp_username != None and self.smtp_password != None:
+                if self.smtp_username is not None and self.smtp_password is not None:
                     server.login(self.smtp_username, self.smtp_password)
 
                 server.sendmail(envelope_from, envelope_to, msg.as_string())
@@ -1382,7 +1382,7 @@ class PWCLI():
             if not stg_commit_name in self.stg_cache:
                 c = self.stg.get_commit(stg_commit_name)
 
-                if c == None:
+                if c is None:
                     continue
 
                 self.stg_cache[stg_commit_name] = c
@@ -1803,7 +1803,7 @@ class PWCLI():
         # the mail
         if reason:
             msg = self.edit_email(msg)
-            if msg == None:
+            if msg is None:
                 # user aborted
                 return
 
@@ -2016,7 +2016,7 @@ class PWCLI():
                                         reply, signature=self.signature)
 
         msg = self.edit_email(msg)
-        if msg == None:
+        if msg is None:
             # user aborted
             return
 
@@ -2031,7 +2031,7 @@ class PWCLI():
             self.output('Failed to convert index to integer: %s' % e)
             return
 
-        if self.patches == None:
+        if self.patches is None:
             self.output('No patches listed, forgot to run list command?')
             return
 
@@ -2045,7 +2045,7 @@ class PWCLI():
 
         reply = self.edit_email(reply)
 
-        if reply == None:
+        if reply is None:
             return
 
         self.send_email(reply)
@@ -2063,7 +2063,7 @@ class PWCLI():
     def cmd_project(self, args):
         logger.debug('cmd_project(args=%r)' % repr(args))
 
-        if args.index == None:
+        if args.index is None:
             self.output('Projects:')
             i = 0
             for project in self.projects:
@@ -2091,7 +2091,7 @@ class PWCLI():
     def cmd_branch(self, args):
         logger.debug('cmd_branch(args=%r)' % repr(args))
 
-        if args.index == None:
+        if args.index is None:
             self.output('Main branches:')
             i = 0
             for branch in self.main_branches:
@@ -2375,11 +2375,11 @@ class PWCLI():
             self.selected_main_branch = self.main_branches[0]
 
         if self.pending_mode == 'stgit':
-            if self.pending_branch == None:
+            if self.pending_branch is None:
                 self.output('general.pending_branch not set')
                 sys.exit(1)
 
-            if self.main_branches == None:
+            if self.main_branches is None:
                 self.output('general.main_branches not set')
                 sys.exit(1)
 
@@ -2421,7 +2421,7 @@ class PWCLI():
         logger.debug('smtp_encryption=%s' % self.smtp_encryption)
         logger.debug('smtp_username=%s' % self.smtp_username)
 
-        if self.smtp_password != None:
+        if self.smtp_password is not None:
             passwd = '<hidden>'
         else:
             passwd = '<not set>'
