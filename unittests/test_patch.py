@@ -133,7 +133,7 @@ class TestPatch(unittest.TestCase):
 
         # mock get_name() method for easier testing
         m = mock.Mock()
-        patch.get_name = m
+        patch.get_name_original = m
 
         m.return_value = 'foo: bar'
         self.assertEqual(patch.get_patch_index(), None)

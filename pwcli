@@ -567,8 +567,15 @@ class Git():
 @functools.total_ordering
 class Patch():
 
-    def get_name(self):
+    def get_name_original(self):
         return self.attributes['name']
+
+    def get_name(self):
+        if self.pending_commit is not None:
+            # TODO: get tags (eg. "[RFC,7/9]" from the original title
+            return self.pending_commit.title
+        else:
+            return self.get_name_original()
 
     def get_id(self):
         return self.attributes['id']
@@ -796,7 +803,7 @@ class Patch():
     def get_patch_index(self):
         # Note: '.*?' is a non-greedy version of '.*'
 
-        match = re.search(r'^\s*\[.*?(\d+)/\d+.*?]', self.get_name())
+        match = re.search(r'^\s*\[.*?(\d+)/\d+.*?]', self.get_name_original())
 
         if match is None:
             return None
