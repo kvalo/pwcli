@@ -41,6 +41,7 @@ import hashlib
 import stubslib
 
 from pwcli import Git
+from pwcli import GitCommit
 
 class TestGit(unittest.TestCase):
 
@@ -100,6 +101,18 @@ foo body
 
         gitrepo = stubslib.GitRepository.load(self.datadir)
         self.assertEquals(len(gitrepo.get_commits()), 0)
+
+class TestGitCommit(unittest.TestCase):
+
+    def test_parse(self):
+        f = open('stg-show-1.data')
+        commit = GitCommit.parse(f.read())
+        f.close()
+
+        self.assertEqual(commit.commit_id,
+                         '8bd453fe60574334173cdbb51faa390b98678063')
+        self.assertEqual(commit.patchwork_id,
+                         12345)
 
 if __name__ == '__main__':
     unittest.main()

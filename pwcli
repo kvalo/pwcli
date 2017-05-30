@@ -305,6 +305,35 @@ class GitError(Exception):
         self.log = log
 
 
+class GitCommit(object):
+    @staticmethod
+    def parse(text):
+        commit = GitCommit()
+
+        match = re.search(r'^commit ([0-9a-f]{40})$', text, re.MULTILINE)
+        if match is None:
+            raise GitError('commit id not found')
+
+        commit.commit_id = match.group(1)
+
+        match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', text, re.MULTILINE)
+        if match is not None:
+            try:
+                commit.patchwork_id = int(match.group(1))
+            except Exception as e:
+                raise GitError('failed to parse patchwork id: %s' % (e))
+
+        return commit
+
+    def __str__(self):
+        return 'GitCommit(id=\'%s\', patchwork_id=\'%d\')' % \
+            (self.commit_id, self.patchwork_id)
+
+    def __init__(self):
+        self.commit_id = None
+        self.patchwork_id = None
+
+
 class Stg():
 
     def rollback(self):
@@ -354,7 +383,6 @@ class Stg():
         return result
 
     def get_commit(self, patchname):
-        result = {}
         cmd = ['stg', 'show', patchname]
 
         p = RunProcess(cmd)
@@ -363,21 +391,10 @@ class Stg():
             raise GitError('stg show failed: %d' % (p.returncode),
                            log=p.stderrdata)
 
-        output = p.stdoutdata.strip()
-
-        match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
-        if match is None:
-            raise GitError('Commit id not found from patch: %s' % patchname)
-
-        result['commit_id'] = match.group(1)
-
-        match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', output, re.MULTILINE)
-        if match is None:
-            raise GitError('Patchwork id not found from patch: %s' % patchname)
-
-        result['patchwork_id'] = match.group(1)
-
-        return result
+        try:
+            return GitCommit.parse(p.stdoutdata)
+        except Exception as e:
+            raise GitError('Failed to parse patch %s: %s' % (patchname, e))
 
     def __init__(self, dry_run, output):
         self.dry_run = dry_run
@@ -400,7 +417,6 @@ class Git():
             raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
     def get_commit(self, commitid):
-        result = {}
         cmd = ['git', 'show', commitid]
 
         p = RunProcess(cmd)
@@ -408,15 +424,10 @@ class Git():
             raise GitError('git show failed: %d' % (p.returncode),
                            log=p.stderrdata)
 
-        output = p.stdoutdata.strip()
-
-        match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
-        if match is None:
-            raise GitError('Commit id not found from patch: %s' % commitid)
-
-        result['commit_id'] = match.group(1)
-
-        return result
+        try:
+            return GitCommit.parse(p.stdoutdata)
+        except Exception as e:
+            raise GitError('Failed to parse commit %s: %s' % (commitid, e))
 
     def log_oneline(self, max_count):
         cmd = ['git', 'log', '--oneline', '--reverse',
@@ -1389,7 +1400,7 @@ class PWCLI():
             else:
                 c = self.stg_cache[stg_commit_name]
 
-            patchwork_id = int(c['patchwork_id'])
+            patchwork_id = c.patchwork_id
 
             # the patch can be in any of the projects configured
             for project in self.projects:
@@ -1413,7 +1424,7 @@ class PWCLI():
             # that it's still valid. If the patch is edited after added
             # to the cache the commit id will change and we would
             # erroneously commit an older version of the patch!
-            patch.set_temp_ref(c['commit_id'])
+            patch.set_temp_ref(c.commit_id)
             patch.stg_index = i
 
             patches.append(patch)
@@ -1642,7 +1653,7 @@ class PWCLI():
 
                 # store the commit id temporarily
                 c = self.git.get_commit('HEAD')
-                patch.set_temp_ref(c['commit_id'])
+                patch.set_temp_ref(c.commit_id)
 
                 applied.append(patch)
                 i += 1
