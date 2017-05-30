@@ -111,8 +111,16 @@ def cmd_show(args):
       print 'Author: %s' % (commit.author)
       print 'Date:   %s' % (commit.date)
 
+      # terminate headers with an extra newline
+      print
+
       for line in commit.body.splitlines():
-            print '   %s' % (line)
+            print '    %s' % (line)
+
+      # terminate commit log with an extra newline
+      print
+
+      print 'diff...\n'
 
 def cmd_delete(args):
       if not args.top:

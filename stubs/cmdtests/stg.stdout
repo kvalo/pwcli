@@ -23,23 +23,31 @@ test show
 commit 1bb57a5d22971a425d4d3ef33023087ec99e4d77
 Author: Timo Tiger <timo@example.com>
 Date:   2011-02-11 15:23:31
-   
-   Foo commit log. Ignore this text
-   
-   Signed-off-by: Dino Dinosaurus <dino@example.com>
-   
-   ---
-   FIXME: add the patch here
+
+    
+    Foo commit log. Ignore this text
+    
+    Signed-off-by: Dino Dinosaurus <dino@example.com>
+    
+    ---
+    FIXME: add the patch here
+
+diff...
+
 import should fail
 
 test delete
 commit b50b875961e94e1bb9b826425f950d405c45c3d5
 Author: Dino Dinosaurus <dino@example.com>
 Date:   2011-02-11 15:23:31
-   
-   Foo commit log. Ignore this text
-   
-   Signed-off-by: Dino Dinosaurus <dino@example.com>
-   
-   ---
-   FIXME: add the patch here
+
+    
+    Foo commit log. Ignore this text
+    
+    Signed-off-by: Dino Dinosaurus <dino@example.com>
+    
+    ---
+    FIXME: add the patch here
+
+diff...
+
