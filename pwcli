@@ -1319,6 +1319,27 @@ class PWCLI():
         return new_buf
 
     def show_patch(self, patch):
+        if patch.pending_commit is not None:
+            pending_commit_id = patch.pending_commit.commit_id
+        else:
+            pending_commit_id = None
+
+        if patch.final_commit is not None:
+            final_commit_id = patch.final_commit.commit_id
+        else:
+            final_commit_id = None
+
+        self.output('Delegate: %s' % (patch.get_delegate()))
+        self.output('State: %s' % (patch.get_state_name()))
+        self.output('From: %s' % (patch.get_submitter()))
+        self.output('Date: %s' % (patch.get_date()))
+        self.output('Patchwork-Id: %s' % (patch.get_id()))
+        self.output('Patchwork-URL: %s' % (patch.get_url()))
+        self.output('PendingCommit: %s' % (pending_commit_id))
+        self.output('FinalCommit: %s' % (final_commit_id))
+        self.output('CommitRef: %s' % (patch.get_commit_ref()))
+        self.output('PatchIndex: %s' % (patch.get_patch_index()))
+        self.output('StgIndex: %s' % (patch.stg_index))
         self.output(
             '============================================================')
         self.output(patch.get_name())
