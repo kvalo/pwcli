@@ -92,7 +92,7 @@ PATCH_ACTIVE_STATES = [ PATCH_STATE_NEW,
                         PATCH_STATE_DEFERRED ]
 
 PATCH_STATE_KEYWORD_MAP = {
-   'review' :   [PATCH_STATE_UNDER_REVIEW],
+    'review' :   [PATCH_STATE_UNDER_REVIEW],
    'upstream' : [PATCH_STATE_AWAITING_UPSTREAM],
    'new' :      [PATCH_STATE_NEW],
    'deferred':  [PATCH_STATE_DEFERRED],
@@ -104,7 +104,7 @@ PATCH_STATE_KEYWORD_MAP = {
 STATE_ABORTED = 'Aborted'
 
 def utf8(buf):
-   return unicode(buf).encode('utf-8')
+    return unicode(buf).encode('utf-8')
 
 def clean(buf):
     buf = buf.translate(None, '\n\t')
@@ -112,2289 +112,2289 @@ def clean(buf):
     return buf
 
 def pretty(obj):
-   return pprint.pformat(obj, indent=4)
+    return pprint.pformat(obj, indent=4)
 
 def get_patches_plural(count, capitalize=True):
-   if count > 1:
-      return '%d patches' % (count)
+    if count > 1:
+        return '%d patches' % (count)
 
-   single = 'patch'
+    single = 'patch'
 
-   if capitalize:
-      single = single.capitalize()
+    if capitalize:
+        single = single.capitalize()
 
-   return single
+    return single
 
 # parses a string like '1-3,5' and returns the indexes in a list [1, 2, 3, 5]
 def parse_list(entries):
 
-   ids = []
+    ids = []
 
-   for entry in entries:
-      (start_str, sep, end_str) = entry.partition('-')
+    for entry in entries:
+        (start_str, sep, end_str) = entry.partition('-')
 
-      if not start_str.isdigit:
-         print 'Not a digit: %s' % (start_str)
-         return []
+        if not start_str.isdigit:
+            print 'Not a digit: %s' % (start_str)
+            return []
 
-      start = int(start_str)
+        start = int(start_str)
 
-      if sep != '-':
-         # entry is just one value
-         ids.append(start)
-         continue
+        if sep != '-':
+            # entry is just one value
+            ids.append(start)
+            continue
 
-      # entry is a region
+        # entry is a region
 
-      if not end_str.isdigit:
-         print 'Not a digit: %s' % (end_str)
-         return []
+        if not end_str.isdigit:
+            print 'Not a digit: %s' % (end_str)
+            return []
 
-      end = int(end_str)
+        end = int(end_str)
 
-      # when we say 0-5 we also want the index 5, not just 0-4
-      end += 1
+        # when we say 0-5 we also want the index 5, not just 0-4
+        end += 1
 
-      ids += range(start, end)
+        ids += range(start, end)
 
-   ids = sorted(ids)
+    ids = sorted(ids)
 
-   # remove duplicate entries (didn't find any clever way to do this)
-   #
-   # remember to copy the list as you cannot modify the list you are
-   # currently iterating!
-   prev = None
-   for val in list(ids):
-      if val == prev:
-         ids.remove(val)
-         continue
+    # remove duplicate entries (didn't find any clever way to do this)
+    #
+    # remember to copy the list as you cannot modify the list you are
+    # currently iterating!
+    prev = None
+    for val in list(ids):
+        if val == prev:
+            ids.remove(val)
+            continue
 
-      prev = val
+        prev = val
 
-   return ids
+    return ids
 
 def shrink(s, width, ellipsis=True):
-   ELLIPSIS = '...'
+    ELLIPSIS = '...'
 
-   if len(s) <= width:
-      return s
+    if len(s) <= width:
+        return s
 
-   if not ellipsis:
-      return s[:width]
+    if not ellipsis:
+        return s[:width]
 
-   s = s[:width - len(ELLIPSIS)]
+    s = s[:width - len(ELLIPSIS)]
 
-   # if the last character is a space for readability replace it with
-   # a dot
-   if s[-1] == ' ':
-      s = s[:-1]
-      s += '.'
+    # if the last character is a space for readability replace it with
+    # a dot
+    if s[-1] == ' ':
+        s = s[:-1]
+        s += '.'
 
-   s += ELLIPSIS
+    s += ELLIPSIS
 
-   return s
+    return s
 
 class Timer():
 
-   def start(self):
-      self.start_time = timeit.default_timer()
+    def start(self):
+        self.start_time = timeit.default_timer()
 
-   def stop(self):
-      self.end_time = timeit.default_timer()
+    def stop(self):
+        self.end_time = timeit.default_timer()
 
-   def get_seconds(self):
-      return self.end_time - self.start_time
+    def get_seconds(self):
+        return self.end_time - self.start_time
 
 class RunProcess():
 
-   # subprocess.Popen() throws OSError if the command is not found
-   def __init__(self, args, stdout_cb=None, input=None):
-      self.args = args
-      self.stdout_cb = stdout_cb
-      self.input = input
+    # subprocess.Popen() throws OSError if the command is not found
+    def __init__(self, args, stdout_cb=None, input=None):
+        self.args = args
+        self.stdout_cb = stdout_cb
+        self.input = input
 
-      self.returncode = None
-      self.stdoutdata = ''
-      self.stderrdata = ''
-      self.timer = Timer()
+        self.returncode = None
+        self.stdoutdata = ''
+        self.stderrdata = ''
+        self.timer = Timer()
 
-      self.timer.start()
+        self.timer.start()
 
-      self.p = subprocess.Popen(args,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+        self.p = subprocess.Popen(args,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
 
-      if input:
-         self.p.stdin.write(input)
+        if input:
+            self.p.stdin.write(input)
 
-      # need to close stdin after writing everything, otherwise
-      # reading output will block
-      self.p.stdin.close()
-         
-      lines = iter(self.p.stdout.readline, '')
-      for line in lines:
-         self.stdoutdata += line
-         if stdout_cb:
-            stdout_cb(line)
+        # need to close stdin after writing everything, otherwise
+        # reading output will block
+        self.p.stdin.close()
 
-      self.stderrdata = self.p.stderr.read()
+        lines = iter(self.p.stdout.readline, '')
+        for line in lines:
+            self.stdoutdata += line
+            if stdout_cb:
+                stdout_cb(line)
 
-      self.p.stdout.close()
-      self.p.stderr.close()
-      self.returncode = self.p.wait()
+        self.stderrdata = self.p.stderr.read()
 
-      self.timer.stop()
+        self.p.stdout.close()
+        self.p.stderr.close()
+        self.returncode = self.p.wait()
 
-      logger.debug('%s took %.1fs: (%r, %r, %r)' %
-                   (self, self.timer.get_seconds(), self.returncode,
-                    self.stdoutdata, self.stderrdata))
+        self.timer.stop()
 
-   def __str__(self):
-      if self.input:
-         input_len = '%d B' % (len(self.input))
-      else:
-         input_len = 'None'
+        logger.debug('%s took %.1fs: (%r, %r, %r)' %
+                     (self, self.timer.get_seconds(), self.returncode,
+                      self.stdoutdata, self.stderrdata))
 
-      return 'RunProcess(\'%s\', %s, %s)' % (' '.join(self.args),
-                                             self.stdout_cb,
-                                             input_len)
+    def __str__(self):
+        if self.input:
+            input_len = '%d B' % (len(self.input))
+        else:
+            input_len = 'None'
 
-   def __repr__(self):
-      return 'RunProcess(%r, %r, %r)' % (self.args,
-                                         self.stdout_cb,
-                                         self.input)
+        return 'RunProcess(\'%s\', %s, %s)' % (' '.join(self.args),
+                                               self.stdout_cb,
+                                               input_len)
+
+    def __repr__(self):
+        return 'RunProcess(%r, %r, %r)' % (self.args,
+                                           self.stdout_cb,
+                                           self.input)
 
 class Person():
 
-   def __init__(self, address):
-      (self.name, self.email) = email.utils.parseaddr(address)
-      if self.name is None or self.email is None:
-         raise Exception('Unparseable address: %r' % (address))
+    def __init__(self, address):
+        (self.name, self.email) = email.utils.parseaddr(address)
+        if self.name is None or self.email is None:
+            raise Exception('Unparseable address: %r' % (address))
 
-   # returns name if available, otherwise email address to somehow
-   # identify the person
-   def get_name(self):
-      if not self.name:
-         return self.email
+    # returns name if available, otherwise email address to somehow
+    # identify the person
+    def get_name(self):
+        if not self.name:
+            return self.email
 
-      return self.name
+        return self.name
 
-   def get_email(self):
-      return self.email
+    def get_email(self):
+        return self.email
 
 class GitError(Exception):
 
-   def __str__(self):
-      return self.msg
+    def __str__(self):
+        return self.msg
 
-   def __init__(self, msg, log=None):
-      self.msg = msg
-      self.log = log
+    def __init__(self, msg, log=None):
+        self.msg = msg
+        self.log = log
 
 class Stg():
 
-   def rollback(self):
-      cmd = ['stg', 'delete', '--top']
+    def rollback(self):
+        cmd = ['stg', 'delete', '--top']
 
-      logger.debug('stg.rollback():')
+        logger.debug('stg.rollback():')
 
-      p = RunProcess(cmd)
+        p = RunProcess(cmd)
 
-      ret = p.returncode
-      logger.debug('%s returned: %s' % (cmd, ret))
+        ret = p.returncode
+        logger.debug('%s returned: %s' % (cmd, ret))
 
-      if ret != 0:
-         raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
-      
-   def import_patch(self, mbox):
-      cmd = ['stg', 'import', '--mbox', '--sign']
+        if ret != 0:
+            raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
-      if self.dry_run:
+    def import_patch(self, mbox):
+        cmd = ['stg', 'import', '--mbox', '--sign']
+
+        if self.dry_run:
             self.output('Dry-run: %s' % str(cmd))
             return
 
-      logger.debug('stg.import_patch(): %s' % (mbox))
+        logger.debug('stg.import_patch(): %s' % (mbox))
 
-      p = RunProcess(cmd, input=mbox)
+        p = RunProcess(cmd, input=mbox)
 
-      ret = p.returncode
-      logger.debug('%s returned: %s' % (cmd, ret))
+        ret = p.returncode
+        logger.debug('%s returned: %s' % (cmd, ret))
 
-      if ret != 0:
-         raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
+        if ret != 0:
+            raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
-   def get_series(self):
-      cmd = ['stg', 'series', '--noprefix', '--all']
+    def get_series(self):
+        cmd = ['stg', 'series', '--noprefix', '--all']
 
-      p = RunProcess(cmd)
+        p = RunProcess(cmd)
 
-      if p.returncode != 0:
-         raise GitError('stg series failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+        if p.returncode != 0:
+            raise GitError('stg series failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-      output = p.stdoutdata.strip()
+        output = p.stdoutdata.strip()
 
-      result = output.splitlines()
+        result = output.splitlines()
 
-      logger.debug('stg.get_series(): %s', result)
-      return result
+        logger.debug('stg.get_series(): %s', result)
+        return result
 
-   def get_commit(self, patchname):
-      result = {}
-      cmd = ['stg', 'show', patchname]
+    def get_commit(self, patchname):
+        result = {}
+        cmd = ['stg', 'show', patchname]
 
-      p = RunProcess(cmd)
+        p = RunProcess(cmd)
 
-      if p.returncode != 0:
-         raise GitError('stg show failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+        if p.returncode != 0:
+            raise GitError('stg show failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-      output = p.stdoutdata.strip()
+        output = p.stdoutdata.strip()
 
-      match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
-      if match == None:
-         raise GitError('Commit id not found from patch: %s' % patchname)
+        match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
+        if match == None:
+            raise GitError('Commit id not found from patch: %s' % patchname)
 
-      result['commit_id'] = match.group(1)
+        result['commit_id'] = match.group(1)
 
-      match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', output, re.MULTILINE)
-      if match == None:
-         raise GitError('Patchwork id not found from patch: %s' % patchname)
+        match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', output, re.MULTILINE)
+        if match == None:
+            raise GitError('Patchwork id not found from patch: %s' % patchname)
 
-      result['patchwork_id'] = match.group(1)
+        result['patchwork_id'] = match.group(1)
 
-      return result
+        return result
 
-   def __init__(self, dry_run, output):
-      self.dry_run = dry_run
-      self.output = output
+    def __init__(self, dry_run, output):
+        self.dry_run = dry_run
+        self.output = output
 
 class Git():
 
-   def rollback(self):
-      cmd = ['git', 'reset', '--hard', 'HEAD^']
+    def rollback(self):
+        cmd = ['git', 'reset', '--hard', 'HEAD^']
 
-      logger.debug('git.rollback():')
+        logger.debug('git.rollback():')
 
-      p = RunProcess(cmd)
+        p = RunProcess(cmd)
 
-      ret = p.returncode
-      logger.debug('%s returned: %s' % (cmd, ret))
+        ret = p.returncode
+        logger.debug('%s returned: %s' % (cmd, ret))
 
-      if ret != 0:
-         raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
-   
-   def get_commit(self, commitid):
-      result = {}
-      cmd = ['git', 'show', commitid]
+        if ret != 0:
+            raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
-      p = RunProcess(cmd)
-      if p.returncode != 0:
-         raise GitError('git show failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+    def get_commit(self, commitid):
+        result = {}
+        cmd = ['git', 'show', commitid]
 
-      output = p.stdoutdata.strip()
+        p = RunProcess(cmd)
+        if p.returncode != 0:
+            raise GitError('git show failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-      match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
-      if match == None:
-         raise GitError('Commit id not found from patch: %s' % commitid)
+        output = p.stdoutdata.strip()
 
-      result['commit_id'] = match.group(1)
+        match = re.search(r'^commit ([0-9a-f]{40})$', output, re.MULTILINE)
+        if match == None:
+            raise GitError('Commit id not found from patch: %s' % commitid)
 
-      return result
+        result['commit_id'] = match.group(1)
 
-   def log_oneline(self, max_count):
-      cmd = ['git', 'log', '--oneline', '--reverse',
-             '--max-count', str(max_count)]
-      p = RunProcess(cmd)
+        return result
 
-      if p.returncode != 0:
-         raise GitError('git log --oneline failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+    def log_oneline(self, max_count):
+        cmd = ['git', 'log', '--oneline', '--reverse',
+               '--max-count', str(max_count)]
+        p = RunProcess(cmd)
 
-      return p.stdoutdata.strip()
+        if p.returncode != 0:
+            raise GitError('git log --oneline failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-   def get_config(self, config):
-      cmd = ['git', 'config', '--get', config]
+        return p.stdoutdata.strip()
 
-      p = RunProcess(cmd)
-      if p.returncode != 0:
-         # if the command fails, assume that it's not set and return None
-         logger.debug('Failed to get git config for %r: %d' % (config,
-                                                               p.returncode))
-         return None
+    def get_config(self, config):
+        cmd = ['git', 'config', '--get', config]
 
-      return p.stdoutdata.strip()
+        p = RunProcess(cmd)
+        if p.returncode != 0:
+            # if the command fails, assume that it's not set and return None
+            logger.debug('Failed to get git config for %r: %d' % (config,
+                                                                  p.returncode))
+            return None
 
-   def get_branch(self):
-      cmd = ['git', 'branch']
-      p = RunProcess(cmd)
+        return p.stdoutdata.strip()
 
-      if p.returncode != 0:
-         raise GitError('git branch failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+    def get_branch(self):
+        cmd = ['git', 'branch']
+        p = RunProcess(cmd)
 
-      output = p.stdoutdata
+        if p.returncode != 0:
+            raise GitError('git branch failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-      # the current branch is prefixed with '*'
-      for line in output.splitlines():
-         tokens = line.split()
-         if tokens[0] == '*' and len(tokens) > 1:
-            return tokens[1]
+        output = p.stdoutdata
 
-      return None
+        # the current branch is prefixed with '*'
+        for line in output.splitlines():
+            tokens = line.split()
+            if tokens[0] == '*' and len(tokens) > 1:
+                return tokens[1]
 
-   # removes a line matching filter from the commit in HEAD
-   def filter_msg(self, filter_string):
-      sed_cmd = 'sed -e "/%s/d"' % (filter_string)
+        return None
 
-      # --force switch is to work around error "Cannot create a new backup.
-      # --A previous backup already exists in refs/original/"
+    # removes a line matching filter from the commit in HEAD
+    def filter_msg(self, filter_string):
+        sed_cmd = 'sed -e "/%s/d"' % (filter_string)
 
-      cmd = ['git', 'filter-branch', '--force', '--msg-filter', sed_cmd, 'HEAD^..HEAD']
+        # --force switch is to work around error "Cannot create a new backup.
+        # --A previous backup already exists in refs/original/"
 
-      p = RunProcess(cmd)
+        cmd = ['git', 'filter-branch', '--force', '--msg-filter', sed_cmd, 'HEAD^..HEAD']
 
-      if p.returncode != 0:
-         raise GitError('git filter-branch failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+        p = RunProcess(cmd)
 
-   def cherry_pick(self, commit_id):
-      cmd = ['git', 'cherry-pick', commit_id]
+        if p.returncode != 0:
+            raise GitError('git filter-branch failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-      if self.dry_run:
+    def cherry_pick(self, commit_id):
+        cmd = ['git', 'cherry-pick', commit_id]
+
+        if self.dry_run:
             self.output('Dry-run: %s' % str(cmd))
             return
 
-      p = RunProcess(cmd)
+        p = RunProcess(cmd)
 
-      if p.returncode != 0:
-         # FIXME: if the cherry-pick fails (conflicts or whatnot) we
-         # should run git cherry-pick --abort to cleanup
-         raise GitError('git cherry-pick failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+        if p.returncode != 0:
+            # FIXME: if the cherry-pick fails (conflicts or whatnot) we
+            # should run git cherry-pick --abort to cleanup
+            raise GitError('git cherry-pick failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
-   def checkout(self, branch):
-      cmd = ['git', 'checkout', branch]
-      p = RunProcess(cmd)
-      if p.returncode != 0:
-         raise GitError('git checkout failed: %d' % (p.returncode),
-                        log=p.stderrdata)
+    def checkout(self, branch):
+        cmd = ['git', 'checkout', branch]
+        p = RunProcess(cmd)
+        if p.returncode != 0:
+            raise GitError('git checkout failed: %d' % (p.returncode),
+                           log=p.stderrdata)
 
 
-   def am(self, mbox):
-      cmd = ['git', 'am', '-s', '-3']
+    def am(self, mbox):
+        cmd = ['git', 'am', '-s', '-3']
 
-      if self.dry_run:
+        if self.dry_run:
             self.output('Dry-run: %s' % str(cmd))
             return
 
-      p = RunProcess(cmd, input=mbox)
+        p = RunProcess(cmd, input=mbox)
 
-      ret = p.returncode
-      logger.debug('%s returned: %s' % (cmd, ret))
+        ret = p.returncode
+        logger.debug('%s returned: %s' % (cmd, ret))
 
-      if ret != 0:
-         abort_cmd = ['git', 'am', '--abort']
-         logger.debug('Aborting git am: %s' % abort_cmd)
-         RunProcess(abort_cmd)
+        if ret != 0:
+            abort_cmd = ['git', 'am', '--abort']
+            logger.debug('Aborting git am: %s' % abort_cmd)
+            RunProcess(abort_cmd)
 
-         clean_cmd = ['git', 'checkout', '-f']
-         logger.debug('Cleaning working tree: %s' % clean_cmd)
-         RunProcess(clean_cmd)
+            clean_cmd = ['git', 'checkout', '-f']
+            logger.debug('Cleaning working tree: %s' % clean_cmd)
+            RunProcess(clean_cmd)
 
-         log = p.stderrdata
+            log = p.stderrdata
 
-         # At least with 1.7.9.5 all errors are output just to stdout
-         # so add that to the log. Just remove the help messages from
-         # the end, they don't provide any real value in this case:
-         #
-         #        When you have resolved this problem run "git am --resolved".
-         #        If you would prefer to skip this patch, instead run "git am --skip".
-         #        To restore the original branch and stop patching run "git am --abort".
-         #
-         log += re.sub(r'When you have resolved.*$', '', p.stdoutdata,
-                       flags=re.MULTILINE|re.DOTALL)
+            # At least with 1.7.9.5 all errors are output just to stdout
+            # so add that to the log. Just remove the help messages from
+            # the end, they don't provide any real value in this case:
+            #
+            #        When you have resolved this problem run "git am --resolved".
+            #        If you would prefer to skip this patch, instead run "git am --skip".
+            #        To restore the original branch and stop patching run "git am --abort".
+            #
+            log += re.sub(r'When you have resolved.*$', '', p.stdoutdata,
+                          flags=re.MULTILINE|re.DOTALL)
 
-         raise GitError('%s failed: %s' % (cmd, ret), log=log)
+            raise GitError('%s failed: %s' % (cmd, ret), log=log)
 
-   def __init__(self, dry_run, output):
-      self.dry_run = dry_run
-      self.output = output
+    def __init__(self, dry_run, output):
+        self.dry_run = dry_run
+        self.output = output
 
 @functools.total_ordering
 class Patch():
 
-   def get_name(self):
-      return self.attributes['name']
+    def get_name(self):
+        return self.attributes['name']
 
-   def get_id(self):
-      return self.attributes['id']
+    def get_id(self):
+        return self.attributes['id']
 
-   def get_delegate(self):
-      return self.attributes['delegate']
+    def get_delegate(self):
+        return self.attributes['delegate']
 
-   def get_submitter(self):
-      return self.attributes['submitter']
+    def get_submitter(self):
+        return self.attributes['submitter']
 
-   def get_date(self):
-      return self.attributes['date']
+    def get_date(self):
+        return self.attributes['date']
 
-   def get_datetime(self):
-      return datetime.datetime.strptime(self.get_date(), '%Y-%m-%d %H:%M:%S')
+    def get_datetime(self):
+        return datetime.datetime.strptime(self.get_date(), '%Y-%m-%d %H:%M:%S')
 
-   def get_state_id(self):
-      return self.attributes['state_id']
+    def get_state_id(self):
+        return self.attributes['state_id']
 
-   def get_state_name(self):
-      return self.attributes['state']
+    def get_state_name(self):
+        return self.attributes['state']
 
-   def set_state_name(self, state_name):
-      if self.dry_run:
-         logger.debug('dry-run: %s().set_state_name(%s)' % (self, state_name))
-         return
+    def set_state_name(self, state_name):
+        if self.dry_run:
+            logger.debug('dry-run: %s().set_state_name(%s)' % (self, state_name))
+            return
 
-      state_id = self.pw.get_state_id(state_name)
-      
-      params = {}
-      params['state'] = state_id
-      self.pw.rpc.patch_set(self.get_id(), params)
+        state_id = self.pw.get_state_id(state_name)
 
-      self.attributes['state'] = state_name
-      self.attributes['state_id'] = state_id
+        params = {}
+        params['state'] = state_id
+        self.pw.rpc.patch_set(self.get_id(), params)
 
-      logger.debug('%s state changed to %s' % (self.get_id(), state_id))
+        self.attributes['state'] = state_name
+        self.attributes['state_id'] = state_id
 
-   def get_commit_ref(self):
-      return self.attributes['commit_ref']
+        logger.debug('%s state changed to %s' % (self.get_id(), state_id))
 
-   def set_commit_ref(self, commit_ref):
-      if self.dry_run:
-         logger.debug('dry-run: %s().set_commit_ref(%s)' % (self, commit_ref))
-         return
+    def get_commit_ref(self):
+        return self.attributes['commit_ref']
 
-      params = {}
-      params['commit_ref'] = commit_ref
-      self.pw.rpc.patch_set(self.get_id(), params)
+    def set_commit_ref(self, commit_ref):
+        if self.dry_run:
+            logger.debug('dry-run: %s().set_commit_ref(%s)' % (self, commit_ref))
+            return
 
-      self.attributes['commit_ref'] = commit_ref
+        params = {}
+        params['commit_ref'] = commit_ref
+        self.pw.rpc.patch_set(self.get_id(), params)
 
-      logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
+        self.attributes['commit_ref'] = commit_ref
 
-   def get_temp_ref(self):
-      return self.temp_ref
+        logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
 
-   def set_temp_ref(self, temp_ref):
-      self.temp_ref = temp_ref
+    def get_temp_ref(self):
+        return self.temp_ref
 
-   def get_url(self):
-      return '%s%s/' % (self.pw.patch_url, self.get_id())
+    def set_temp_ref(self, temp_ref):
+        self.temp_ref = temp_ref
 
-   def get_mbox(self):
-      if self.mbox == None:
-         logger.debug('patch_get_mbox(%s)' % self.get_id())
-         self.mbox = self.pw.rpc.patch_get_mbox(self.get_id())
-         logger.debug(repr(self.mbox))
+    def get_url(self):
+        return '%s%s/' % (self.pw.patch_url, self.get_id())
 
-      return utf8(self.mbox)
+    def get_mbox(self):
+        if self.mbox == None:
+            logger.debug('patch_get_mbox(%s)' % self.get_id())
+            self.mbox = self.pw.rpc.patch_get_mbox(self.get_id())
+            logger.debug(repr(self.mbox))
 
-   # removes all extra '[ ]' tags _before_ the actual title
-   def clean_subject(self, subject):
-      # Note: '.*?' is a non-greedy version of '.*'
+        return utf8(self.mbox)
 
-      return re.sub(r'^\s*(\[.*?\]\s*)*', '', subject)
+    # removes all extra '[ ]' tags _before_ the actual title
+    def clean_subject(self, subject):
+        # Note: '.*?' is a non-greedy version of '.*'
 
-   def get_mbox_for_stgit(self):
-      msg = self.get_email()
+        return re.sub(r'^\s*(\[.*?\]\s*)*', '', subject)
 
-      payload = msg.get_payload()
+    def get_mbox_for_stgit(self):
+        msg = self.get_email()
 
-      # add Patchwork-Id with s/^---\n/Patchwork-Id: 1001\n---\n
-      id_line = '\nPatchwork-Id: %s\n---\n' % (self.get_id())
-      payload = re.sub(r'\n---\n', id_line, payload)
-      msg.set_payload(payload)
+        payload = msg.get_payload()
 
-      subject = self.clean_subject(msg['Subject'])
-      msg.replace_header('Subject', subject)
+        # add Patchwork-Id with s/^---\n/Patchwork-Id: 1001\n---\n
+        id_line = '\nPatchwork-Id: %s\n---\n' % (self.get_id())
+        payload = re.sub(r'\n---\n', id_line, payload)
+        msg.set_payload(payload)
 
-      # Add a From header with unixfrom so that this is valid mbox
-      # format, strangely patchwork doesn't add it.
-      mbox = msg.as_string(unixfrom=True)
+        subject = self.clean_subject(msg['Subject'])
+        msg.replace_header('Subject', subject)
 
-      return mbox
+        # Add a From header with unixfrom so that this is valid mbox
+        # format, strangely patchwork doesn't add it.
+        mbox = msg.as_string(unixfrom=True)
 
-   def set_mbox(self, mbox):
-      if self.dry_run:
-         logger.debug('dry-run: %s().set_mbox(%s)' % (self, mbox))
-         return
+        return mbox
 
-      logger.debug('%s: set_mbox(): %s' % (self, repr(mbox)))
-      self.mbox = mbox
+    def set_mbox(self, mbox):
+        if self.dry_run:
+            logger.debug('dry-run: %s().set_mbox(%s)' % (self, mbox))
+            return
 
-      # need to also update the name from mbox
-      msg = self.get_email()
-      self.attributes['name'] = msg['Subject']
+        logger.debug('%s: set_mbox(): %s' % (self, repr(mbox)))
+        self.mbox = mbox
 
-   def get_diffstat(self):
-      p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
+        # need to also update the name from mbox
+        msg = self.get_email()
+        self.attributes['name'] = msg['Subject']
 
-      diffstat = p.stdoutdata
-      diffstat = diffstat.rstrip()
+    def get_diffstat(self):
+        p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
 
-      return diffstat
+        diffstat = p.stdoutdata
+        diffstat = diffstat.rstrip()
 
-   def get_email(self):
-      return email.message_from_string(self.get_mbox())
+        return diffstat
 
-   def get_reply_msg(self, from_name, from_email, text='', signature=None):
-      msg = self.get_email()
+    def get_email(self):
+        return email.message_from_string(self.get_mbox())
 
-      (log, sep, patch) = msg.get_payload().partition(LOG_SEPARATOR)
+    def get_reply_msg(self, from_name, from_email, text='', signature=None):
+        msg = self.get_email()
 
-      # create body
-      quote = []
+        (log, sep, patch) = msg.get_payload().partition(LOG_SEPARATOR)
 
-      from_entries = email.header.decode_header(msg['From'])
-      logger.debug('from_entries %r' % (from_entries))
+        # create body
+        quote = []
 
-      if len(from_entries) == 0:
-         raise Exception('Invalid From header: %r' % (msg['From']))
+        from_entries = email.header.decode_header(msg['From'])
+        logger.debug('from_entries %r' % (from_entries))
 
-      (header_from, charset) = from_entries[0]
+        if len(from_entries) == 0:
+            raise Exception('Invalid From header: %r' % (msg['From']))
 
-      # FIXME: what if charset is something else (iso-8859-1 etc), can
-      # we use that still?
-      if charset == 'utf-8' or charset == None:
-         who = header_from
-      else:
-         who = None
+        (header_from, charset) = from_entries[0]
 
-      if who:
-         quote.append('%s wrote:' % (who))
+        # FIXME: what if charset is something else (iso-8859-1 etc), can
+        # we use that still?
+        if charset == 'utf-8' or charset == None:
+            who = header_from
+        else:
+            who = None
 
-      for line in log.splitlines():
-         quote.append('> %s' % line)
+        if who:
+            quote.append('%s wrote:' % (who))
 
-      quote.append('')
+        for line in log.splitlines():
+            quote.append('> %s' % line)
 
-      body = '\n'.join(quote)
+        quote.append('')
 
-      # empty line after the quote
-      body += '\n'
+        body = '\n'.join(quote)
 
-      body += text
+        # empty line after the quote
+        body += '\n'
 
-      if signature:
-         t = string.Template(signature)
-         s = t.substitute(URL=self.get_url())
-         body += '-- \n%s\n' % (s)
+        body += text
 
-      logger.debug('body=%s', repr(body))
+        if signature:
+            t = string.Template(signature)
+            s = t.substitute(URL=self.get_url())
+            body += '-- \n%s\n' % (s)
 
-      # avoid base64 encoding, a tip from http://bugs.python.org/issue12552
-      email.charset.add_charset('utf-8', email.charset.SHORTEST)
+        logger.debug('body=%s', repr(body))
 
-      reply = email.mime.text.MIMEText(body, _charset='utf-8')
+        # avoid base64 encoding, a tip from http://bugs.python.org/issue12552
+        email.charset.add_charset('utf-8', email.charset.SHORTEST)
 
-      # create cc list
-      persons = []
+        reply = email.mime.text.MIMEText(body, _charset='utf-8')
 
-      if 'To' in msg:
-         persons += msg['To'].split(',')
+        # create cc list
+        persons = []
 
-      if 'Cc' in msg:
-        persons += msg['Cc'].split(',')
+        if 'To' in msg:
+            persons += msg['To'].split(',')
 
-      cc = []
-      for person in persons:
-         person = clean(person)
+        if 'Cc' in msg:
+            persons += msg['Cc'].split(',')
 
-         # don't add my email in cc field
-         if person.count(from_email) > 0:
-            continue
+        cc = []
+        for person in persons:
+            person = clean(person)
 
-         cc.append(person)
+            # don't add my email in cc field
+            if person.count(from_email) > 0:
+                continue
 
-      from_hdr = '%s <%s>' % (from_name, from_email)
-      subject_hdr = 'Re: %s' % clean(msg['Subject'])
-      to_hdr = clean(msg['From'])
-      cc_hdr = ', '.join(cc)
+            cc.append(person)
 
-      reply['Subject'] = subject_hdr
-      reply['From'] = from_hdr
-      reply['In-Reply-To'] = msg['Message-Id']
-      reply['References'] = msg['Message-Id']
-      reply['To'] = to_hdr
+        from_hdr = '%s <%s>' % (from_name, from_email)
+        subject_hdr = 'Re: %s' % clean(msg['Subject'])
+        to_hdr = clean(msg['From'])
+        cc_hdr = ', '.join(cc)
 
-      if len(cc_hdr) > 0:
-         reply['Cc'] = cc_hdr
+        reply['Subject'] = subject_hdr
+        reply['From'] = from_hdr
+        reply['In-Reply-To'] = msg['Message-Id']
+        reply['References'] = msg['Message-Id']
+        reply['To'] = to_hdr
 
-      user_agent = PWCLI_USER_AGENT
+        if len(cc_hdr) > 0:
+            reply['Cc'] = cc_hdr
 
-      if 'PWCLI_CENSOR_USER_AGENT' in os.environ:
-         # censor the string from all changing version numbers (pwcli
-         # _and_ python) so that it doesn't change the test output
-         user_agent = re.sub(r'(pwcli/)[0-9\.\-git]+' , r'\1<censored>',
-                             user_agent)
-         user_agent = re.sub(r'(Python/)[0-9\.]+' , r'\1<censored>',
-                             user_agent)
+        user_agent = PWCLI_USER_AGENT
 
-      reply['User-Agent'] = user_agent
+        if 'PWCLI_CENSOR_USER_AGENT' in os.environ:
+            # censor the string from all changing version numbers (pwcli
+            # _and_ python) so that it doesn't change the test output
+            user_agent = re.sub(r'(pwcli/)[0-9\.\-git]+' , r'\1<censored>',
+                                user_agent)
+            user_agent = re.sub(r'(Python/)[0-9\.]+' , r'\1<censored>',
+                                user_agent)
 
+        reply['User-Agent'] = user_agent
 
-      logger.debug('%s().get_reply_msg(): %s', self, repr(quote))
 
-      return reply
+        logger.debug('%s().get_reply_msg(): %s', self, repr(quote))
 
-   def get_log(self):
-      msg = self.get_email()
-      payload = msg.get_payload()
+        return reply
 
-      (log, sep, patch) = payload.partition(LOG_SEPARATOR)
+    def get_log(self):
+        msg = self.get_email()
+        payload = msg.get_payload()
 
-      return log.strip()
+        (log, sep, patch) = payload.partition(LOG_SEPARATOR)
 
-   # Tries to guess the patch number (eg 5 from 5/10) from the name
-   # and returns that as int. If no index found returns None.
-   def get_patch_index(self):
-      # Note: '.*?' is a non-greedy version of '.*'
+        return log.strip()
 
-      match = re.search(r'^\s*\[.*?(\d+)/\d+.*?]', self.get_name())
+    # Tries to guess the patch number (eg 5 from 5/10) from the name
+    # and returns that as int. If no index found returns None.
+    def get_patch_index(self):
+        # Note: '.*?' is a non-greedy version of '.*'
 
-      if match == None:
-         return None
+        match = re.search(r'^\s*\[.*?(\d+)/\d+.*?]', self.get_name())
 
-      return int(match.group(1))
-      
-   def __eq__(self, other):
-      if self.get_datetime() == other.get_datetime() and \
-         self.get_name() == other.get_name():
+        if match == None:
+            return None
+
+        return int(match.group(1))
+
+    def __eq__(self, other):
+        if self.get_datetime() == other.get_datetime() and \
+           self.get_name() == other.get_name():
             return True
 
-      return False
+        return False
 
-   def __lt__(self, other):
-      if self.get_datetime() < other.get_datetime():
-         return True
+    def __lt__(self, other):
+        if self.get_datetime() < other.get_datetime():
+            return True
 
-      # if the date is same due some simple comparison based on
-      # subject name
-      if self.get_datetime() == other.get_datetime():
-         self_index = self.get_patch_index()
-         other_index = other.get_patch_index()
+        # if the date is same due some simple comparison based on
+        # subject name
+        if self.get_datetime() == other.get_datetime():
+            self_index = self.get_patch_index()
+            other_index = other.get_patch_index()
 
-         if self_index and other_index:
-            return self_index < other_index
-         
-         return self.get_name() < other.get_name()
+            if self_index and other_index:
+                return self_index < other_index
 
-      return False
-      
-   def __str__(self):
-       return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
+            return self.get_name() < other.get_name()
 
-   def __init__(self, pw, attributes, dry_run):
-      self.pw = pw
-      self.attributes = attributes
-      self.dry_run = dry_run
+        return False
 
-      self.mbox = None
-      self.temp_ref = None
-      self.stg_index = None
+    def __str__(self):
+        return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
+
+    def __init__(self, pw, attributes, dry_run):
+        self.pw = pw
+        self.attributes = attributes
+        self.dry_run = dry_run
+
+        self.mbox = None
+        self.temp_ref = None
+        self.stg_index = None
 
 class Project():
-   def _get_patches(self, filters, username=None):
-      results = []
+    def _get_patches(self, filters, username=None):
+        results = []
 
-      logger.debug('%s()._get_patches(filters=%s)' % (self, repr(filters)))
-      patches = self.pw.rpc.patch_list(filters)
-      logger.debug('patches:\n%s' % pretty(patches))
+        logger.debug('%s()._get_patches(filters=%s)' % (self, repr(filters)))
+        patches = self.pw.rpc.patch_list(filters)
+        logger.debug('patches:\n%s' % pretty(patches))
 
-      for p in patches:
-         patch = Patch(self.pw, p, self.dry_run)
+        for p in patches:
+            patch = Patch(self.pw, p, self.dry_run)
 
-         if username != None and patch.get_delegate() != username:
-            continue
+            if username != None and patch.get_delegate() != username:
+                continue
 
-         results.append(patch)
-         logger.debug('added patch %s' % patch)
+            results.append(patch)
+            logger.debug('added patch %s' % patch)
 
-      return results
+        return results
 
-   def get_patches(self, state=PATCH_STATE_UNDER_REVIEW, username=None):
-      patches = []
+    def get_patches(self, state=PATCH_STATE_UNDER_REVIEW, username=None):
+        patches = []
 
-      for patch in self.cache.values():
-         if state != None and patch.get_state_name() != state:
-            continue
+        for patch in self.cache.values():
+            if state != None and patch.get_state_name() != state:
+                continue
 
-         if username != None and patch.get_delegate() != username:
-            continue
+            if username != None and patch.get_delegate() != username:
+                continue
 
-         patches.append(patch)
+            patches.append(patch)
 
-      return patches
+        return patches
 
-   def get_patch(self, patchwork_id):
-      if patchwork_id in self.cache:
-         return self.cache[patchwork_id]
+    def get_patch(self, patchwork_id):
+        if patchwork_id in self.cache:
+            return self.cache[patchwork_id]
 
-      filters = {}
-      filters['id'] = patchwork_id
-      results = self._get_patches(filters)
+        filters = {}
+        filters['id'] = patchwork_id
+        results = self._get_patches(filters)
 
-      if len(results) > 1:
-         logger.debug('Multiple patches found with same patchwork id %s' % (patchwork_id))
-         return None
-      elif len(results) == 0:
-         logger.debug('patchwork id %s not found' % (patchwork_id))
-         return None
+        if len(results) > 1:
+            logger.debug('Multiple patches found with same patchwork id %s' % (patchwork_id))
+            return None
+        elif len(results) == 0:
+            logger.debug('patchwork id %s not found' % (patchwork_id))
+            return None
 
-      # add patch to cache
-      patch = results[0]
-      self.cache[patchwork_id] = patch
+        # add patch to cache
+        patch = results[0]
+        self.cache[patchwork_id] = patch
 
-      return patch
+        return patch
 
-   def update_cache(self):
-      patches = []
-      username = None
-      filters = {}
-      filters['project_id'] = self.id
+    def update_cache(self):
+        patches = []
+        username = None
+        filters = {}
+        filters['project_id'] = self.id
 
-      for state in [PATCH_STATE_NEW,
-                    PATCH_STATE_UNDER_REVIEW,
-                    PATCH_STATE_AWAITING_UPSTREAM,
-                    PATCH_STATE_DEFERRED]:
-         filters['state_id'] = self.pw.get_state_id(state)
-         patches += self._get_patches(filters, username)
+        for state in [PATCH_STATE_NEW,
+                      PATCH_STATE_UNDER_REVIEW,
+                      PATCH_STATE_AWAITING_UPSTREAM,
+                      PATCH_STATE_DEFERRED]:
+            filters['state_id'] = self.pw.get_state_id(state)
+            patches += self._get_patches(filters, username)
 
-      # make a copy of the old cache
-      old_cache = dict(self.cache)
-      
-      for new_patch in patches:
-         pid = new_patch.get_id()
+        # make a copy of the old cache
+        old_cache = dict(self.cache)
 
-         if not pid in self.cache:
-            # patch is not in cache, add it
-            self.cache[pid] = new_patch
-            continue
+        for new_patch in patches:
+            pid = new_patch.get_id()
 
-         # patch already exists in the cache
-         patch = self.cache[pid]
-         del old_cache[pid]
+            if not pid in self.cache:
+                # patch is not in cache, add it
+                self.cache[pid] = new_patch
+                continue
 
-         # check the state and update it if changed
-         if patch.get_state_name() != new_patch.get_state_name():
-            # FIXME: Doesn't set_state_name() also make an unnecessary
-            # rpc call to ther server here? That's wasting time. Ok,
-            # currently this doesn't apply as update_cache() is called
-            # only once during startup.
-            patch.set_state_name(new_patch.get_state_name())
+            # patch already exists in the cache
+            patch = self.cache[pid]
+            del old_cache[pid]
 
-      # Delete patches from cache which are not in one of active
-      # states anymore.
-      for old_patch in old_cache:
-         del self.cache[old_patch.get_id()]
+            # check the state and update it if changed
+            if patch.get_state_name() != new_patch.get_state_name():
+                # FIXME: Doesn't set_state_name() also make an unnecessary
+                # rpc call to ther server here? That's wasting time. Ok,
+                # currently this doesn't apply as update_cache() is called
+                # only once during startup.
+                patch.set_state_name(new_patch.get_state_name())
 
-   def __str__(self):
-       return 'Project(name=%s, id=%s)' % (self.name, self.id)
+        # Delete patches from cache which are not in one of active
+        # states anymore.
+        for old_patch in old_cache:
+            del self.cache[old_patch.get_id()]
 
-   def __init__(self, name, pw, dry_run):
-      self.name = name
-      self.id = None
-      self.pw = pw
-      self.dry_run = dry_run
-      self.cache = {}
+    def __str__(self):
+        return 'Project(name=%s, id=%s)' % (self.name, self.id)
 
-      logger.debug('project_list(%s, %d)' % (self.name, 0))
-      projects = pw.rpc.project_list(self.name, 0)
+    def __init__(self, name, pw, dry_run):
+        self.name = name
+        self.id = None
+        self.pw = pw
+        self.dry_run = dry_run
+        self.cache = {}
 
-      logger.debug('projects: %s' % pretty(projects))
+        logger.debug('project_list(%s, %d)' % (self.name, 0))
+        projects = pw.rpc.project_list(self.name, 0)
 
-      for project in projects:
-         if project['linkname'] == self.name:
-            self.id = project['id']
+        logger.debug('projects: %s' % pretty(projects))
 
-      if self.id == None:
-         raise Exception('No project id found for %s' % self.name)
+        for project in projects:
+            if project['linkname'] == self.name:
+                self.id = project['id']
 
-      logger.debug(self)
+        if self.id == None:
+            raise Exception('No project id found for %s' % self.name)
+
+        logger.debug(self)
 
 class AuthTransport(xmlrpclib.SafeTransport):
-   def send_auth(self, connection):
-      creds = base64.encodestring('%s:%s' % (self.username,
-                                             self.password)).strip()
-      auth_string = 'Basic ' + creds
-      connection.putheader('Authorization', auth_string)
+    def send_auth(self, connection):
+        creds = base64.encodestring('%s:%s' % (self.username,
+                                               self.password)).strip()
+        auth_string = 'Basic ' + creds
+        connection.putheader('Authorization', auth_string)
 
-   def send_host(self, connection, host):
-      xmlrpclib.Transport.send_host(self, connection, host)
+    def send_host(self, connection, host):
+        xmlrpclib.Transport.send_host(self, connection, host)
 
-      if self.username != None and self.password != None:
-         self.send_auth(connection)
+        if self.username != None and self.password != None:
+            self.send_auth(connection)
 
-   def make_connection(self, host):
-      if self.https:
-         return xmlrpclib.SafeTransport.make_connection(self, host)
-      else:
-         return xmlrpclib.Transport.make_connection(self, host)
+    def make_connection(self, host):
+        if self.https:
+            return xmlrpclib.SafeTransport.make_connection(self, host)
+        else:
+            return xmlrpclib.Transport.make_connection(self, host)
 
-   def __init__(self, username = None, password = None, https = False):
-      xmlrpclib.SafeTransport.__init__(self)
+    def __init__(self, username = None, password = None, https = False):
+        xmlrpclib.SafeTransport.__init__(self)
 
-      self.username = username
-      self.password = password
-      self.https = https
+        self.username = username
+        self.password = password
+        self.https = https
 
 class Patchwork():
-   def update_state_list(self):
-      logger.debug('patch_state_list()')
-      self.states = self.rpc.state_list('', 0)
-      logger.debug(repr(self.states))
+    def update_state_list(self):
+        logger.debug('patch_state_list()')
+        self.states = self.rpc.state_list('', 0)
+        logger.debug(repr(self.states))
 
-   def get_state_id(self, state_name):
-      for state in self.states:
-         if state['name'] == state_name:
-            return state['id']
+    def get_state_id(self, state_name):
+        for state in self.states:
+            if state['name'] == state_name:
+                return state['id']
 
-   def get_user_ids(self, username):
-      persons = self.rpc.person_list(username, 0)
-      logger.debug('%s().get_user_id(%s):\n%s' % (self, username, pretty(persons)))
+    def get_user_ids(self, username):
+        persons = self.rpc.person_list(username, 0)
+        logger.debug('%s().get_user_id(%s):\n%s' % (self, username, pretty(persons)))
 
-      ids = []
+        ids = []
 
-      for person in persons:
-         if person['user'] == username:
-            ids.append(person['id'])
+        for person in persons:
+            if person['user'] == username:
+                ids.append(person['id'])
 
-      return ids
-         
-   def __init__(self, url, username, password):
-      self.xmlrpc_url = url
-      self.patch_url = url.replace('/xmlrpc/', '/patch/')
-      https = url.startswith('https')
-      transport = AuthTransport(username, password, https)
-      self.rpc = xmlrpclib.Server(url, transport = transport)
+        return ids
 
-      logger.debug('connected to %s (username %s)' % (url, username))
+    def __init__(self, url, username, password):
+        self.xmlrpc_url = url
+        self.patch_url = url.replace('/xmlrpc/', '/patch/')
+        https = url.startswith('https')
+        transport = AuthTransport(username, password, https)
+        self.rpc = xmlrpclib.Server(url, transport = transport)
 
-      self.update_state_list()
+        logger.debug('connected to %s (username %s)' % (url, username))
+
+        self.update_state_list()
 
 class PWCLI():
 
-   # retrieve all mbox files in one for "smoother user experience"
-   def prefetch_patches(self, patches):
-      i = 1
-      for patch in patches:
-         self.output('\rRetrieving patches (%d/%d)' % (i, len(patches)),
-                     newline=False)
-
-         patch.get_mbox()
-         i += 1
-
-   def get_patches_from_ids(self, ids):
-      indexes = parse_list(ids)
-
-      if self.patches == None:
-         raise Exception('No patches listed, forgot to run list command?')
-
-      if len(self.patches) == 0:
-         raise Exception('No patches available, doing nothing.')
-         return
-
-      # sanity check and populate selected[]
-      selected_patches = []
-      for index in indexes:
-         if index > len(self.patches):
-            raise Exception('Patch index %d not found, max %d' %
-                            (index, len(self.patches)))
-
-         if index - 1 < 0:
-            self.output('Invalid patch list index: %d %d' % (index))
-            return
-
-         selected_patches.append(self.patches[index - 1])
-
-      return selected_patches
-
-   def open_browser_url(self, url):
-      if not self.browser:
-         return
-
-      cmd = [self.browser, url]
-
-      # to avoid call() unnecessarily spamming stdout and stderr
-      devnull = open(os.devnull, "w")
-
-      returncode = subprocess.call(cmd, stdout=devnull, stderr=devnull)
-
-      devnull.close()
-
-      logger.debug('PWCLI.open_browser_url(url=%r): return code %d' % (url,
-                                                                       returncode))
-
-   def create_patchlist_as_string(self, patches, show_indexes=False,
-                                  open_browser=False, show_ids=False):
-      i = 1
-      result = ''
-
-      for patch in patches:
-         if show_indexes:
-            if patch.get_temp_ref():
-               pending = '*'
-            else:
-               pending = ' '
-
-            index = '%s[%3d] ' % (pending, i)
-         elif show_ids:
-            # this is not similarly aligned as the others but that
-            # doesn't matter as we should use this only with emails
-            index = '%d ' % (patch.get_id())
-         else:
-            # For nice alignment add empty columns if indexes are
-            # disabled.
-            index = '      '
-
-         WIDTH_NAME = 60
-         WIDTH_DATE = 10
-         WIDTH_SUBMITTER = 12
-
-         name = shrink(patch.get_name(), WIDTH_NAME)
-         date = patch.get_datetime().strftime('%Y-%m-%d')
-         submitter = shrink(Person(patch.get_submitter()).get_name(),
-                                     WIDTH_SUBMITTER, ellipsis=False)
-         state = patch.get_state_name()
-
-         # <patchname> <date> <submitter> <state>
-         formatstr = '%%s%%-%ds %%-%ds %%-%ds %%s\n' % (WIDTH_NAME,
-                                                        WIDTH_DATE,
-                                                        WIDTH_SUBMITTER)
-         result += formatstr % (index, name, date, submitter, state)
-         # result += '%s %-40s %-12s %-10s %s\n' % (index,
-         #                                          patch.get_name(),
-         #                                          'John Doe',
-         #                                          '2012-01-02',
-         #                                          patch.get_state_name())
-         if open_browser:
-            self.open_browser_url(patch.get_url())
-
-         i += 1
-
-      return result.strip('\n')
-
-   def create_patchlist_for_mail(self, patches):
-      result = ''
-
-      for patch in patches:
-         result += '%d %s\n' % (patch.get_id(), patch.get_name())
-
-      return result.strip('\n')
-
-   def show_choose_list(self, table, prefix=None):
-
-      valid = {}
-
-      if not prefix:
-         prefix = ''
-
-      # for convenience convert list to a dict
-      if isinstance(table, list):
-         copy = table
-         table = collections.OrderedDict()
-         for c in copy:
-            table[c] = c
-
-      for name in table.keys():
-         # find the one char shortcut
-         match = re.search('([A-Z])', name)
-         if len(match.groups()) != 1:
-            raise Exception('Invalid number (%d) of upper case letters in choose list: %s' % (len(match.groups()), name))
-         shortcut = match.group(0).lower()
-         valid[shortcut] = table[name]
-
-      while True:
-         choices = '%s%s? ' % (prefix, '/'.join(table.keys()))
-         answer = self.input(choices)
-         answer = answer.lower()
-
-         if answer in valid:
-            return valid[answer]
-
-         self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                       ', '.join(valid)))
-
-      # should not be reached
-      assert(False)
-
-   def send_email(self, msg):
-      logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
-
-      # FIXME: check that email configs are set
-
-      if 'From' not in msg:
-         self.output('No From header found in the message')
-         return
-
-      if 'To' not in msg:
-         self.output('No To header found in the message')
-         return
-
-      envelope_from = msg['From']
-
-      envelope_to = []
-      for person in msg['To'].split(','):
-         envelope_to.append(clean(person))
-      
-      if 'Cc' in msg:
-         for person in msg['Cc'].split(','):
-            envelope_to.append(clean(person))
-
-      logger.debug('%s.send_email(): %s -> %s\n%r' % (self,
-                                                      envelope_from,
-                                                      envelope_to,
-                                                      msg.as_string()))
-
-      if self.dry_run:
-         self.output('Dry-run: %s -> %s' % (envelope_from, envelope_to))
-         return
-
-      done = False
-
-      while not done:
-         try:
-            server = smtplib.SMTP(self.smtp_host, self.smtp_port)
-
-            if self.smtp_encryption == 'tls':
-               server.starttls()
-
-            if self.smtp_username != None and self.smtp_password != None:
-               server.login(self.smtp_username, self.smtp_password)
-
-            server.sendmail(envelope_from, envelope_to, msg.as_string())
-            server.quit()
-
-            done = True
-         except (smtplib.SMTPException, socket.error) as e:
-            self.output('Failed to send email via %s: %s' % (self.smtp_host, e))
-
-            ANSWER_RETRY = 'Retry'
-            ANSWER_ABORT = 'aBort'
-
-            answer = self.show_choose_list([ANSWER_RETRY, ANSWER_ABORT])
-
-            if answer == ANSWER_RETRY:
-               continue
-            elif answer == ANSWER_ABORT:
-               return
-
-      logger.debug('email sent to %s:%s' % (self.smtp_host, self.smtp_port))
-
-   def edit_email(self, msg):
-      logger.debug('%s.edit_email(msg=%r)' % (self, msg.as_string()))
-
-      while True:
-
-         if 'From' not in msg:
-            self.output('No From header found in the message')
-            return
-
-         if 'To' not in msg:
-            self.output('No To header found in the message')
-            return
-
-         envelope_from = msg['From']
-
-         envelope_to = []
-         for person in msg['To'].split(','):
-            envelope_to.append(clean(person))
-      
-         if 'Cc' in msg:
-            for person in msg['Cc'].split(','):
-               envelope_to.append(clean(person))
-
-         self.output('============================================================')
-         self.output(msg.as_string())
-         self.output('============================================================')
-
-         self.output('Envelope From: %s' % envelope_from)
-         self.output('Envelope To: %s' % envelope_to)
-
-         ANSWER_SEND = 'Send'
-         ANSWER_EDIT = 'Edit'
-         ANSWER_ABORT = 'aBort'
-
-         answer = self.show_choose_list([ANSWER_SEND, ANSWER_EDIT, ANSWER_ABORT])
-
-         if answer == ANSWER_SEND:
-            # Send
-            return msg
-         elif answer == ANSWER_EDIT:
-            # Edit
-            buf = self.edit_file(msg.as_string())
-            msg = email.message_from_string(buf)
-         elif answer == ANSWER_ABORT:
-            # Abort
-            self.output('Aborted send email')
-            return None
-
-      # should not reach this
-      return None
-
-   def edit_file(self, buf):
-      f = open(PWCLI_EDIT_FILE, 'w')
-      f.write(buf)
-      f.close()
-
-      subprocess.call([self.editor, PWCLI_EDIT_FILE])
-
-      f = open(PWCLI_EDIT_FILE, 'r')
-      new_buf = f.read()
-      f.close
-
-      os.remove(PWCLI_EDIT_FILE)
-
-      return new_buf
-
-   def show_patch(self, patch):
-      self.output('============================================================')
-      self.output(patch.get_name())
-      self.output('')
-      self.output('%s%s%s' % (patch.get_log(), LOG_SEPARATOR, patch.get_diffstat()))
-      self.output('============================================================')
-
-   def show_info(self):
-      user_ids = ', '.join(str(v) for v in self.user_ids)
-
-      self.print_header('User', '%s (%s)' % (self.username, user_ids))
-      self.print_header('Projects', ' '.join(self.project_names))
-      self.print_header('Tree', self.tree)
-
-      if self.pending_mode == 'stgit':
-         self.print_header('Main branches', ' '.join(self.main_branches))
-         self.print_header('Pending branch', self.pending_branch)
-      else:
-         self.print_header('Branch', self.git.get_branch())
-
-      if self.default_filter_delegated:
-         username = self.username
-      else:
-         username = None
-
-      # in stgit mode we should get the count from the pending branch
-      if self.pending_mode == 'stgit':
-         review = len(self.get_pending_branch_patches())
-      else:
-         review = len(self.project.get_patches(PATCH_STATE_UNDER_REVIEW, username))
-
-      new = len(self.project.get_patches(PATCH_STATE_NEW, username))
-      upstream = len(self.project.get_patches(PATCH_STATE_AWAITING_UPSTREAM, username))
-      deferred = len(self.project.get_patches(PATCH_STATE_DEFERRED, username))
-      total = new + review + upstream + deferred
-
-      self.print_header(PATCH_STATE_NEW, new)
-      self.print_header('Review', review)
-      self.print_header('Upstream', upstream)
-      self.print_header(PATCH_STATE_DEFERRED, deferred)
-      self.print_header('Total', total)
-
-   def run_build_script(self):
-      cmd = self.build_command
-
-      if not cmd:
-         # build command is not specified, skip the build
-         return
-
-      if self.dry_run:
-            self.output('Dry-run: %s' % str(cmd))
-            return
-
-      empty_line = '                                                                 '
-      stdout_cb = lambda line: self.output('\r%s\r%s' % (empty_line,
-                                                         line.replace('\n', '')),
-                                           newline=False)
-
-      p = RunProcess(cmd, stdout_cb=stdout_cb)
-
-      # empty the line from "status" messages
-      self.output('\r%s\r' % (empty_line), newline=False)
-
-      if p.returncode != 0:
-         self.output(p.stderrdata.strip())
-         self.output('Build failed: %d' % (p.returncode))
-      elif len(p.stderrdata) > 0:
-         self.output(p.stderrdata.strip())
-         self.output('Build successful with warnings')
-      else:
-         self.output('Build successful')
-
-      return p
-
-   def get_pending_branch_patches(self):
-      patches = []
-
-      self.git.checkout(self.pending_branch)
-
-      stg_series = self.stg.get_series()
-
-      i = 0
-      for stg_commit_name in stg_series:
-         if not stg_commit_name in self.stg_cache:
-            c = self.stg.get_commit(stg_commit_name)
-
-            if c == None:
-               continue
-
-            self.stg_cache[stg_commit_name] = c
-         else:
-            c = self.stg_cache[stg_commit_name]
-
-         patchwork_id = int(c['patchwork_id'])
-
-         # the patch can be in any of the projects configured
-         for project in self.projects:
-            patch = project.get_patch(patchwork_id)
-            if patch:
-               break
-
-         if not patch:
-            self.output('Patch id %s not found' % (patchwork_id))
-            continue
-
-         # patches in pending branch can be applied, tests or
-         # whatever, so skip those
-         if patch.get_state_name() != PATCH_STATE_UNDER_REVIEW:
-            continue
-
-         # store the commit id so that we can use it when cherry picking
-         # the patch
-         #
-         # FIXME: As we cache the commit id we should somehow check
-         # that it's still valid. If the patch is edited after added
-         # to the cache the commit id will change and we would
-         # erroneously commit an older version of the patch!
-         patch.set_temp_ref(c['commit_id'])
-         patch.stg_index = i
-
-         patches.append(patch)
-         i += 1
-
-      return patches
-
-   def cmd_help(self, args):
-      logger.debug('cmd_help(args=%s)' % repr(args))
-      self.parser.print_help()
-
-   def cmd_quit(self, args):
-      logger.debug('cmd_quit(args=%s)' % repr(args))
-      sys.exit(0)
-
-   def cmd_list(self, args):
-      logger.debug('cmd_list(args=%s)' % repr(args))
-
-      state_filter = None
-      title_filter = None
-
-      if args.title is not None:
-         title_filter = args.title[0]
-
-      if args.state is not None:
-         state_filter = args.state[0]
-
-      # Note: the general filter overrules both title and state
-      # filters, so this needs to be last.
-      if args.filter is not None:
-         if PATCH_STATE_KEYWORD_MAP.has_key(args.filter):
-            state_filter = args.filter
-         else:
-            title_filter = args.filter
-         
-      if state_filter is not None:
-         if not PATCH_STATE_KEYWORD_MAP.has_key(state_filter):
-            self.output('Unknown state: %s' % state_filter)
-            return
-         
-         # user defined a state
-         states = PATCH_STATE_KEYWORD_MAP[state_filter]
-      else:
-         # no state defined, use all active states
-         states = PATCH_ACTIVE_STATES
-
-      if self.default_filter_delegated:
-         username = self.username
-      else:
-         username = None
-
-      patches = []
-      for state in states:
-         patches += self.project.get_patches(state, username)
-
-      if self.pending_mode == 'stgit':
-         pending_patches = self.get_pending_branch_patches()
-
-         if state_filter == 'pending':
-            # Only show patches in pending branch, discard the rest.
-            patches = pending_patches
-            states = PATCH_ACTIVE_STATES
-         else:
-            # As pending branch can contain patches from the projects
-            # other than the currently selected, include those patches
-            # also to the results.
-            for patch in pending_patches:
-               if patch in patches:
-                  # the patch is already in list
-                  break
-
-               if patch.get_state_name() not in states:
-                  break
-            
-               patches.append(patch)
-
-      # Filter patches. Make a copy of the list, we can't modify the
-      # list we are currently iterating!
-      for patch in list(patches):
-         if title_filter:
-            match = re.search(title_filter, patch.get_name(),
-                              re.MULTILINE | re.IGNORECASE)
-            if not match:
-               patches.remove(patch)
-               continue
-
-         if args.submitter:
-            match = re.search(args.submitter[0], patch.get_submitter(),
-                              re.MULTILINE | re.IGNORECASE)
-            if not match:
-               patches.remove(patch)
-               continue
-
-
-      # sort the patches
-      if state_filter == 'pending':
-         # sort based on order they are in the pending branch
-         self.patches = sorted(patches, key=lambda x: x.stg_index)
-      else:
-         # for now just simple sorting
-         self.patches = sorted(patches)
-
-      self.output(self.create_patchlist_as_string(self.patches,
-                                                  show_indexes=True))
-
-   # Basic operation:
-   #
-   # * show lists of patches
-   # * open patches in browser
-   # * commit All/commit Individually/aBort?
-   # * commit patches
-   # * run build script
-   # * Accept/Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
-   # * print status '%d patch(es) set to %s'
-   # * if state == accept: send "%d patches applied to %s, thanks." and exit
-   # * if state != accept: revert applied patches from git tree
-   # * Reason:
-   # * if len(reason) == 0: exit
-   # * create summary mail: "%d patch(es) changed state to %s. <patchlist> Reason: <reason> <buildlogs>"
-   # * Send/Edit/aBort?
-   def cmd_commit(self, args):
-      logger.debug('cmd_commit(args=%s)' % repr(args))
-      patches = self.get_patches_from_ids(args.ids)
-
-      self.prefetch_patches(patches)
-
-      # newline to clear the "progress bar"
-      self.output('')
-
-      self.output(self.create_patchlist_as_string(patches,
-                                                  show_indexes=False,
-                                                  open_browser=True))
-
-      self.output('------------------------------------------------------------')
-      self.output('%d patches' % len(patches))
-
-      while True:
-         answer = self.input('commit All/commit Individually/aBort? ')
-         answer = answer.lower()
-
-         valid = ['a', 'i', 'b']
-
-         if answer in valid:
-            break
-
-         self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
-                                                                       ', '.join(valid)))
-
-      if answer == 'a':
-         # commit All
-         commit_individually = False
-
-      if answer == 'i':
-         # commit Individually
-         commit_individually = True
-
-      if answer == 'b':
-         # aBort
-         self.output('Aborted commit command')
-         return
-
-      if self.pending_mode == 'stgit':
-         self.git.checkout(self.selected_main_branch)
-
-      applied = []
-      faillog = ''
-      builder = None
-
-      try:
-         i = 1
-         for patch in patches:
-            # show progressbar if applying all patches in one go
-            if not commit_individually:
-               self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
-                           newline=False)
-               
-
-            # edit can be chosen multiple times, that's why the loop
-            while commit_individually:
-               # FIXME: in stgit mode we should show the commit log from
-               # pending branch
-               self.show_patch(patch)
-
-               ANSWER_COMMIT = 'Commit'
-               ANSWER_EDIT = 'Edit'
-               ANSWER_ABORT = 'aBort'
-
-               answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
-                                              prefix='[%d/%d] ' % (len(applied) + 1,
-                                                                   len(patches)))
-
-               if answer == ANSWER_ABORT:
-                  self.output('Commit command aborted')
-                  return
-
-               if answer == ANSWER_EDIT:
-                  mbox = patch.get_mbox()
-                  new_mbox = self.edit_file(mbox)
-
-                  if mbox != new_mbox:
-                     patch.set_mbox(new_mbox)
-
-                  continue
-
-               if answer == ANSWER_COMMIT:
-                  # continue with commit process
-                  break
-
-            # apply the patch
-            if self.pending_mode == 'stgit':
-               # FIXME: add sanity check that the patch really is in
-               # review state. Also applies to main ('non-pending')
-               # mode?
-
-               # The pwcli commit command always requires the list
-               # command to be run first, which always sets the
-               # temp_ref (in stgit mode) so we can assume that the
-               # patch has correct commit_ref set.
-               self.git.cherry_pick(patch.get_temp_ref())
-
-               # remove Patchwork-Id from the commit log
-               self.git.filter_msg('^Patchwork-Id:')
-            else:
-               self.git.am(patch.get_mbox())
-
-            # store the commit id temporarily
-            c = self.git.get_commit('HEAD')
-            patch.set_temp_ref(c['commit_id'])
-
-            applied.append(patch)
+    # retrieve all mbox files in one for "smoother user experience"
+    def prefetch_patches(self, patches):
+        i = 1
+        for patch in patches:
+            self.output('\rRetrieving patches (%d/%d)' % (i, len(patches)),
+                        newline=False)
+
+            patch.get_mbox()
             i += 1
 
-         # newline to clear the "progress bar"
-         self.output('')
-         
-      except GitError as e:
-         # newline to clear the "progress bar"
-         self.output('')
+    def get_patches_from_ids(self, ids):
+        indexes = parse_list(ids)
 
-         self.output('Failed to apply the patch: %s' % e)
-         self.output('%s' % e.log)
-         faillog += e.log
+        if self.patches == None:
+            raise Exception('No patches listed, forgot to run list command?')
 
-      if len(applied) == len(patches):
-         # all patches were succesfully applied
-
-         # run a build test
-         builder = self.run_build_script()
-
-         if builder and len(builder.stderrdata) > 0:
-            faillog += builder.stderrdata
-
-         # show summary in the shell
-         self.output('============================================================')
-         self.output('%d patches applied:' % len(applied))
-         self.output('')
-         self.output(self.git.log_oneline(len(applied)))
-         self.output('')
-      else:
-         # not all patches were applied due to a problem, remove the already applied
-         for i in range(len(applied)):
-            self.git.rollback()
-
-      # need to use ordered dict so that the list is shown in correct order
-      state_table = collections.OrderedDict()
-
-      # Accepted state should not be shown if any of the patches
-      # failed apply
-      if len(patches) == len(applied):
-         state_table['Accepted'] =           PATCH_STATE_ACCEPTED
-
-      state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
-      state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
-      state_table['Rejected'] =           PATCH_STATE_REJECTED
-      state_table['New'] =                PATCH_STATE_NEW
-      state_table['Deferred'] =           PATCH_STATE_DEFERRED
-      state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
-      state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
-      state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
-      state_table['rFc'] =                PATCH_STATE_RFC
-      state_table['aBort'] =              STATE_ABORTED
-
-      while True:
-         state = self.show_choose_list(state_table)
-         result = None
-
-         if builder is not None:
-            if builder.returncode != 0:
-               result = 'Build FAILED!'
-            elif len(builder.stderrdata) > 0:
-               result = 'Build had WARNINGS!'
-
-         if state != PATCH_STATE_ACCEPTED or not result:
-            # no problems with patches
-            break
-
-         # patches had problems and user chose to ACCEPT them
-         self.output(result)
-
-         answer = self.input('Are you sure want to ACCEPT these patches [y/N]: ')
-         answer = answer.lower()
-         if answer == 'y':
-            # user is sure
-            break
-
-         # user it not sure, ask for the state again
-            
-      if state != PATCH_STATE_ACCEPTED:
-         # FIXME: git revert all patches in applied list as the user
-         # didn't accept them
-         pass
-
-      if state == STATE_ABORTED:
-         self.output('Aborted.')
-         return
-
-      i = 1
-      for patch in patches:
-         self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
-                     newline=False)
-         patch.set_state_name(state)
-         i += 1
-
-         if state == PATCH_STATE_ACCEPTED:
-            # Set commit_ref so that the commit id is visible in the
-            # web interface and it's possible to find the patchwork id
-            # based on commit id.
-            patch.set_commit_ref(patch.get_temp_ref())
-
-      # newline to clear the "progress bar"
-      self.output('')
-
-      self.output('%s set to %s' % (get_patches_plural(len(patches)),
-                                    state))
-      reply = ''
-      reason = None
-
-      if state == PATCH_STATE_ACCEPTED:
-         tree_name = '%s.git' % self.tree
-
-         if self.pending_mode == 'stgit' and len(self.main_branches) > 1:
-            branch_name = '%s branch of ' % (self.selected_main_branch)
-         else:
-            branch_name = ''
-
-         reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
-                                                   branch_name,
-                                                   tree_name)
-         reply += '%s\n\n' % self.git.log_oneline(len(patches))
-
-         # Note: faillog is not added if the patches are accepted, for
-         # example no need to show false warnings
-      else:
-         reason = self.input('Reason (RET for no mail): ')
-         reason = reason.strip()
-
-         if len(reason) == 0:
-            # no reason specified so no need to send any mail either
+        if len(self.patches) == 0:
+            raise Exception('No patches available, doing nothing.')
             return
 
-         reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
-         reply += '%s\n\n' % (reason)
+        # sanity check and populate selected[]
+        selected_patches = []
+        for index in indexes:
+            if index > len(self.patches):
+                raise Exception('Patch index %d not found, max %d' %
+                                (index, len(self.patches)))
 
-         # add possible git and build failures/warnings to the mail
-         faillog = faillog.strip()
-         if len(faillog) > 0:
-            reply += '%s\n\n' % (faillog)
+            if index - 1 < 0:
+                self.output('Invalid patch list index: %d %d' % (index))
+                return
 
-         reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
-                                         state)
+            selected_patches.append(self.patches[index - 1])
 
-         # With one patch no point of adding the list, the patchwork
-         # id and link is already available from the signature.
-         if len(patches) > 1:
-            reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
-         
-      first_patch = patches[0]
-      msg = first_patch.get_reply_msg(self.fullname, self.email,
-                                      reply, signature=self.signature)
+        return selected_patches
 
-      # if the patches are accepted, there's no reason and no need to edit the mail
-      if reason:
-         msg = self.edit_email(msg)
-         if msg == None:
-            # user aborted
+    def open_browser_url(self, url):
+        if not self.browser:
             return
 
-      self.send_email(msg)
+        cmd = [self.browser, url]
 
-   def cmd_show(self, args):
-      logger.debug('cmd_show(args=%s)' % repr(args))
+        # to avoid call() unnecessarily spamming stdout and stderr
+        devnull = open(os.devnull, "w")
 
-      selected_patches = self.get_patches_from_ids(args.ids)
+        returncode = subprocess.call(cmd, stdout=devnull, stderr=devnull)
 
-      if len(selected_patches) == 1:
-         patch = selected_patches[0]
-         self.show_patch(patch)
-         self.open_browser_url(patch.get_url())
-      elif len(selected_patches) > 1:
-         self.output(self.create_patchlist_as_string(selected_patches,
-                                                     show_indexes=False,
-                                                     open_browser=True))
-      else:
-         # FIXME: what to do if we don't find any patches?
-         pass
+        devnull.close()
 
-   # Basic operation:
-   #
-   # * show list of patches
-   # * open patches in browser
-   # * if pending mode is enabled
-   # ** Apply/Skip/aBort?
-   # ** apply patches to the pending branch
-   # ** run build script
-   # * Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
-   # * print status '%d patch(es) set to %s'
-   # * if state == Under review: exit
-   # * Reason: 
-   # * if len(reason) == 0 don't send any mail
-   # * create summary mail: "%d patch(es) changed to state %s. <patchlist> Reason: <reason> <buildlogs>"
-   # * Send/Edit/aBort?
+        logger.debug('PWCLI.open_browser_url(url=%r): return code %d' % (url,
+                                                                         returncode))
 
-   def cmd_review(self, args):
-      logger.debug('cmd_review(args=%r)' % args)
+    def create_patchlist_as_string(self, patches, show_indexes=False,
+                                   open_browser=False, show_ids=False):
+        i = 1
+        result = ''
 
-      patches = self.get_patches_from_ids(args.ids)
+        for patch in patches:
+            if show_indexes:
+                if patch.get_temp_ref():
+                    pending = '*'
+                else:
+                    pending = ' '
 
-      self.prefetch_patches(patches)
+                index = '%s[%3d] ' % (pending, i)
+            elif show_ids:
+                # this is not similarly aligned as the others but that
+                # doesn't matter as we should use this only with emails
+                index = '%d ' % (patch.get_id())
+            else:
+                # For nice alignment add empty columns if indexes are
+                # disabled.
+                index = '      '
 
-      # force a newline so that new text starts from it's own line
-      self.output('')
+            WIDTH_NAME = 60
+            WIDTH_DATE = 10
+            WIDTH_SUBMITTER = 12
 
-      self.output(self.create_patchlist_as_string(patches,
-                                                  show_indexes=False,
-                                                  open_browser=True))
+            name = shrink(patch.get_name(), WIDTH_NAME)
+            date = patch.get_datetime().strftime('%Y-%m-%d')
+            submitter = shrink(Person(patch.get_submitter()).get_name(),
+                               WIDTH_SUBMITTER, ellipsis=False)
+            state = patch.get_state_name()
 
-      self.output('------------------------------------------------------------')
+            # <patchname> <date> <submitter> <state>
+            formatstr = '%%s%%-%ds %%-%ds %%-%ds %%s\n' % (WIDTH_NAME,
+                                                           WIDTH_DATE,
+                                                           WIDTH_SUBMITTER)
+            result += formatstr % (index, name, date, submitter, state)
+            # result += '%s %-40s %-12s %-10s %s\n' % (index,
+            #                                          patch.get_name(),
+            #                                          'John Doe',
+            #                                          '2012-01-02',
+            #                                          patch.get_state_name())
+            if open_browser:
+                self.open_browser_url(patch.get_url())
 
-      applied = []
-      faillog = ''
-      builder = None
+            i += 1
 
-      if self.pending_mode == 'stgit':
-         while True:
-            choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(patches)
-            answer = self.input(choises)
+        return result.strip('\n')
+
+    def create_patchlist_for_mail(self, patches):
+        result = ''
+
+        for patch in patches:
+            result += '%d %s\n' % (patch.get_id(), patch.get_name())
+
+        return result.strip('\n')
+
+    def show_choose_list(self, table, prefix=None):
+
+        valid = {}
+
+        if not prefix:
+            prefix = ''
+
+        # for convenience convert list to a dict
+        if isinstance(table, list):
+            copy = table
+            table = collections.OrderedDict()
+            for c in copy:
+                table[c] = c
+
+        for name in table.keys():
+            # find the one char shortcut
+            match = re.search('([A-Z])', name)
+            if len(match.groups()) != 1:
+                raise Exception('Invalid number (%d) of upper case letters in choose list: %s' % (len(match.groups()), name))
+            shortcut = match.group(0).lower()
+            valid[shortcut] = table[name]
+
+        while True:
+            choices = '%s%s? ' % (prefix, '/'.join(table.keys()))
+            answer = self.input(choices)
             answer = answer.lower()
 
-            valid = ['a', 's', 'b']
-
             if answer in valid:
-               break
+                return valid[answer]
 
             self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
                                                                           ', '.join(valid)))
 
-         # Apply
-         if answer == 'a':
-            # git checkout self.pending_branch
-            self.git.checkout(self.pending_branch)
-         
-            try:
-               i = 1
-               for patch in patches:
-                  self.output('\rImporting patches (%d/%d)' % (i, len(patches)),
-                              newline=False)
-                  self.stg.import_patch(patch.get_mbox_for_stgit())
-                  applied.append(patch)
-                  i += 1
+        # should not be reached
+        assert(False)
 
-               # newline to clear the "progress bar"
-               self.output('')
-                  
-               # run a build test
-               builder = self.run_build_script()
+    def send_email(self, msg):
+        logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
 
-               if builder and len(builder.stderrdata) > 0:
-                  faillog += builder.stderrdata
+        # FIXME: check that email configs are set
 
-            except GitError as e:
-               # newline to clear the "progress bar"
-               self.output('')
-
-               self.output('Failed to apply patch: %s' % e)
-               self.output('%s' % e.log)
-               faillog += e.log
-
-               for i in range(len(applied)):
-                  self.stg.rollback()
-
-         # Skip
-         elif answer == 's':
-            # do nothing, just continue to state handling
-            pass
-         # aBort
-         elif answer == 'b':
+        if 'From' not in msg:
+            self.output('No From header found in the message')
             return
 
-      # need to use ordered dict so that the list is shown in correct order
-      state_table = collections.OrderedDict()
+        if 'To' not in msg:
+            self.output('No To header found in the message')
+            return
 
-      # In pending mode Under Review state should be shown only if the
-      # patches were succesfully applied to the pending branch
-      if self.pending_mode != 'stgit' or len(patches) == len(applied):
-         state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+        envelope_from = msg['From']
 
-      state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
-      state_table['Rejected'] =           PATCH_STATE_REJECTED
-      state_table['New'] =                PATCH_STATE_NEW
-      state_table['Deferred'] =           PATCH_STATE_DEFERRED
-      state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
-      state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
-      state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
-      state_table['rFc'] =                PATCH_STATE_RFC
-      state_table['aBort'] =              STATE_ABORTED
+        envelope_to = []
+        for person in msg['To'].split(','):
+            envelope_to.append(clean(person))
 
-      while True:
-         state = self.show_choose_list(state_table)
-         result = None
+        if 'Cc' in msg:
+            for person in msg['Cc'].split(','):
+                envelope_to.append(clean(person))
 
-         if builder is not None:
-            if builder.returncode != 0:
-               result = 'Build FAILED!'
-            elif len(builder.stderrdata) > 0:
-               result = 'Build had WARNINGS!'
+        logger.debug('%s.send_email(): %s -> %s\n%r' % (self,
+                                                        envelope_from,
+                                                        envelope_to,
+                                                        msg.as_string()))
 
-         if state != PATCH_STATE_UNDER_REVIEW or not result:
-            # no problems with patches
-            break
+        if self.dry_run:
+            self.output('Dry-run: %s -> %s' % (envelope_from, envelope_to))
+            return
 
-         # patches had problems and user chose to UNDER_REVIEW them
-         self.output(result)
+        done = False
 
-         answer = self.input('Are you sure want to set these patches to UNDER REVIEW? [y/N]: ')
-         answer = answer.lower()
-         if answer == 'y':
-            # user is sure
-            break
+        while not done:
+            try:
+                server = smtplib.SMTP(self.smtp_host, self.smtp_port)
 
-         # user it not sure, ask for the state again
+                if self.smtp_encryption == 'tls':
+                    server.starttls()
 
-      if state == STATE_ABORTED:
-         self.output('Aborted.')
-         return
+                if self.smtp_username != None and self.smtp_password != None:
+                    server.login(self.smtp_username, self.smtp_password)
 
-      i = 1
-      for patch in patches:
-         self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
-                     newline=False)
-         patch.set_state_name(state)
+                server.sendmail(envelope_from, envelope_to, msg.as_string())
+                server.quit()
 
-      # newline to clear the "progress bar"
-      self.output('')
+                done = True
+            except (smtplib.SMTPException, socket.error) as e:
+                self.output('Failed to send email via %s: %s' % (self.smtp_host, e))
 
-      self.output('%s set to %s' % (get_patches_plural(len(patches)),
-                                    state))
-                                                                        
-      if state == PATCH_STATE_UNDER_REVIEW:
-         # patches were ok, no further action
-         return
+                ANSWER_RETRY = 'Retry'
+                ANSWER_ABORT = 'aBort'
 
-      reason = self.input('Reason (RET for no mail): ')
-      reason = reason.strip()
+                answer = self.show_choose_list([ANSWER_RETRY, ANSWER_ABORT])
 
-      if len(reason) == 0:
-         # no reason specified so no need to send any mail either
-         return
+                if answer == ANSWER_RETRY:
+                    continue
+                elif answer == ANSWER_ABORT:
+                    return
 
-      reply = ''
+        logger.debug('email sent to %s:%s' % (self.smtp_host, self.smtp_port))
 
-      reply += '%s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
+    def edit_email(self, msg):
+        logger.debug('%s.edit_email(msg=%r)' % (self, msg.as_string()))
 
-      # add possible git and build failures/warnings to the mail
-      faillog = faillog.strip()
-      if len(faillog) > 0:
-         reply += '%s\n\n' % (faillog)
+        while True:
 
-      reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
-                                      state)
+            if 'From' not in msg:
+                self.output('No From header found in the message')
+                return
 
-      # No point adding patchlist for a single patch, it doesn't
-      # bring any extra value which isn't already in the title or
-      # in the signature.
-      if len(patches) > 1:
-         reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
+            if 'To' not in msg:
+                self.output('No To header found in the message')
+                return
 
-      first_patch = patches[0]
-      msg = first_patch.get_reply_msg(self.fullname, self.email,
-                                      reply, signature=self.signature)
+            envelope_from = msg['From']
 
-      msg = self.edit_email(msg)
-      if msg == None:
-         # user aborted
-         return
+            envelope_to = []
+            for person in msg['To'].split(','):
+                envelope_to.append(clean(person))
 
-      self.send_email(msg)
+            if 'Cc' in msg:
+                for person in msg['Cc'].split(','):
+                    envelope_to.append(clean(person))
 
-   def cmd_reply(self, args):
-      logger.debug('cmd_reply(args=%s)' % repr(args))
+            self.output('============================================================')
+            self.output(msg.as_string())
+            self.output('============================================================')
 
-      try:
-         i = int(args.id[0])
-      except ValueError as e:
-         self.output('Failed to convert index to integer: %s' % e)
-         return
+            self.output('Envelope From: %s' % envelope_from)
+            self.output('Envelope To: %s' % envelope_to)
 
-      if self.patches == None:
-         self.output('No patches listed, forgot to run list command?')
-         return
+            ANSWER_SEND = 'Send'
+            ANSWER_EDIT = 'Edit'
+            ANSWER_ABORT = 'aBort'
 
-      if i > len(self.patches):
-         self.output('Patch index %d not found' % i)
-         return
+            answer = self.show_choose_list([ANSWER_SEND, ANSWER_EDIT, ANSWER_ABORT])
 
-      patch = self.patches[i - 1]
-      reply = patch.get_reply_msg(self.fullname, self.email, signature=self.signature)
+            if answer == ANSWER_SEND:
+                # Send
+                return msg
+            elif answer == ANSWER_EDIT:
+                # Edit
+                buf = self.edit_file(msg.as_string())
+                msg = email.message_from_string(buf)
+            elif answer == ANSWER_ABORT:
+                # Abort
+                self.output('Aborted send email')
+                return None
 
-      reply = self.edit_email(reply)
+        # should not reach this
+        return None
 
-      if reply == None:
-         return
-      
-      self.send_email(reply)
+    def edit_file(self, buf):
+        f = open(PWCLI_EDIT_FILE, 'w')
+        f.write(buf)
+        f.close()
 
-   def cmd_info(self, args):
-      logger.debug('cmd_info(args=%s)' % repr(args))
+        subprocess.call([self.editor, PWCLI_EDIT_FILE])
 
-      self.show_info()
+        f = open(PWCLI_EDIT_FILE, 'r')
+        new_buf = f.read()
+        f.close
 
-   def cmd_build(self, args):
-      logger.debug('cmd_build(args=%s)' % repr(args))
+        os.remove(PWCLI_EDIT_FILE)
 
-      self.run_build_script()
+        return new_buf
 
-   def cmd_project(self, args):
-      logger.debug('cmd_project(args=%r)' % repr(args))
+    def show_patch(self, patch):
+        self.output('============================================================')
+        self.output(patch.get_name())
+        self.output('')
+        self.output('%s%s%s' % (patch.get_log(), LOG_SEPARATOR, patch.get_diffstat()))
+        self.output('============================================================')
 
-      if args.index == None:
-         self.output('Projects:')
-         i = 0
-         for project in self.projects:
-            if self.project == project:
-               selected = '*'
+    def show_info(self):
+        user_ids = ', '.join(str(v) for v in self.user_ids)
+
+        self.print_header('User', '%s (%s)' % (self.username, user_ids))
+        self.print_header('Projects', ' '.join(self.project_names))
+        self.print_header('Tree', self.tree)
+
+        if self.pending_mode == 'stgit':
+            self.print_header('Main branches', ' '.join(self.main_branches))
+            self.print_header('Pending branch', self.pending_branch)
+        else:
+            self.print_header('Branch', self.git.get_branch())
+
+        if self.default_filter_delegated:
+            username = self.username
+        else:
+            username = None
+
+        # in stgit mode we should get the count from the pending branch
+        if self.pending_mode == 'stgit':
+            review = len(self.get_pending_branch_patches())
+        else:
+            review = len(self.project.get_patches(PATCH_STATE_UNDER_REVIEW, username))
+
+        new = len(self.project.get_patches(PATCH_STATE_NEW, username))
+        upstream = len(self.project.get_patches(PATCH_STATE_AWAITING_UPSTREAM, username))
+        deferred = len(self.project.get_patches(PATCH_STATE_DEFERRED, username))
+        total = new + review + upstream + deferred
+
+        self.print_header(PATCH_STATE_NEW, new)
+        self.print_header('Review', review)
+        self.print_header('Upstream', upstream)
+        self.print_header(PATCH_STATE_DEFERRED, deferred)
+        self.print_header('Total', total)
+
+    def run_build_script(self):
+        cmd = self.build_command
+
+        if not cmd:
+            # build command is not specified, skip the build
+            return
+
+        if self.dry_run:
+            self.output('Dry-run: %s' % str(cmd))
+            return
+
+        empty_line = '                                                                 '
+        stdout_cb = lambda line: self.output('\r%s\r%s' % (empty_line,
+                                                           line.replace('\n', '')),
+                                             newline=False)
+
+        p = RunProcess(cmd, stdout_cb=stdout_cb)
+
+        # empty the line from "status" messages
+        self.output('\r%s\r' % (empty_line), newline=False)
+
+        if p.returncode != 0:
+            self.output(p.stderrdata.strip())
+            self.output('Build failed: %d' % (p.returncode))
+        elif len(p.stderrdata) > 0:
+            self.output(p.stderrdata.strip())
+            self.output('Build successful with warnings')
+        else:
+            self.output('Build successful')
+
+        return p
+
+    def get_pending_branch_patches(self):
+        patches = []
+
+        self.git.checkout(self.pending_branch)
+
+        stg_series = self.stg.get_series()
+
+        i = 0
+        for stg_commit_name in stg_series:
+            if not stg_commit_name in self.stg_cache:
+                c = self.stg.get_commit(stg_commit_name)
+
+                if c == None:
+                    continue
+
+                self.stg_cache[stg_commit_name] = c
             else:
-               selected = ' '
+                c = self.stg_cache[stg_commit_name]
 
-            self.output('%s %d: %s' % (selected, i, project.name))
+            patchwork_id = int(c['patchwork_id'])
 
+            # the patch can be in any of the projects configured
+            for project in self.projects:
+                patch = project.get_patch(patchwork_id)
+                if patch:
+                    break
+
+            if not patch:
+                self.output('Patch id %s not found' % (patchwork_id))
+                continue
+
+            # patches in pending branch can be applied, tests or
+            # whatever, so skip those
+            if patch.get_state_name() != PATCH_STATE_UNDER_REVIEW:
+                continue
+
+            # store the commit id so that we can use it when cherry picking
+            # the patch
+            #
+            # FIXME: As we cache the commit id we should somehow check
+            # that it's still valid. If the patch is edited after added
+            # to the cache the commit id will change and we would
+            # erroneously commit an older version of the patch!
+            patch.set_temp_ref(c['commit_id'])
+            patch.stg_index = i
+
+            patches.append(patch)
             i += 1
 
-         return
+        return patches
 
-      try:
-         index = int(args.index)
-      except ValueError as e:
-         self.output('Failed to convert index to integer: %s' % e)
-         return
+    def cmd_help(self, args):
+        logger.debug('cmd_help(args=%s)' % repr(args))
+        self.parser.print_help()
 
-      self.project = self.projects[index]
+    def cmd_quit(self, args):
+        logger.debug('cmd_quit(args=%s)' % repr(args))
+        sys.exit(0)
 
-      self.output('Switched to project: %s' % (self.project.name))
+    def cmd_list(self, args):
+        logger.debug('cmd_list(args=%s)' % repr(args))
 
-   def cmd_branch(self, args):
-      logger.debug('cmd_branch(args=%r)' % repr(args))
+        state_filter = None
+        title_filter = None
 
-      if args.index == None:
-         self.output('Main branches:')
-         i = 0
-         for branch in self.main_branches:
-            if self.selected_main_branch == branch:
-               selected = '*'
+        if args.title is not None:
+            title_filter = args.title[0]
+
+        if args.state is not None:
+            state_filter = args.state[0]
+
+        # Note: the general filter overrules both title and state
+        # filters, so this needs to be last.
+        if args.filter is not None:
+            if PATCH_STATE_KEYWORD_MAP.has_key(args.filter):
+                state_filter = args.filter
             else:
-               selected = ' '
+                title_filter = args.filter
 
-            self.output('%s %d: %s' % (selected, i, branch))
+        if state_filter is not None:
+            if not PATCH_STATE_KEYWORD_MAP.has_key(state_filter):
+                self.output('Unknown state: %s' % state_filter)
+                return
 
-            i += 1
+            # user defined a state
+            states = PATCH_STATE_KEYWORD_MAP[state_filter]
+        else:
+            # no state defined, use all active states
+            states = PATCH_ACTIVE_STATES
 
-         return
+        if self.default_filter_delegated:
+            username = self.username
+        else:
+            username = None
 
-      try:
-         index = int(args.index)
-      except ValueError as e:
-         self.output('Failed to convert index to integer: %s' % e)
-         return
+        patches = []
+        for state in states:
+            patches += self.project.get_patches(state, username)
 
-      if index > len(self.main_branches) - 1:
-         self.output('index out of bounds: %d' % index)
-         return
+        if self.pending_mode == 'stgit':
+            pending_patches = self.get_pending_branch_patches()
 
-      self.selected_main_branch = self.main_branches[index]
+            if state_filter == 'pending':
+                # Only show patches in pending branch, discard the rest.
+                patches = pending_patches
+                states = PATCH_ACTIVE_STATES
+            else:
+                # As pending branch can contain patches from the projects
+                # other than the currently selected, include those patches
+                # also to the results.
+                for patch in pending_patches:
+                    if patch in patches:
+                        # the patch is already in list
+                        break
 
-      self.output('Switched main branch to: %s' % (self.selected_main_branch))
+                    if patch.get_state_name() not in states:
+                        break
 
-   def run_shell(self):
-      index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
+                    patches.append(patch)
 
-      self.parser = argparse.ArgumentParser(description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
-                                            prog='',
-                                            add_help=False)
-   
-      subparsers = self.parser.add_subparsers()
+        # Filter patches. Make a copy of the list, we can't modify the
+        # list we are currently iterating!
+        for patch in list(patches):
+            if title_filter:
+                match = re.search(title_filter, patch.get_name(),
+                                  re.MULTILINE | re.IGNORECASE)
+                if not match:
+                    patches.remove(patch)
+                    continue
 
-      subparsers.add_parser('help').set_defaults(func=self.cmd_help,
-                                                 help='show summary of available commands')
+            if args.submitter:
+                match = re.search(args.submitter[0], patch.get_submitter(),
+                                  re.MULTILINE | re.IGNORECASE)
+                if not match:
+                    patches.remove(patch)
+                    continue
 
-      subparsers.add_parser('quit').set_defaults(func=self.cmd_quit,
-                                                 help='quit the shell')
-      subparsers.add_parser('q').set_defaults(func=self.cmd_quit,
-                                              help='quit the shell')
 
-      parser_list = subparsers.add_parser('list', 
-                                          help='list patches from patchwork',
-                                          description='Fetches patches from patchwork based on various filters and shows the summary with indexes')
-      parser_list.add_argument('filter', nargs='?',
-                               help='filter either based state name (see --state) or regexp for patch title')
-      parser_list.add_argument('--state', '-s', nargs=1,
-                               help='filter list based on states: new, review, upstream, deferred')
-      parser_list.add_argument('--title', '-t', nargs=1,
-                               help='show only patches with title (subject) matching TITLE (regexp, case is ignored)')
-      parser_list.add_argument('--from', '-f', nargs=1,
-                               dest='submitter', metavar='FROM',
-                               help='show only patches submitted by FROM (regexp, case is ignored)')
-      parser_list.set_defaults(func=self.cmd_list)
+        # sort the patches
+        if state_filter == 'pending':
+            # sort based on order they are in the pending branch
+            self.patches = sorted(patches, key=lambda x: x.stg_index)
+        else:
+            # for now just simple sorting
+            self.patches = sorted(patches)
 
-      parser_commit = subparsers.add_parser('commit',
-                                            help='commit list of patches',
-                                            description='Commits one or more patches using git, changes the state of patches accordingly and sends an email reply. Requires that the list command is run before.')
-      parser_commit.add_argument('ids', metavar='IDS', nargs='+',
-                                 help=index_help)
-      parser_commit.set_defaults(func=self.cmd_commit)
+        self.output(self.create_patchlist_as_string(self.patches,
+                                                    show_indexes=True))
 
-      parser_review = subparsers.add_parser('review',
-                                            help='review patches and change states',
-                                            description='Opens each patch in a brower window for easy review of the patch and comments. Provides options to change states')
-      parser_review.add_argument('ids', metavar='IDS', nargs='+',
-                                 help=index_help)
-      parser_review.set_defaults(func=self.cmd_review)
+    # Basic operation:
+    #
+    # * show lists of patches
+    # * open patches in browser
+    # * commit All/commit Individually/aBort?
+    # * commit patches
+    # * run build script
+    # * Accept/Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
+    # * print status '%d patch(es) set to %s'
+    # * if state == accept: send "%d patches applied to %s, thanks." and exit
+    # * if state != accept: revert applied patches from git tree
+    # * Reason:
+    # * if len(reason) == 0: exit
+    # * create summary mail: "%d patch(es) changed state to %s. <patchlist> Reason: <reason> <buildlogs>"
+    # * Send/Edit/aBort?
+    def cmd_commit(self, args):
+        logger.debug('cmd_commit(args=%s)' % repr(args))
+        patches = self.get_patches_from_ids(args.ids)
 
-      parser_show = subparsers.add_parser('show',
-                                          help='show information about the patches',
-                                          description='Show information about the patches and open browser window for each')
-      parser_show.add_argument('ids', metavar='IDS', nargs='+',
-                               help=index_help)
-      parser_show.set_defaults(func=self.cmd_show)
+        self.prefetch_patches(patches)
 
-      parser_reply = subparsers.add_parser('reply',
-                                           help='send an email reply to the patch')
-      parser_reply.add_argument('id', metavar='ID', nargs=1,
-                                help='patch index from list command')
-      parser_reply.set_defaults(func=self.cmd_reply)
+        # newline to clear the "progress bar"
+        self.output('')
 
-      parser_project = subparsers.add_parser('project',
-                                             help='switch between patchwork projects',
-                                             description='Switch between patchwork projects, if no index is specified list of projects is shown with indexes.')
-      parser_project.add_argument('index', metavar='INDEX', nargs='?',
-                                  help='patchwork project index')
-      parser_project.set_defaults(func=self.cmd_project)
+        self.output(self.create_patchlist_as_string(patches,
+                                                    show_indexes=False,
+                                                    open_browser=True))
 
-      parser_project = subparsers.add_parser('branch',
-                                             help='switch between git branches',
-                                             description='Switch between git branches, if no branch index specified list of available branches is shown with indexes.')
-      parser_project.add_argument('index', metavar='INDEX', nargs='?',
-                                  help='branch index')
-      parser_project.set_defaults(func=self.cmd_branch)
+        self.output('------------------------------------------------------------')
+        self.output('%d patches' % len(patches))
 
-      subparsers.add_parser('info').set_defaults(func=self.cmd_info,
-                                                 help='show various patchwork statistics')
+        while True:
+            answer = self.input('commit All/commit Individually/aBort? ')
+            answer = answer.lower()
 
-      subparsers.add_parser('build').set_defaults(func=self.cmd_build,
-                                                 help='run build script and show results')
+            valid = ['a', 'i', 'b']
 
-      while True:
-         prompt = ''
+            if answer in valid:
+                break
 
-         if self.pending_mode == 'stgit':
-            branch = self.selected_main_branch
-         else:
-            branch = self.git.get_branch()
-         prompt += '%s@%s ' % (branch, self.tree)
+            self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                          ', '.join(valid)))
 
-         if self.dry_run:
-            prompt += '(dry-run)'
+        if answer == 'a':
+            # commit All
+            commit_individually = False
 
-         prompt += '> '
+        if answer == 'i':
+            # commit Individually
+            commit_individually = True
 
-         try:
-            cmd = self.input(prompt)
-         except EOFError:
-            logger.debug('CTRL-d from user, exit')
+        if answer == 'b':
+            # aBort
+            self.output('Aborted commit command')
+            return
 
-            # add a newline so the shell prompt starts from a clean line
+        if self.pending_mode == 'stgit':
+            self.git.checkout(self.selected_main_branch)
+
+        applied = []
+        faillog = ''
+        builder = None
+
+        try:
+            i = 1
+            for patch in patches:
+                # show progressbar if applying all patches in one go
+                if not commit_individually:
+                    self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
+                                newline=False)
+
+
+                # edit can be chosen multiple times, that's why the loop
+                while commit_individually:
+                    # FIXME: in stgit mode we should show the commit log from
+                    # pending branch
+                    self.show_patch(patch)
+
+                    ANSWER_COMMIT = 'Commit'
+                    ANSWER_EDIT = 'Edit'
+                    ANSWER_ABORT = 'aBort'
+
+                    answer = self.show_choose_list([ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
+                                                   prefix='[%d/%d] ' % (len(applied) + 1,
+                                                                        len(patches)))
+
+                    if answer == ANSWER_ABORT:
+                        self.output('Commit command aborted')
+                        return
+
+                    if answer == ANSWER_EDIT:
+                        mbox = patch.get_mbox()
+                        new_mbox = self.edit_file(mbox)
+
+                        if mbox != new_mbox:
+                            patch.set_mbox(new_mbox)
+
+                        continue
+
+                    if answer == ANSWER_COMMIT:
+                        # continue with commit process
+                        break
+
+                # apply the patch
+                if self.pending_mode == 'stgit':
+                    # FIXME: add sanity check that the patch really is in
+                    # review state. Also applies to main ('non-pending')
+                    # mode?
+
+                    # The pwcli commit command always requires the list
+                    # command to be run first, which always sets the
+                    # temp_ref (in stgit mode) so we can assume that the
+                    # patch has correct commit_ref set.
+                    self.git.cherry_pick(patch.get_temp_ref())
+
+                    # remove Patchwork-Id from the commit log
+                    self.git.filter_msg('^Patchwork-Id:')
+                else:
+                    self.git.am(patch.get_mbox())
+
+                # store the commit id temporarily
+                c = self.git.get_commit('HEAD')
+                patch.set_temp_ref(c['commit_id'])
+
+                applied.append(patch)
+                i += 1
+
+            # newline to clear the "progress bar"
             self.output('')
-            sys.exit(0)
 
-         # argparse is idiotic and exits if there's a parse error,
-         # workaround it by catching SystemExit. Idea from:
-         #
-         # http://bugs.python.org/issue9938
-         try:
-            args = self.parser.parse_args(cmd.split())
-         except SystemExit:
-            continue
+        except GitError as e:
+            # newline to clear the "progress bar"
+            self.output('')
 
-         args.func(args)
+            self.output('Failed to apply the patch: %s' % e)
+            self.output('%s' % e.log)
+            faillog += e.log
 
-   def print_header(self, name, value):
-      fmt = "%- 14s: %s"
-      self.output(fmt % (name, value))
+        if len(applied) == len(patches):
+            # all patches were succesfully applied
 
-   def output(self, buf, newline=True):
-      logger.debug('> \'%s\'' % buf)
+            # run a build test
+            builder = self.run_build_script()
 
-      if newline:
-         buf += '\n'
+            if builder and len(builder.stderrdata) > 0:
+                faillog += builder.stderrdata
 
-      sys.stdout.write(buf)
+            # show summary in the shell
+            self.output('============================================================')
+            self.output('%d patches applied:' % len(applied))
+            self.output('')
+            self.output(self.git.log_oneline(len(applied)))
+            self.output('')
+        else:
+            # not all patches were applied due to a problem, remove the already applied
+            for i in range(len(applied)):
+                self.git.rollback()
 
-      # flush so that the message really goes to the user
-      if not newline:
-         sys.stdout.flush()
+        # need to use ordered dict so that the list is shown in correct order
+        state_table = collections.OrderedDict()
 
-   def input(self, prompt):
-      logger.debug('> \'%s\'' % prompt)
-      cmd = raw_input(prompt)
-      logger.debug('< \'%s\'' % cmd)
+        # Accepted state should not be shown if any of the patches
+        # failed apply
+        if len(patches) == len(applied):
+            state_table['Accepted'] =           PATCH_STATE_ACCEPTED
 
-      return cmd
+        state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+        state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
+        state_table['Rejected'] =           PATCH_STATE_REJECTED
+        state_table['New'] =                PATCH_STATE_NEW
+        state_table['Deferred'] =           PATCH_STATE_DEFERRED
+        state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
+        state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
+        state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
+        state_table['rFc'] =                PATCH_STATE_RFC
+        state_table['aBort'] =              STATE_ABORTED
 
-   def __init__(self):
-      self.timer = Timer()
+        while True:
+            state = self.show_choose_list(state_table)
+            result = None
 
-      if 'GIT_DIR' in os.environ:
-         self.git_dir = os.environ['GIT_DIR']
-      else:
-         self.git_dir = '.git'
+            if builder is not None:
+                if builder.returncode != 0:
+                    result = 'Build FAILED!'
+                elif len(builder.stderrdata) > 0:
+                    result = 'Build had WARNINGS!'
 
-      self.pwcli_dir = os.path.join(self.git_dir, 'pwcli')
-      self.config_file = os.path.join(self.pwcli_dir, 'config')
-      self.signature_file = os.path.join(self.pwcli_dir, 'signature')
+            if state != PATCH_STATE_ACCEPTED or not result:
+                # no problems with patches
+                break
 
-      if not os.path.exists(self.pwcli_dir):
-         print '%s does not exist, exiting' % self.pwcli_dir
-         sys.exit(1)
+            # patches had problems and user chose to ACCEPT them
+            self.output(result)
 
-      if not os.path.isdir(self.pwcli_dir):
-         print '%s is not a directory, exiting' % self.pwcli_dir
-         sys.exit(1)
+            answer = self.input('Are you sure want to ACCEPT these patches [y/N]: ')
+            answer = answer.lower()
+            if answer == 'y':
+                # user is sure
+                break
 
-      if os.path.exists(PWCLI_EDIT_FILE):
-         print '%s exists, remove and try again.' % PWCLI_EDIT_FILE
-         sys.exit(1)
+            # user it not sure, ask for the state again
 
-      logging.basicConfig(filename=os.path.join(self.pwcli_dir, 'log'),
-                          format='%(asctime)s %(levelname)s: %(message)s')
+        if state != PATCH_STATE_ACCEPTED:
+            # FIXME: git revert all patches in applied list as the user
+            # didn't accept them
+            pass
 
-      parser = argparse.ArgumentParser(description='Patchwork Command-Line Interface')
-      parser.add_argument('-d', '--debug', action='store_true',
-                          help='enable debug messages')
+        if state == STATE_ABORTED:
+            self.output('Aborted.')
+            return
 
-      parser.add_argument('--dry-run', action='store_true',
-                          help='Don\'t modify anything')
+        i = 1
+        for patch in patches:
+            self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
+                        newline=False)
+            patch.set_state_name(state)
+            i += 1
 
-      parser.add_argument('--no-browser', action='store_true',
-                          help='do not open any patchwork pages on browser')
+            if state == PATCH_STATE_ACCEPTED:
+                # Set commit_ref so that the commit id is visible in the
+                # web interface and it's possible to find the patchwork id
+                # based on commit id.
+                patch.set_commit_ref(patch.get_temp_ref())
 
-      parser.add_argument('--version', action='version',
-                          version='%(prog)s ' + PWCLI_VERSION)
+        # newline to clear the "progress bar"
+        self.output('')
 
-      args = parser.parse_args()
+        self.output('%s set to %s' % (get_patches_plural(len(patches)),
+                                      state))
+        reply = ''
+        reason = None
 
-      if args.debug:
-         logger.setLevel(logging.DEBUG)
+        if state == PATCH_STATE_ACCEPTED:
+            tree_name = '%s.git' % self.tree
 
-      logger.debug('pwcli args %s)' % repr(args))
+            if self.pending_mode == 'stgit' and len(self.main_branches) > 1:
+                branch_name = '%s branch of ' % (self.selected_main_branch)
+            else:
+                branch_name = ''
 
-      self.dry_run = args.dry_run
+            reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
+                                                          branch_name,
+                                                          tree_name)
+            reply += '%s\n\n' % self.git.log_oneline(len(patches))
 
-      self.config = ConfigParser.RawConfigParser()
+            # Note: faillog is not added if the patches are accepted, for
+            # example no need to show false warnings
+        else:
+            reason = self.input('Reason (RET for no mail): ')
+            reason = reason.strip()
 
-      if not os.path.exists(self.config_file):
-         print 'Could not find %s', self.config_file
-         sys.exit(1)
+            if len(reason) == 0:
+                # no reason specified so no need to send any mail either
+                return
 
-      self.config.read(self.config_file)
+            reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
+            reply += '%s\n\n' % (reason)
 
-      if self.config.has_option('general', 'log-level'):
-         if self.config.get('general', 'log-level') == 'debug':
+            # add possible git and build failures/warnings to the mail
+            faillog = faillog.strip()
+            if len(faillog) > 0:
+                reply += '%s\n\n' % (faillog)
+
+            reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
+                                            state)
+
+            # With one patch no point of adding the list, the patchwork
+            # id and link is already available from the signature.
+            if len(patches) > 1:
+                reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
+
+        first_patch = patches[0]
+        msg = first_patch.get_reply_msg(self.fullname, self.email,
+                                        reply, signature=self.signature)
+
+        # if the patches are accepted, there's no reason and no need to edit the mail
+        if reason:
+            msg = self.edit_email(msg)
+            if msg == None:
+                # user aborted
+                return
+
+        self.send_email(msg)
+
+    def cmd_show(self, args):
+        logger.debug('cmd_show(args=%s)' % repr(args))
+
+        selected_patches = self.get_patches_from_ids(args.ids)
+
+        if len(selected_patches) == 1:
+            patch = selected_patches[0]
+            self.show_patch(patch)
+            self.open_browser_url(patch.get_url())
+        elif len(selected_patches) > 1:
+            self.output(self.create_patchlist_as_string(selected_patches,
+                                                        show_indexes=False,
+                                                        open_browser=True))
+        else:
+            # FIXME: what to do if we don't find any patches?
+            pass
+
+    # Basic operation:
+    #
+    # * show list of patches
+    # * open patches in browser
+    # * if pending mode is enabled
+    # ** Apply/Skip/aBort?
+    # ** apply patches to the pending branch
+    # ** run build script
+    # * Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
+    # * print status '%d patch(es) set to %s'
+    # * if state == Under review: exit
+    # * Reason:
+    # * if len(reason) == 0 don't send any mail
+    # * create summary mail: "%d patch(es) changed to state %s. <patchlist> Reason: <reason> <buildlogs>"
+    # * Send/Edit/aBort?
+
+    def cmd_review(self, args):
+        logger.debug('cmd_review(args=%r)' % args)
+
+        patches = self.get_patches_from_ids(args.ids)
+
+        self.prefetch_patches(patches)
+
+        # force a newline so that new text starts from it's own line
+        self.output('')
+
+        self.output(self.create_patchlist_as_string(patches,
+                                                    show_indexes=False,
+                                                    open_browser=True))
+
+        self.output('------------------------------------------------------------')
+
+        applied = []
+        faillog = ''
+        builder = None
+
+        if self.pending_mode == 'stgit':
+            while True:
+                choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(patches)
+                answer = self.input(choises)
+                answer = answer.lower()
+
+                valid = ['a', 's', 'b']
+
+                if answer in valid:
+                    break
+
+                self.output('Unknown choise \'%s\', valid choises are: %s' % (answer,
+                                                                              ', '.join(valid)))
+
+            # Apply
+            if answer == 'a':
+                # git checkout self.pending_branch
+                self.git.checkout(self.pending_branch)
+
+                try:
+                    i = 1
+                    for patch in patches:
+                        self.output('\rImporting patches (%d/%d)' % (i, len(patches)),
+                                    newline=False)
+                        self.stg.import_patch(patch.get_mbox_for_stgit())
+                        applied.append(patch)
+                        i += 1
+
+                    # newline to clear the "progress bar"
+                    self.output('')
+
+                    # run a build test
+                    builder = self.run_build_script()
+
+                    if builder and len(builder.stderrdata) > 0:
+                        faillog += builder.stderrdata
+
+                except GitError as e:
+                    # newline to clear the "progress bar"
+                    self.output('')
+
+                    self.output('Failed to apply patch: %s' % e)
+                    self.output('%s' % e.log)
+                    faillog += e.log
+
+                    for i in range(len(applied)):
+                        self.stg.rollback()
+
+            # Skip
+            elif answer == 's':
+                # do nothing, just continue to state handling
+                pass
+            # aBort
+            elif answer == 'b':
+                return
+
+        # need to use ordered dict so that the list is shown in correct order
+        state_table = collections.OrderedDict()
+
+        # In pending mode Under Review state should be shown only if the
+        # patches were succesfully applied to the pending branch
+        if self.pending_mode != 'stgit' or len(patches) == len(applied):
+            state_table['Under review'] =       PATCH_STATE_UNDER_REVIEW
+
+        state_table['Changes requested'] =  PATCH_STATE_CHANGES_REQUESTED
+        state_table['Rejected'] =           PATCH_STATE_REJECTED
+        state_table['New'] =                PATCH_STATE_NEW
+        state_table['Deferred'] =           PATCH_STATE_DEFERRED
+        state_table['Superseded' ] =        PATCH_STATE_SUPERSEDED
+        state_table['aWaiting upstream'] =  PATCH_STATE_AWAITING_UPSTREAM
+        state_table['not aPplicable'] =     PATCH_STATE_NOT_APPLICABLE
+        state_table['rFc'] =                PATCH_STATE_RFC
+        state_table['aBort'] =              STATE_ABORTED
+
+        while True:
+            state = self.show_choose_list(state_table)
+            result = None
+
+            if builder is not None:
+                if builder.returncode != 0:
+                    result = 'Build FAILED!'
+                elif len(builder.stderrdata) > 0:
+                    result = 'Build had WARNINGS!'
+
+            if state != PATCH_STATE_UNDER_REVIEW or not result:
+                # no problems with patches
+                break
+
+            # patches had problems and user chose to UNDER_REVIEW them
+            self.output(result)
+
+            answer = self.input('Are you sure want to set these patches to UNDER REVIEW? [y/N]: ')
+            answer = answer.lower()
+            if answer == 'y':
+                # user is sure
+                break
+
+            # user it not sure, ask for the state again
+
+        if state == STATE_ABORTED:
+            self.output('Aborted.')
+            return
+
+        i = 1
+        for patch in patches:
+            self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
+                        newline=False)
+            patch.set_state_name(state)
+
+        # newline to clear the "progress bar"
+        self.output('')
+
+        self.output('%s set to %s' % (get_patches_plural(len(patches)),
+                                      state))
+
+        if state == PATCH_STATE_UNDER_REVIEW:
+            # patches were ok, no further action
+            return
+
+        reason = self.input('Reason (RET for no mail): ')
+        reason = reason.strip()
+
+        if len(reason) == 0:
+            # no reason specified so no need to send any mail either
+            return
+
+        reply = ''
+
+        reply += '%s\n\n' % (textwrap.fill(reason, MAIL_BODY_WIDTH))
+
+        # add possible git and build failures/warnings to the mail
+        faillog = faillog.strip()
+        if len(faillog) > 0:
+            reply += '%s\n\n' % (faillog)
+
+        reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
+                                        state)
+
+        # No point adding patchlist for a single patch, it doesn't
+        # bring any extra value which isn't already in the title or
+        # in the signature.
+        if len(patches) > 1:
+            reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
+
+        first_patch = patches[0]
+        msg = first_patch.get_reply_msg(self.fullname, self.email,
+                                        reply, signature=self.signature)
+
+        msg = self.edit_email(msg)
+        if msg == None:
+            # user aborted
+            return
+
+        self.send_email(msg)
+
+    def cmd_reply(self, args):
+        logger.debug('cmd_reply(args=%s)' % repr(args))
+
+        try:
+            i = int(args.id[0])
+        except ValueError as e:
+            self.output('Failed to convert index to integer: %s' % e)
+            return
+
+        if self.patches == None:
+            self.output('No patches listed, forgot to run list command?')
+            return
+
+        if i > len(self.patches):
+            self.output('Patch index %d not found' % i)
+            return
+
+        patch = self.patches[i - 1]
+        reply = patch.get_reply_msg(self.fullname, self.email, signature=self.signature)
+
+        reply = self.edit_email(reply)
+
+        if reply == None:
+            return
+
+        self.send_email(reply)
+
+    def cmd_info(self, args):
+        logger.debug('cmd_info(args=%s)' % repr(args))
+
+        self.show_info()
+
+    def cmd_build(self, args):
+        logger.debug('cmd_build(args=%s)' % repr(args))
+
+        self.run_build_script()
+
+    def cmd_project(self, args):
+        logger.debug('cmd_project(args=%r)' % repr(args))
+
+        if args.index == None:
+            self.output('Projects:')
+            i = 0
+            for project in self.projects:
+                if self.project == project:
+                    selected = '*'
+                else:
+                    selected = ' '
+
+                self.output('%s %d: %s' % (selected, i, project.name))
+
+                i += 1
+
+            return
+
+        try:
+            index = int(args.index)
+        except ValueError as e:
+            self.output('Failed to convert index to integer: %s' % e)
+            return
+
+        self.project = self.projects[index]
+
+        self.output('Switched to project: %s' % (self.project.name))
+
+    def cmd_branch(self, args):
+        logger.debug('cmd_branch(args=%r)' % repr(args))
+
+        if args.index == None:
+            self.output('Main branches:')
+            i = 0
+            for branch in self.main_branches:
+                if self.selected_main_branch == branch:
+                    selected = '*'
+                else:
+                    selected = ' '
+
+                self.output('%s %d: %s' % (selected, i, branch))
+
+                i += 1
+
+            return
+
+        try:
+            index = int(args.index)
+        except ValueError as e:
+            self.output('Failed to convert index to integer: %s' % e)
+            return
+
+        if index > len(self.main_branches) - 1:
+            self.output('index out of bounds: %d' % index)
+            return
+
+        self.selected_main_branch = self.main_branches[index]
+
+        self.output('Switched main branch to: %s' % (self.selected_main_branch))
+
+    def run_shell(self):
+        index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
+
+        self.parser = argparse.ArgumentParser(description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
+                                              prog='',
+                                              add_help=False)
+
+        subparsers = self.parser.add_subparsers()
+
+        subparsers.add_parser('help').set_defaults(func=self.cmd_help,
+                                                   help='show summary of available commands')
+
+        subparsers.add_parser('quit').set_defaults(func=self.cmd_quit,
+                                                   help='quit the shell')
+        subparsers.add_parser('q').set_defaults(func=self.cmd_quit,
+                                                help='quit the shell')
+
+        parser_list = subparsers.add_parser('list',
+                                            help='list patches from patchwork',
+                                            description='Fetches patches from patchwork based on various filters and shows the summary with indexes')
+        parser_list.add_argument('filter', nargs='?',
+                                 help='filter either based state name (see --state) or regexp for patch title')
+        parser_list.add_argument('--state', '-s', nargs=1,
+                                 help='filter list based on states: new, review, upstream, deferred')
+        parser_list.add_argument('--title', '-t', nargs=1,
+                                 help='show only patches with title (subject) matching TITLE (regexp, case is ignored)')
+        parser_list.add_argument('--from', '-f', nargs=1,
+                                 dest='submitter', metavar='FROM',
+                                 help='show only patches submitted by FROM (regexp, case is ignored)')
+        parser_list.set_defaults(func=self.cmd_list)
+
+        parser_commit = subparsers.add_parser('commit',
+                                              help='commit list of patches',
+                                              description='Commits one or more patches using git, changes the state of patches accordingly and sends an email reply. Requires that the list command is run before.')
+        parser_commit.add_argument('ids', metavar='IDS', nargs='+',
+                                   help=index_help)
+        parser_commit.set_defaults(func=self.cmd_commit)
+
+        parser_review = subparsers.add_parser('review',
+                                              help='review patches and change states',
+                                              description='Opens each patch in a brower window for easy review of the patch and comments. Provides options to change states')
+        parser_review.add_argument('ids', metavar='IDS', nargs='+',
+                                   help=index_help)
+        parser_review.set_defaults(func=self.cmd_review)
+
+        parser_show = subparsers.add_parser('show',
+                                            help='show information about the patches',
+                                            description='Show information about the patches and open browser window for each')
+        parser_show.add_argument('ids', metavar='IDS', nargs='+',
+                                 help=index_help)
+        parser_show.set_defaults(func=self.cmd_show)
+
+        parser_reply = subparsers.add_parser('reply',
+                                             help='send an email reply to the patch')
+        parser_reply.add_argument('id', metavar='ID', nargs=1,
+                                  help='patch index from list command')
+        parser_reply.set_defaults(func=self.cmd_reply)
+
+        parser_project = subparsers.add_parser('project',
+                                               help='switch between patchwork projects',
+                                               description='Switch between patchwork projects, if no index is specified list of projects is shown with indexes.')
+        parser_project.add_argument('index', metavar='INDEX', nargs='?',
+                                    help='patchwork project index')
+        parser_project.set_defaults(func=self.cmd_project)
+
+        parser_project = subparsers.add_parser('branch',
+                                               help='switch between git branches',
+                                               description='Switch between git branches, if no branch index specified list of available branches is shown with indexes.')
+        parser_project.add_argument('index', metavar='INDEX', nargs='?',
+                                    help='branch index')
+        parser_project.set_defaults(func=self.cmd_branch)
+
+        subparsers.add_parser('info').set_defaults(func=self.cmd_info,
+                                                   help='show various patchwork statistics')
+
+        subparsers.add_parser('build').set_defaults(func=self.cmd_build,
+                                                    help='run build script and show results')
+
+        while True:
+            prompt = ''
+
+            if self.pending_mode == 'stgit':
+                branch = self.selected_main_branch
+            else:
+                branch = self.git.get_branch()
+            prompt += '%s@%s ' % (branch, self.tree)
+
+            if self.dry_run:
+                prompt += '(dry-run)'
+
+            prompt += '> '
+
+            try:
+                cmd = self.input(prompt)
+            except EOFError:
+                logger.debug('CTRL-d from user, exit')
+
+                # add a newline so the shell prompt starts from a clean line
+                self.output('')
+                sys.exit(0)
+
+            # argparse is idiotic and exits if there's a parse error,
+            # workaround it by catching SystemExit. Idea from:
+            #
+            # http://bugs.python.org/issue9938
+            try:
+                args = self.parser.parse_args(cmd.split())
+            except SystemExit:
+                continue
+
+            args.func(args)
+
+    def print_header(self, name, value):
+        fmt = "%- 14s: %s"
+        self.output(fmt % (name, value))
+
+    def output(self, buf, newline=True):
+        logger.debug('> \'%s\'' % buf)
+
+        if newline:
+            buf += '\n'
+
+        sys.stdout.write(buf)
+
+        # flush so that the message really goes to the user
+        if not newline:
+            sys.stdout.flush()
+
+    def input(self, prompt):
+        logger.debug('> \'%s\'' % prompt)
+        cmd = raw_input(prompt)
+        logger.debug('< \'%s\'' % cmd)
+
+        return cmd
+
+    def __init__(self):
+        self.timer = Timer()
+
+        if 'GIT_DIR' in os.environ:
+            self.git_dir = os.environ['GIT_DIR']
+        else:
+            self.git_dir = '.git'
+
+        self.pwcli_dir = os.path.join(self.git_dir, 'pwcli')
+        self.config_file = os.path.join(self.pwcli_dir, 'config')
+        self.signature_file = os.path.join(self.pwcli_dir, 'signature')
+
+        if not os.path.exists(self.pwcli_dir):
+            print '%s does not exist, exiting' % self.pwcli_dir
+            sys.exit(1)
+
+        if not os.path.isdir(self.pwcli_dir):
+            print '%s is not a directory, exiting' % self.pwcli_dir
+            sys.exit(1)
+
+        if os.path.exists(PWCLI_EDIT_FILE):
+            print '%s exists, remove and try again.' % PWCLI_EDIT_FILE
+            sys.exit(1)
+
+        logging.basicConfig(filename=os.path.join(self.pwcli_dir, 'log'),
+                            format='%(asctime)s %(levelname)s: %(message)s')
+
+        parser = argparse.ArgumentParser(description='Patchwork Command-Line Interface')
+        parser.add_argument('-d', '--debug', action='store_true',
+                            help='enable debug messages')
+
+        parser.add_argument('--dry-run', action='store_true',
+                            help='Don\'t modify anything')
+
+        parser.add_argument('--no-browser', action='store_true',
+                            help='do not open any patchwork pages on browser')
+
+        parser.add_argument('--version', action='version',
+                            version='%(prog)s ' + PWCLI_VERSION)
+
+        args = parser.parse_args()
+
+        if args.debug:
             logger.setLevel(logging.DEBUG)
 
-      # read settings from pwcli config file
-      self.url = self.config.get('general', 'url')
-      self.username = self.config.get('general', 'username')
-      self.password = self.config.get('general', 'password')
+        logger.debug('pwcli args %s)' % repr(args))
 
-      if self.config.has_option('general', 'build-command'):
-         self.build_command = self.config.get('general', 'build-command').split(' ')
-      else:
-         self.build_command = None
+        self.dry_run = args.dry_run
 
-      self.project_names = self.config.get('general', 'project')
+        self.config = ConfigParser.RawConfigParser()
 
-      self.project_names = self.project_names.split()
-
-      # FIXME: ConfigParser supports providing defaults as a dict, use
-      # those instead. Also maybe it's better to use self.config
-      # directly and get rid of self.foo properties?
-
-      if self.config.has_option('general', 'default_filter_delegated'):
-         self.default_filter_delegated = self.config.getboolean('general',
-                                                                'default_filter_delegated')
-      else:
-         self.default_filter_delegated = True
-
-      if self.config.has_option('general', 'browser') and not args.no_browser:
-         self.browser = self.config.get('general', 'browser')
-      else:
-         self.browser = None
-
-      pending_modes = ['disabled', 'stgit']
-
-      # defaults
-      self.pending_mode = 'disabled'
-      self.pending_branch = None
-      self.main_branches = None
-
-      if self.config.has_option('general', 'pending_mode'):
-         self.pending_mode = self.config.get('general', 'pending_mode').lower()
-
-      if self.pending_mode not in pending_modes:
-         self.output('Invalid stgit.mode "%s"' % self.pending_mode)
-         sys.exit(1)
-
-      if self.config.has_option('general', 'pending_branch'):
-         self.pending_branch = self.config.get('general', 'pending_branch').lower()
-
-      if self.config.has_option('general', 'main_branches'):
-         branches = self.config.get('general', 'main_branches').lower()
-         self.main_branches = branches.split()
-         self.selected_main_branch = self.main_branches[0]
-
-      if self.pending_mode == 'stgit':
-         if self.pending_branch == None:
-            self.output('general.pending_branch not set')
+        if not os.path.exists(self.config_file):
+            print 'Could not find %s', self.config_file
             sys.exit(1)
 
-         if self.main_branches == None:
-            self.output('general.main_branches not set')
+        self.config.read(self.config_file)
+
+        if self.config.has_option('general', 'log-level'):
+            if self.config.get('general', 'log-level') == 'debug':
+                logger.setLevel(logging.DEBUG)
+
+        # read settings from pwcli config file
+        self.url = self.config.get('general', 'url')
+        self.username = self.config.get('general', 'username')
+        self.password = self.config.get('general', 'password')
+
+        if self.config.has_option('general', 'build-command'):
+            self.build_command = self.config.get('general', 'build-command').split(' ')
+        else:
+            self.build_command = None
+
+        self.project_names = self.config.get('general', 'project')
+
+        self.project_names = self.project_names.split()
+
+        # FIXME: ConfigParser supports providing defaults as a dict, use
+        # those instead. Also maybe it's better to use self.config
+        # directly and get rid of self.foo properties?
+
+        if self.config.has_option('general', 'default_filter_delegated'):
+            self.default_filter_delegated = self.config.getboolean('general',
+                                                                   'default_filter_delegated')
+        else:
+            self.default_filter_delegated = True
+
+        if self.config.has_option('general', 'browser') and not args.no_browser:
+            self.browser = self.config.get('general', 'browser')
+        else:
+            self.browser = None
+
+        pending_modes = ['disabled', 'stgit']
+
+        # defaults
+        self.pending_mode = 'disabled'
+        self.pending_branch = None
+        self.main_branches = None
+
+        if self.config.has_option('general', 'pending_mode'):
+            self.pending_mode = self.config.get('general', 'pending_mode').lower()
+
+        if self.pending_mode not in pending_modes:
+            self.output('Invalid stgit.mode "%s"' % self.pending_mode)
             sys.exit(1)
 
-      # read settings from environment variables
-      if 'EDITOR' in os.environ:
-         self.editor = os.environ['EDITOR']
-      else:
-         self.editor = DEFAULT_EDITOR
+        if self.config.has_option('general', 'pending_branch'):
+            self.pending_branch = self.config.get('general', 'pending_branch').lower()
 
-      if os.path.exists(self.signature_file):
-         f = open(self.signature_file, 'r')
-         self.signature = f.read()
-         f.close()
-      else:
-         self.signature = None
+        if self.config.has_option('general', 'main_branches'):
+            branches = self.config.get('general', 'main_branches').lower()
+            self.main_branches = branches.split()
+            self.selected_main_branch = self.main_branches[0]
 
-      self.git = Git(self.dry_run, self.output)
-      self.stg = Stg(self.dry_run, self.output)
-      self.stg_cache = {}
+        if self.pending_mode == 'stgit':
+            if self.pending_branch == None:
+                self.output('general.pending_branch not set')
+                sys.exit(1)
 
-      # read settings from git
-      self.fullname = self.git.get_config('user.name')
-      self.email = self.git.get_config('user.email')
-      self.smtp_host = self.git.get_config('sendemail.smtpserver')
-      self.smtp_port = self.git.get_config('sendemail.smtpserverport')
-      self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
-      self.smtp_username = self.git.get_config('sendemail.smtpuser')
-      self.smtp_password = self.git.get_config('sendemail.smtppass')
+            if self.main_branches == None:
+                self.output('general.main_branches not set')
+                sys.exit(1)
 
-      # print configs to debug log
-      logger.debug('fullname=%s' % self.fullname)
-      logger.debug('email=%s' % self.email)
-      logger.debug('url=%s' % self.url)
-      logger.debug('username=%s' % self.username)
-      logger.debug('project_name=%s' % self.project_names)
-      logger.debug('editor=%s' % self.editor)
-      logger.debug('smtp_host=%s' % self.smtp_host)
-      logger.debug('smtp_port=%s' % self.smtp_port)
-      logger.debug('smtp_encryption=%s' % self.smtp_encryption)
-      logger.debug('smtp_username=%s' % self.smtp_username)
+        # read settings from environment variables
+        if 'EDITOR' in os.environ:
+            self.editor = os.environ['EDITOR']
+        else:
+            self.editor = DEFAULT_EDITOR
 
-      if self.smtp_password != None:
-         passwd = '<hidden>'
-      else:
-         passwd = '<not set>'
+        if os.path.exists(self.signature_file):
+            f = open(self.signature_file, 'r')
+            self.signature = f.read()
+            f.close()
+        else:
+            self.signature = None
 
-      logger.debug('smtp_password=%s' % passwd)
-      
-      self.output('Connecting to %s' % self.url)
+        self.git = Git(self.dry_run, self.output)
+        self.stg = Stg(self.dry_run, self.output)
+        self.stg_cache = {}
 
-      self.pw = Patchwork(self.url, self.username, self.password)
+        # read settings from git
+        self.fullname = self.git.get_config('user.name')
+        self.email = self.git.get_config('user.email')
+        self.smtp_host = self.git.get_config('sendemail.smtpserver')
+        self.smtp_port = self.git.get_config('sendemail.smtpserverport')
+        self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
+        self.smtp_username = self.git.get_config('sendemail.smtpuser')
+        self.smtp_password = self.git.get_config('sendemail.smtppass')
 
-      self.projects = []
-      for project_name in self.project_names:
-         project = Project(project_name, self.pw, self.dry_run)
-         project.update_cache()
-         self.projects.append(project)
+        # print configs to debug log
+        logger.debug('fullname=%s' % self.fullname)
+        logger.debug('email=%s' % self.email)
+        logger.debug('url=%s' % self.url)
+        logger.debug('username=%s' % self.username)
+        logger.debug('project_name=%s' % self.project_names)
+        logger.debug('editor=%s' % self.editor)
+        logger.debug('smtp_host=%s' % self.smtp_host)
+        logger.debug('smtp_port=%s' % self.smtp_port)
+        logger.debug('smtp_encryption=%s' % self.smtp_encryption)
+        logger.debug('smtp_username=%s' % self.smtp_username)
 
-      # select the first project as initial project
-      self.project = self.projects[0]
+        if self.smtp_password != None:
+            passwd = '<hidden>'
+        else:
+            passwd = '<not set>'
 
-      self.user_ids = self.pw.get_user_ids(self.username)
-      self.tree = os.path.basename(os.getcwd())
+        logger.debug('smtp_password=%s' % passwd)
 
-      self.patches = None
+        self.output('Connecting to %s' % self.url)
 
-      self.show_info()
+        self.pw = Patchwork(self.url, self.username, self.password)
 
-      logger.info('pwcli %s started' % PWCLI_VERSION)
+        self.projects = []
+        for project_name in self.project_names:
+            project = Project(project_name, self.pw, self.dry_run)
+            project.update_cache()
+            self.projects.append(project)
+
+        # select the first project as initial project
+        self.project = self.projects[0]
+
+        self.user_ids = self.pw.get_user_ids(self.username)
+        self.tree = os.path.basename(os.getcwd())
+
+        self.patches = None
+
+        self.show_info()
+
+        logger.info('pwcli %s started' % PWCLI_VERSION)
 
 def main():
-   pwcli = PWCLI()
-   pwcli.run_shell()
+    pwcli = PWCLI()
+    pwcli.run_shell()
 
 if __name__ == "__main__":
-   main()
+    main()
