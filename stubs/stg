@@ -114,6 +114,8 @@ def cmd_show(args):
       # terminate headers with an extra newline
       print
 
+      print '    %s' % (commit.subject)
+
       for line in commit.body.splitlines():
             print '    %s' % (line)
 
