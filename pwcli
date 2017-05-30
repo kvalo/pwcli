@@ -323,15 +323,30 @@ class GitCommit(object):
             except Exception as e:
                 raise GitError('failed to parse patchwork id: %s' % (e))
 
+        # '*?' is non-greedy
+        match = re.search(r'\n\n\s\s\s\s(.*?)\n\s\s\s\s\n(\s\s\s\s.*\n)\n[^\s]', text,
+                          re.MULTILINE | re.DOTALL)
+
+        # TODO: make title and log parsing optionally because tests
+        # fail, most likely because stubs return the patch in wrong
+        # format (or something). But that should be fixed and we
+        # should throw GitError() if the patch is not in correct
+        # format.
+        if match is not None:
+            commit.title = match.group(1)
+            commit.log = re.sub(r'\s\s\s\s(.*?)\n', r'\1\n', match.group(2))
+
         return commit
 
     def __str__(self):
-        return 'GitCommit(id=\'%s\', patchwork_id=\'%d\')' % \
-            (self.commit_id, self.patchwork_id)
+        return 'GitCommit(title=\'%s\', id=\'%s\', patchwork_id=\'%d\')' % \
+            (self.title, self.commit_id, self.patchwork_id)
 
     def __init__(self):
         self.commit_id = None
         self.patchwork_id = None
+        self.title = None
+        self.log = None
 
 
 class Stg():

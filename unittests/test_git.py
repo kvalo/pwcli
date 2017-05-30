@@ -113,6 +113,8 @@ class TestGitCommit(unittest.TestCase):
                          '8bd453fe60574334173cdbb51faa390b98678063')
         self.assertEqual(commit.patchwork_id,
                          12345)
+        self.assertEqual(commit.log,
+                         'For now this just runs pyflakes and pep8. Need to extend it later.\nThere should not be any functional changes.\n foo foo bar bar\n\nSigned-off-by: Alice Example <alice@example.com>\nPatchwork-Id: 12345\nSigned-off-by: Ed Example <ed@example.com>\n')
 
 if __name__ == '__main__':
     unittest.main()
