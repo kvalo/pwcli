@@ -625,12 +625,6 @@ class Patch():
 
         logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
 
-    def get_temp_ref(self):
-        return self.temp_ref
-
-    def set_temp_ref(self, temp_ref):
-        self.temp_ref = temp_ref
-
     def get_url(self):
         return '%s%s/' % (self.pw.patch_url, self.get_id())
 
@@ -842,7 +836,9 @@ class Patch():
         self.dry_run = dry_run
 
         self.mbox = None
-        self.temp_ref = None
+
+        self.pending_commit = None
+        self.final_commit = None
         self.stg_index = None
 
 
@@ -1094,7 +1090,7 @@ class PWCLI():
 
         for patch in patches:
             if show_indexes:
-                if patch.get_temp_ref():
+                if patch.pending_commit is not None:
                     pending = '*'
                 else:
                     pending = ' '
@@ -1439,7 +1435,7 @@ class PWCLI():
             # that it's still valid. If the patch is edited after added
             # to the cache the commit id will change and we would
             # erroneously commit an older version of the patch!
-            patch.set_temp_ref(c.commit_id)
+            patch.pending_commit = c
             patch.stg_index = i
 
             patches.append(patch)
@@ -1655,11 +1651,11 @@ class PWCLI():
                     # review state. Also applies to main ('non-pending')
                     # mode?
 
-                    # The pwcli commit command always requires the list
-                    # command to be run first, which always sets the
-                    # temp_ref (in stgit mode) so we can assume that the
-                    # patch has correct commit_ref set.
-                    self.git.cherry_pick(patch.get_temp_ref())
+                    # The pwcli commit command always requires the
+                    # list command to be run first, which always sets
+                    # the pending_commit (in stgit mode) from which we
+                    # get the commit id.
+                    self.git.cherry_pick(patch.pending_commit.commit_id)
 
                     # remove Patchwork-Id from the commit log
                     self.git.filter_msg('^Patchwork-Id:')
@@ -1667,8 +1663,7 @@ class PWCLI():
                     self.git.am(patch.get_mbox())
 
                 # store the commit id temporarily
-                c = self.git.get_commit('HEAD')
-                patch.set_temp_ref(c.commit_id)
+                patch.final_commit = self.git.get_commit('HEAD')
 
                 applied.append(patch)
                 i += 1
@@ -1771,7 +1766,7 @@ class PWCLI():
                 # Set commit_ref so that the commit id is visible in the
                 # web interface and it's possible to find the patchwork id
                 # based on commit id.
-                patch.set_commit_ref(patch.get_temp_ref())
+                patch.set_commit_ref(patch.final_commit.commit_id)
 
         # newline to clear the "progress bar"
         self.output('')
