@@ -147,5 +147,25 @@ class TestPatch(unittest.TestCase):
         m.return_value = '[for-3.4 200/200] foo: bar'
         self.assertEqual(patch.get_patch_index(), 200)
 
+    def test_get_tags(self):
+        attributes = FAKE_ATTRIBUTES
+        patch = pwcli.Patch(None, attributes, False)
+
+        # mock get_name() method for easier testing
+        m = mock.Mock()
+        patch.get_name_original = m
+
+        m.return_value = 'foo: bar'
+        self.assertEqual(patch.get_tags(), None)
+
+        m.return_value = '[v2] foo: bar'
+        self.assertEqual(patch.get_tags(), '[v2]')
+
+        m.return_value = '[2/2] foo: bar'
+        self.assertEqual(patch.get_tags(), '[2/2]')
+
+        m.return_value = '[RFC,7/9] foo: bar'
+        self.assertEqual(patch.get_tags(), '[RFC,7/9]')
+
 if __name__ == '__main__':
     unittest.main()

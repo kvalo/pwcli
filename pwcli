@@ -572,10 +572,23 @@ class Patch():
 
     def get_name(self):
         if self.pending_commit is not None:
-            # TODO: get tags (eg. "[RFC,7/9]" from the original title
-            return self.pending_commit.title
+            name = ''
+
+            # get tags (eg. "[RFC,7/9]" from the original title
+            if self.get_tags() is not None:
+                name += '%s ' % (self.get_tags())
+
+            name += self.pending_commit.title
+            return name
         else:
             return self.get_name_original()
+
+    def get_tags(self):
+        match = re.match(r'^\s*(\[.*?\])', self.get_name_original())
+        if match is None:
+            return None
+
+        return match.group(1)
 
     def get_id(self):
         return self.attributes['id']
