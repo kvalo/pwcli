@@ -790,10 +790,15 @@ class Patch():
         return reply
 
     def get_log(self):
-        msg = self.get_email()
-        payload = msg.get_payload()
+        if self.pending_commit is not None:
+            log = self.pending_commit.log
 
-        (log, sep, patch) = payload.partition(LOG_SEPARATOR)
+            # remove Patchwork-Id
+            log = re.sub(r'\n\s*Patchwork-Id:\s*\d+\s*\n', '\n', log)
+        else:
+            msg = self.get_email()
+            payload = msg.get_payload()
+            (log, sep, patch) = payload.partition(LOG_SEPARATOR)
 
         return log.strip()
 
