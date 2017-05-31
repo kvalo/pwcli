@@ -694,8 +694,6 @@ class Patch():
     def get_reply_msg(self, from_name, from_email, text='', signature=None):
         msg = self.get_email()
 
-        (log, sep, patch) = msg.get_payload().partition(LOG_SEPARATOR)
-
         # create body
         quote = []
 
@@ -716,8 +714,9 @@ class Patch():
 
         if who:
             quote.append('%s wrote:' % (who))
+            quote.append('')
 
-        for line in log.splitlines():
+        for line in self.get_log().splitlines():
             quote.append('> %s' % line)
 
         quote.append('')

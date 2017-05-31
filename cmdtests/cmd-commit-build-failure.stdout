@@ -56,7 +56,7 @@ User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
  Python/<censored>
 
 Dino Dinosaurus <dino@example.com> wrote:
-> 
+
 > Foo commit log. Ignore this text
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
@@ -97,7 +97,7 @@ User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
  Python/<censored>
 
 Dino Dinosaurus <dino@example.com> wrote:
-> 
+
 > Foo commit log. Ignore this text
 > 
 > Signed-off-by: Dino Dinosaurus <dino@example.com>
