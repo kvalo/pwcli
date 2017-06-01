@@ -2039,6 +2039,7 @@ class PWCLI():
             self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
                         newline=False)
             patch.set_state_name(state)
+            i += 1
 
         # newline to clear the "progress bar"
         self.output('')
