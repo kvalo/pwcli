@@ -1458,6 +1458,11 @@ class PWCLI():
 
             patchwork_id = c.patchwork_id
 
+            if patchwork_id is None:
+                self.output('Invalid Patchwork-Id for pending commit %s: %s' %
+                            (stg_commit_name, patchwork_id))
+                continue
+
             # the patch can be in any of the projects configured
             for project in self.projects:
                 patch = project.get_patch(patchwork_id)
