@@ -74,4 +74,46 @@ Signed-off-by: Dino Dinosaurus <dino@example.com>
 ---
  0 files changed
 ============================================================
+master@data > show #1020
+show #1020
+Delegate: test
+State: Deferred
+From: Timo Tiger <timo@example.com>
+Date: 2011-02-11 15:23:31
+Patchwork-Id: 1020
+Patchwork-URL: http://localhost:8105/1020/
+PendingCommit: None
+FinalCommit: None
+CommitRef: 
+PatchIndex: None
+StgIndex: None
+============================================================
+foo: small cleanup
+
+Foo commit log. Ignore this text
+
+Signed-off-by: Dino Dinosaurus <dino@example.com>
+---
+ 0 files changed
+============================================================
+master@data > show #1030,#1031,#1032
+show #1030,#1031,#1032
+      foo: new patch                                               2011-02-11 Timo Tiger   New
+      foo: minor change with CC                                    2011-02-11 Timo Tiger   New
+      foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
+master@data > show #777777
+show #777777
+command failed: Patchwork id 777777 not found
+master@data > show #1030,#1031,#1032,#777777
+show #1030,#1031,#1032,#777777
+command failed: Patchwork id 777777 not found
+master@data > show #foobar
+show #foobar
+command failed: Invalid patchwork server patch id: #foobar
+master@data > show #1030,#foobar
+show #1030,#foobar
+command failed: Invalid patchwork server patch id: #foobar
+master@data > show #1030-#1032
+show #1030-#1032
+command failed: Invalid patchwork server patch id: #1030-#1032
 master@data > quit

@@ -1073,9 +1073,35 @@ class PWCLI():
             patch.get_mbox()
             i += 1
 
+    # Uses patchwork server patch ids, _not_ pwcli list indexes.
+    # Format is '#12345,#54321'.
+    def get_patches_from_server_ids(self, ids):
+        patches = []
+        ids_list = ids.split(',')
+
+        for arg_id in ids_list:
+            if not arg_id.startswith('#'):
+                raise Exception('Invalid patchwork server patch id: %s' % (arg_id))
+
+            try:
+                patchwork_id = int(arg_id[1:])
+            except:
+                raise Exception('Invalid patchwork server patch id: %s' % (arg_id))
+
+            patch = self.project.get_patch(patchwork_id)
+            if patch is None:
+                raise Exception('Patchwork id %s not found' % (patchwork_id))
+
+            patches.append(patch)
+
+        return patches
+
     def get_patches_from_ids(self, ids):
         if ids.lower() == PATCHINDEX_ALL:
             return self.patches
+
+        if ids.startswith('#'):
+            return self.get_patches_from_server_ids(ids)
 
         indexes = parse_list(ids)
 
@@ -2238,7 +2264,11 @@ class PWCLI():
             self.output('Unknown stg command: %s' % (args.cmd))
 
     def run_shell(self):
-        index_help = 'The indexes of the patches to be committed from a previous list command. Use a comma to separate indexes and a hyphen to give a range of indexes. Example: 5-8,10,13'
+        index_help = '''List of patch ids which can be eiher pwcli list indexes or real
+patchwork ids. The pwcli indexes are found from a previous list
+command, use a comma to separate indexes and a hyphen to give a range
+of indexes. Example: 5-8,10,13. The patchwork server ids are prefexed
+with # character. Example: #1000,#1005'''
 
         self.parser = argparse.ArgumentParser(
             description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
@@ -2272,21 +2302,21 @@ class PWCLI():
         parser_commit = subparsers.add_parser('commit',
                                               help='commit list of patches',
                                               description='Commits one or more patches using git, changes the state of patches accordingly and sends an email reply. Requires that the list command is run before.')
-        parser_commit.add_argument('ids', metavar='PATCHINDEXES',
+        parser_commit.add_argument('ids', metavar='PATCHIDS',
                                    help=index_help)
         parser_commit.set_defaults(func=self.cmd_commit)
 
         parser_review = subparsers.add_parser('review',
                                               help='review patches and change states',
                                               description='Opens each patch in a brower window for easy review of the patch and comments. Provides options to change states')
-        parser_review.add_argument('ids', metavar='PATCHINDEXES',
+        parser_review.add_argument('ids', metavar='PATCHIDS',
                                    help=index_help)
         parser_review.set_defaults(func=self.cmd_review)
 
         parser_show = subparsers.add_parser('show',
                                             help='show information about the patches',
                                             description='Show information about the patches and open browser window for each')
-        parser_show.add_argument('ids', metavar='PATCHINDEXES',
+        parser_show.add_argument('ids', metavar='PATCHIDS',
                                  help=index_help)
         parser_show.set_defaults(func=self.cmd_show)
 

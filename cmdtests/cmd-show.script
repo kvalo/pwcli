@@ -45,6 +45,30 @@ def test_info(ctxt, pwcli):
    pwcli.sendline('show 1')
    pwcli.expect_prompt()
 
+   pwcli.sendline('show #1020')
+   pwcli.expect_prompt()
+
+   pwcli.sendline('show #1030,#1031,#1032')
+   pwcli.expect_prompt()
+
+   # this id doesn't exist
+   pwcli.sendline('show #777777')
+   pwcli.expect_prompt()
+
+   pwcli.sendline('show #1030,#1031,#1032,#777777')
+   pwcli.expect_prompt()
+
+   # invalid id
+   pwcli.sendline('show #foobar')
+   pwcli.expect_prompt()
+
+   pwcli.sendline('show #1030,#foobar')
+   pwcli.expect_prompt()
+
+   # this is not supported
+   pwcli.sendline('show #1030-#1032')
+   pwcli.expect_prompt()
+
    pwcli.sendline('quit')
 
 if __name__ == "__main__":
