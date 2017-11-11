@@ -1557,7 +1557,6 @@ class PWCLI():
             if state_filter == 'pending':
                 # Only show patches in pending branch, discard the rest.
                 patches = pending_patches
-                states = PATCH_ACTIVE_STATES
             else:
                 # As pending branch can contain patches from the projects
                 # other than the currently selected, include those patches
