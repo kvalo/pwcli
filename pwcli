@@ -1992,9 +1992,6 @@ class PWCLI():
                     self.output('%s' % e.log)
                     faillog += e.log
 
-                    for i in range(len(applied)):
-                        self.stg.rollback()
-
             # Skip
             elif answer == 's':
                 # do nothing, just continue to state handling
@@ -2031,11 +2028,20 @@ class PWCLI():
                 elif len(builder.stderrdata) > 0:
                     result = 'Build had WARNINGS!'
 
+            if self.pending_mode == 'stgit' and state != PATCH_STATE_UNDER_REVIEW:
+                # User rejected the patches (or aborted) for some
+                # reason, so remove the patches from the pending branch.
+                for i in range(len(applied)):
+                    self.stg.rollback()
+
             if state != PATCH_STATE_UNDER_REVIEW or not result:
-                # no problems with patches
+                # User accepted the patches and there were no problems
+                # with the build. So no need to ask confirmation from
+                # the user.
                 break
 
-            # patches had problems and user chose to UNDER_REVIEW them
+            # patches had build problems and user still chose
+            # UNDER_REVIEW state for them
             self.output(result)
 
             answer = self.input(

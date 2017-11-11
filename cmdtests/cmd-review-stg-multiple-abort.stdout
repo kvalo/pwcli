@@ -47,9 +47,4 @@ b
 Aborted.
 master@data > stg list
 stg list
-[ 0] foo-new-patch
-[ 1] foo-minor-change-with-cc
-[ 2] foo-another-minor-change-with-multiple-to
-[ 3] bar-blah-blah-blah-1
-[ 4] bar-blah-blah-blah-2
 master@data > quit
