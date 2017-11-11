@@ -54,6 +54,7 @@ import datetime
 import platform
 import socket
 import functools
+import traceback
 
 import readline
 assert readline  # to shut up pyflakes
@@ -2302,7 +2303,11 @@ class PWCLI():
             except SystemExit:
                 continue
 
-            args.func(args)
+            try:
+                args.func(args)
+            except Exception as e:
+                logger.error('%s failed: %s' % (args.func, traceback.format_exc().strip()))
+                self.output('command failed: %s' % (e))
 
     def print_header(self, name, value):
         fmt = "%- 14s: %s"
