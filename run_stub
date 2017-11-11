@@ -77,6 +77,8 @@ def main():
 
       args = parser.parse_args()
 
+      print 'Using datadir: %s' % (datadir)
+
       git = stubs.GitStub(smtpport=SMTP_PORT)
       git.start()
 
@@ -111,7 +113,7 @@ def main():
       if not args.keep:
             shutil.rmtree(datadir)
       else:
-            print 'Keeping temporary datadir %s' % (datadir)
+            print 'Keeping temporary datadir: %s' % (datadir)
 
 if __name__ == "__main__":
       main()
