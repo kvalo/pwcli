@@ -23,7 +23,7 @@ command failed: Not a digit: foo
 master@data > commit 1 2
 commit 1 2
 usage: 
-        {help,quit,q,list,commit,review,show,reply,project,branch,info,build,stg}
+        {help,quit,q,list,commit,review,show,reply,project,branch,info,build,stg,download}
         ...
 : error: unrecognized arguments: 2
 master@data > quit

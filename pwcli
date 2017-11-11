@@ -55,6 +55,7 @@ import platform
 import socket
 import functools
 import traceback
+import mailbox
 
 import readline
 assert readline  # to shut up pyflakes
@@ -2263,6 +2264,25 @@ class PWCLI():
         else:
             self.output('Unknown stg command: %s' % (args.cmd))
 
+    def cmd_download(self, args):
+        logger.debug('cmd_download(args=%s)' % repr(args))
+
+        patches = self.get_patches_from_ids(args.ids)
+
+        if len(patches) == 0:
+            self.output('No patches downloaded')
+            return
+
+        path = '%d.mbox' % (patches[0].get_id())
+
+        mbox = mailbox.mbox(path)
+        for patch in patches:
+            mbox.add(patch.get_email().as_string())
+
+        mbox.close()
+
+        self.output('%d patches written to %s' % (len(patches), path))
+
     def run_shell(self):
         index_help = '''List of patch ids which can be eiher pwcli list indexes or real
 patchwork ids. The pwcli indexes are found from a previous list
@@ -2352,6 +2372,13 @@ with # character. Example: #1000,#1005'''
         parser_stg.add_argument('cmd', metavar='COMMAND',
                                 help='commands supported: list')
         parser_stg.set_defaults(func=self.cmd_stg)
+
+        parser_download = subparsers.add_parser('download',
+                                                help='download patches to an mbox file',
+                                                description='Downloads specified patches from server and saves them to an mbox file. This can be then used with git-am to apply the patches.')
+        parser_download.add_argument('ids', metavar='PATCHIDS',
+                                     help=index_help)
+        parser_download.set_defaults(func=self.cmd_download)
 
         while True:
             prompt = ''
