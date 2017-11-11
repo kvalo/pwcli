@@ -140,9 +140,8 @@ def parse_list(entries):
     for entry in entries:
         (start_str, sep, end_str) = entry.partition('-')
 
-        if not start_str.isdigit:
-            print 'Not a digit: %s' % (start_str)
-            return []
+        if not start_str.isdigit():
+            raise Exception('Not a digit: %s' % (start_str))
 
         start = int(start_str)
 
@@ -153,9 +152,8 @@ def parse_list(entries):
 
         # entry is a region
 
-        if not end_str.isdigit:
-            print 'Not a digit: %s' % (end_str)
-            return []
+        if not end_str.isdigit():
+            raise Exception('Not a digit: %s' % (end_str))
 
         end = int(end_str)
 
