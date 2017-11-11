@@ -2153,7 +2153,7 @@ class PWCLI():
 
         if args.index is None:
             self.output('Projects:')
-            i = 0
+            i = 1
             for project in self.projects:
                 if self.project == project:
                     selected = '*'
@@ -2172,6 +2172,13 @@ class PWCLI():
             self.output('Failed to convert index to integer: %s' % e)
             return
 
+        # the index starts from 1
+        index -= 1
+
+        if index < 0 or index > len(self.projects) - 1:
+            self.output('index out of bounds: %d' % (index + 1))
+            return
+
         self.project = self.projects[index]
 
         self.output('Switched to project: %s' % (self.project.name))
@@ -2181,7 +2188,7 @@ class PWCLI():
 
         if args.index is None:
             self.output('Main branches:')
-            i = 0
+            i = 1
             for branch in self.main_branches:
                 if self.selected_main_branch == branch:
                     selected = '*'
@@ -2200,8 +2207,11 @@ class PWCLI():
             self.output('Failed to convert index to integer: %s' % e)
             return
 
-        if index > len(self.main_branches) - 1:
-            self.output('index out of bounds: %d' % index)
+        # the index starts from 1
+        index -= 1
+
+        if index < 0 or index > len(self.main_branches) - 1:
+            self.output('index out of bounds: %d' % (index + 1))
             return
 
         self.selected_main_branch = self.main_branches[index]
