@@ -111,6 +111,9 @@ Envelope From: Timo Testi <test@example.com>
 Envelope To: ['Timo Tiger <timo@example.com>', 'list@example.com']
 Send/Edit/aBort? s
 s
+master@data > list pending
+list pending
+
 master@data > quit
 mail 0:
 ----------------------------------------------------------------------

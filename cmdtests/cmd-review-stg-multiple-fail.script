@@ -58,6 +58,11 @@ def test_stg(ctxt, pwcli):
    pwcli.expect(cmdtestlib.PROMPT_REPLY)
    pwcli.sendline('s')
 
+   # patches 1 and 2 should be deleted and the pending branch should
+   # be empty
+   pwcli.expect_prompt()
+   pwcli.sendline('list pending')
+
    pwcli.expect_prompt()
    pwcli.sendline('quit')
 
