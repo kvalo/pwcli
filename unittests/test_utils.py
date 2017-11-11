@@ -41,15 +41,40 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(pwcli.clean('\n\t  foo  '), 'foo')
 
     def test_parse_list(self):
-        self.assertEqual(pwcli.parse_list(['1-3']), [1, 2, 3])
-        self.assertEqual(pwcli.parse_list([]), [])
-        self.assertEqual(pwcli.parse_list(['99']), [99])
-        self.assertEqual(pwcli.parse_list(['0', '77', '7777']), [0, 77, 7777])
-        self.assertEqual(pwcli.parse_list(['0-3', '5']), [0, 1, 2, 3, 5])
-        self.assertEqual(pwcli.parse_list(['10', '11', '12', '14-15', '16']),
+        self.assertEqual(pwcli.parse_list('1-3'), [1, 2, 3])
+        self.assertEqual(pwcli.parse_list(''), [])
+        self.assertEqual(pwcli.parse_list('99'), [99])
+        self.assertEqual(pwcli.parse_list('0,77,7777'), [0, 77, 7777])
+        self.assertEqual(pwcli.parse_list('0-3,5'), [0, 1, 2, 3, 5])
+        self.assertEqual(pwcli.parse_list('10,11,12,14-15,16'),
                          [10, 11, 12, 14, 15, 16])
-        self.assertEqual(pwcli.parse_list(['0-3', '2']), [0, 1, 2, 3])
-        self.assertEqual(pwcli.parse_list(['1-4', '0-3', '2', '1-2']), [0, 1, 2, 3, 4])
+        self.assertEqual(pwcli.parse_list('0-3,2'), [0, 1, 2, 3])
+        self.assertEqual(pwcli.parse_list('1-4,0-3,2,1-2'), [0, 1, 2, 3, 4])
+
+        # negative tests
+        with self.assertRaises(Exception):
+            pwcli.parse_list('1 2')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('foo')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('foo-bar')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('foo,bar')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('1-bar')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('1,bar')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('bar,2')
+
+        with self.assertRaises(Exception):
+            pwcli.parse_list('bar-2')
 
     def test_shrink(self):
         f = pwcli.shrink

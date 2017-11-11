@@ -130,12 +130,18 @@ def get_patches_plural(count, capitalize=True):
 
     return single
 
+
 # parses a string like '1-3,5' and returns the indexes in a list [1, 2, 3, 5]
-
-
-def parse_list(entries):
-
+def parse_list(arg):
     ids = []
+
+    if arg.find(' ') != -1:
+        raise Exception('Spaces are not allowed in an index list: %s' % (arg))
+
+    if len(arg) == 0:
+        return []
+
+    entries = arg.split(',')
 
     for entry in entries:
         (start_str, sep, end_str) = entry.partition('-')
@@ -2191,7 +2197,7 @@ class PWCLI():
                     (self.selected_main_branch))
 
     def run_shell(self):
-        index_help = 'the indexes of the patches to be committed from the previous list command, example: 5-8,10'
+        index_help = 'The indexes of the patches to be committed from a previous list command. Use a comma to separate indexes and a hyphen to give a range of indexes. Example: 5-8,10,13'
 
         self.parser = argparse.ArgumentParser(
             description='pwcli %s - patchwork client shell. More help for individual commands with --help switch' % (PWCLI_VERSION),
@@ -2225,21 +2231,21 @@ class PWCLI():
         parser_commit = subparsers.add_parser('commit',
                                               help='commit list of patches',
                                               description='Commits one or more patches using git, changes the state of patches accordingly and sends an email reply. Requires that the list command is run before.')
-        parser_commit.add_argument('ids', metavar='IDS', nargs='+',
+        parser_commit.add_argument('ids', metavar='PATCHINDEXES',
                                    help=index_help)
         parser_commit.set_defaults(func=self.cmd_commit)
 
         parser_review = subparsers.add_parser('review',
                                               help='review patches and change states',
                                               description='Opens each patch in a brower window for easy review of the patch and comments. Provides options to change states')
-        parser_review.add_argument('ids', metavar='IDS', nargs='+',
+        parser_review.add_argument('ids', metavar='PATCHINDEXES',
                                    help=index_help)
         parser_review.set_defaults(func=self.cmd_review)
 
         parser_show = subparsers.add_parser('show',
                                             help='show information about the patches',
                                             description='Show information about the patches and open browser window for each')
-        parser_show.add_argument('ids', metavar='IDS', nargs='+',
+        parser_show.add_argument('ids', metavar='PATCHINDEXES',
                                  help=index_help)
         parser_show.set_defaults(func=self.cmd_show)
 

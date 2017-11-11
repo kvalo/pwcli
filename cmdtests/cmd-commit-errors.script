@@ -42,6 +42,9 @@ def test_commit(ctxt, pwcli):
    pwcli.sendline('commit foo')
    pwcli.expect_prompt()
 
+   pwcli.sendline('commit 1 2')
+   pwcli.expect_prompt()
+
    pwcli.sendline('quit')
 
 if __name__ == "__main__":
