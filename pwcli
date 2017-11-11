@@ -104,6 +104,8 @@ PATCH_STATE_KEYWORD_MAP = {
 
 STATE_ABORTED = 'Aborted'
 
+PATCHINDEX_ALL = 'all'
+
 
 def utf8(buf):
     return unicode(buf).encode('utf-8')
@@ -1072,6 +1074,9 @@ class PWCLI():
             i += 1
 
     def get_patches_from_ids(self, ids):
+        if ids.lower() == PATCHINDEX_ALL:
+            return self.patches
+
         indexes = parse_list(ids)
 
         if self.patches is None:

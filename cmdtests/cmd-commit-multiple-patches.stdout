@@ -35,9 +35,43 @@ b50b875961e9 foo: test 1
 1bb57a5d2297 foo: test 2
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+list -s deferred
 a
 Setting patch state (1/2)Setting patch state (2/2)
 2 patches set to Accepted
+list -s deferredmaster@data > list -s deferred
+commit all
+ [  1] [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
+ [  2] [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
+ [  3] [3/4] koo: yyy bbb cc 3                                      2011-02-11 Dino Dinosau Deferred
+ [  4] [4/4] koo: yyy bbb cc 4                                      2011-02-11 Dino Dinosau Deferred
+ [  5] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
+master@data > commit all
+Retrieving patches (1/5)Retrieving patches (2/5)Retrieving patches (3/5)Retrieving patches (4/5)Retrieving patches (5/5)
+      [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
+      [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
+      [3/4] koo: yyy bbb cc 3                                      2011-02-11 Dino Dinosau Deferred
+      [4/4] koo: yyy bbb cc 4                                      2011-02-11 Dino Dinosau Deferred
+      foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
+------------------------------------------------------------
+5 patches
+commit All/commit Individually/aBort? a
+a
+Commiting patches (1/5)Commiting patches (2/5)Commiting patches (3/5)Commiting patches (4/5)Commiting patches (5/5)
+                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
+============================================================
+5 patches applied:
+
+1b4cbb425e8e koo: yyy bbb cc 1
+3209780a9476 koo: yyy bbb cc 2
+d26c37c16f91 koo: yyy bbb cc 3
+0313eb322861 koo: yyy bbb cc 4
+6018a2acb73b foo: small cleanup
+
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+a
+Setting patch state (1/5)Setting patch state (2/5)Setting patch state (3/5)Setting patch state (4/5)Setting patch state (5/5)
+5 patches set to Accepted
 master@data > quit
 mail 0:
 ----------------------------------------------------------------------
@@ -68,5 +102,38 @@ b50b875961e9 foo: test 1
 -- 
 Sent by pwcli
 http://localhost:8105/1001/
+----------------------------------------------------------------------
+mail 1:
+----------------------------------------------------------------------
+test@example.com -> dino@example.com, list@example.com
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [1/4] koo: yyy bbb cc 1
+From: Timo Testi <test@example.com>
+In-Reply-To: <11111@example.com>
+References: <11111@example.com>
+To: Dino Dinosaurus <dino@example.com>
+Cc: list@example.com
+User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
+ Python/<censored>
+
+Dino Dinosaurus <dino@example.com> wrote:
+
+> Foo commit log. Ignore this text
+> 
+> Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+5 patches applied to data.git, thanks.
+
+1b4cbb425e8e koo: yyy bbb cc 1
+3209780a9476 koo: yyy bbb cc 2
+d26c37c16f91 koo: yyy bbb cc 3
+0313eb322861 koo: yyy bbb cc 4
+6018a2acb73b foo: small cleanup
+
+-- 
+Sent by pwcli
+http://localhost:8105/1060/
 ----------------------------------------------------------------------
 

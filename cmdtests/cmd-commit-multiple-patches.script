@@ -43,6 +43,15 @@ def test_commit(ctxt, pwcli):
    pwcli.expect(cmdtestlib.PROMPT_COMMIT_ACCEPT)
    pwcli.sendline('a')
 
+   # test magic patch index 'all'
+   pwcli.sendline('list -s deferred')
+   pwcli.expect_prompt()
+   pwcli.sendline('commit all')
+   pwcli.expect(cmdtestlib.PROMPT_COMMIT_ALL)
+   pwcli.sendline('a')
+   pwcli.expect(cmdtestlib.PROMPT_COMMIT_ACCEPT)
+   pwcli.sendline('a')
+
    pwcli.expect_prompt()
    pwcli.sendline('quit')
 
