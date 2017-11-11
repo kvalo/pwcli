@@ -1396,7 +1396,7 @@ class PWCLI():
 
         # in stgit mode we should get the count from the pending branch
         if self.pending_mode == 'stgit':
-            review = len(self.get_pending_branch_patches())
+            review = len(self.get_pending_branch_patches(state_filter=[PATCH_STATE_UNDER_REVIEW]))
         else:
             review = len(self.project.get_patches(
                 PATCH_STATE_UNDER_REVIEW, username))
@@ -1447,7 +1447,7 @@ class PWCLI():
 
         return p
 
-    def get_pending_branch_patches(self):
+    def get_pending_branch_patches(self, state_filter=None):
         patches = []
 
         self.git.checkout(self.pending_branch)
@@ -1483,10 +1483,9 @@ class PWCLI():
                 self.output('Patch id %s not found' % (patchwork_id))
                 continue
 
-            # patches in pending branch can be applied, tests or
-            # whatever, so skip those
-            if patch.get_state_name() != PATCH_STATE_UNDER_REVIEW:
-                continue
+            if state_filter is not None:
+                if patch.get_state_name() not in state_filter:
+                    continue
 
             # store the commit id so that we can use it when cherry picking
             # the patch
@@ -1497,6 +1496,8 @@ class PWCLI():
             # erroneously commit an older version of the patch!
             patch.pending_commit = c
             patch.stg_index = i
+
+            patch.stg_name = stg_commit_name
 
             patches.append(patch)
             i += 1
@@ -1552,7 +1553,9 @@ class PWCLI():
             patches += self.project.get_patches(state, username)
 
         if self.pending_mode == 'stgit':
-            pending_patches = self.get_pending_branch_patches()
+            # patches in pending branch can be applied, tests or
+            # whatever, so skip those
+            pending_patches = self.get_pending_branch_patches(state_filter=[PATCH_STATE_UNDER_REVIEW])
 
             if state_filter == 'pending':
                 # Only show patches in pending branch, discard the rest.
@@ -2200,6 +2203,24 @@ class PWCLI():
         self.output('Switched main branch to: %s' %
                     (self.selected_main_branch))
 
+    def cmd_stg_list(self, args):
+        i = 0
+        for patch in self.get_pending_branch_patches():
+            print '[%2d] %s' % (i, patch.stg_name)
+            i += 1
+
+    def cmd_stg(self, args):
+        logger.debug('cmd_stg(args=%r)' % repr(args))
+
+        if self.pending_mode != 'stgit':
+            self.output('stgit mode is not enabled')
+            return
+
+        if args.cmd == 'list':
+            self.cmd_stg_list(args)
+        else:
+            self.output('Unknown stg command: %s' % (args.cmd))
+
     def run_shell(self):
         index_help = 'The indexes of the patches to be committed from a previous list command. Use a comma to separate indexes and a hyphen to give a range of indexes. Example: 5-8,10,13'
 
@@ -2278,6 +2299,13 @@ class PWCLI():
 
         subparsers.add_parser('build').set_defaults(func=self.cmd_build,
                                                     help='run build script and show results')
+
+        parser_stg = subparsers.add_parser('stg',
+                                           help='stg helpers to manage the pending branch',
+                                           description='Provides various subcommands to make it easier/faster to manage the pending branch.')
+        parser_stg.add_argument('cmd', metavar='COMMAND',
+                                help='commands supported: list')
+        parser_stg.set_defaults(func=self.cmd_stg)
 
         while True:
             prompt = ''
