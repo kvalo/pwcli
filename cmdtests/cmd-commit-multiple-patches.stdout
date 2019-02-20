@@ -35,18 +35,18 @@ b50b875961e9 foo: test 1
 1bb57a5d2297 foo: test 2
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
-list -s deferred
 a
 Setting patch state (1/2)Setting patch state (2/2)
 2 patches set to Accepted
-list -s deferredmaster@data > list -s deferred
-commit all
+master@data > list -s deferred
+list -s deferred
  [  1] [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
  [  2] [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
  [  3] [3/4] koo: yyy bbb cc 3                                      2011-02-11 Dino Dinosau Deferred
  [  4] [4/4] koo: yyy bbb cc 4                                      2011-02-11 Dino Dinosau Deferred
  [  5] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
 master@data > commit all
+commit all
 Retrieving patches (1/5)Retrieving patches (2/5)Retrieving patches (3/5)Retrieving patches (4/5)Retrieving patches (5/5)
       [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
       [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
