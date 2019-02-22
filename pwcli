@@ -2230,18 +2230,20 @@ class PWCLI():
 
         try:
             index = int(args.index)
+
+            # the index starts from 1
+            index -= 1
+
+            if index < 0 or index > len(self.main_branches) - 1:
+                self.output('branch index out of bounds: %d' % (index + 1))
+                return
+
+            self.selected_main_branch = self.main_branches[index]
         except ValueError as e:
-            self.output('Failed to convert index to integer: %s' % e)
-            return
-
-        # the index starts from 1
-        index -= 1
-
-        if index < 0 or index > len(self.main_branches) - 1:
-            self.output('index out of bounds: %d' % (index + 1))
-            return
-
-        self.selected_main_branch = self.main_branches[index]
+            if not args.index in self.main_branches:
+                self.output('invalid branch index/name: "%s"' % args.index)
+                return
+            self.selected_main_branch = args.index
 
         self.output('Switched main branch to: %s' %
                     (self.selected_main_branch))
