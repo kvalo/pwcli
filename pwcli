@@ -31,6 +31,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import print_function
 import xmlrpclib
 import base64
 import logging
@@ -2251,7 +2252,7 @@ class PWCLI():
     def cmd_stg_list(self, args):
         i = 0
         for patch in self.get_pending_branch_patches():
-            print '[%2d] %s' % (i, patch.stg_name)
+            print('[%2d] %s' % (i, patch.stg_name))
             i += 1
 
     def cmd_stg(self, args):
@@ -2456,15 +2457,15 @@ with # character. Example: #1000,#1005'''
         self.signature_file = os.path.join(self.pwcli_dir, 'signature')
 
         if not os.path.exists(self.pwcli_dir):
-            print '%s does not exist, exiting' % self.pwcli_dir
+            print('%s does not exist, exiting' % self.pwcli_dir)
             sys.exit(1)
 
         if not os.path.isdir(self.pwcli_dir):
-            print '%s is not a directory, exiting' % self.pwcli_dir
+            print('%s is not a directory, exiting' % self.pwcli_dir)
             sys.exit(1)
 
         if os.path.exists(PWCLI_EDIT_FILE):
-            print '%s exists, remove and try again.' % PWCLI_EDIT_FILE
+            print('%s exists, remove and try again.' % PWCLI_EDIT_FILE)
             sys.exit(1)
 
         logging.basicConfig(filename=os.path.join(self.pwcli_dir, 'log'),
@@ -2496,7 +2497,7 @@ with # character. Example: #1000,#1005'''
         self.config = ConfigParser.RawConfigParser()
 
         if not os.path.exists(self.config_file):
-            print 'Could not find %s', self.config_file
+            print('Could not find %s', self.config_file)
             sys.exit(1)
 
         self.config.read(self.config_file)
