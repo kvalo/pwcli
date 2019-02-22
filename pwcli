@@ -309,7 +309,7 @@ class GitError(Exception):
     def __str__(self):
         return self.msg
 
-    def __init__(self, msg, log=None):
+    def __init__(self, msg, log=''):
         self.msg = msg
         self.log = log
 
