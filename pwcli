@@ -2584,8 +2584,12 @@ with # character. Example: #1000,#1005'''
         self.stg_cache = {}
 
         # read settings from git
-        self.fullname = self.git.get_config('user.name')
-        self.email = self.git.get_config('user.email')
+        sendemail_from = self.git.get_config('sendemail.from')
+        if sendemail_from:
+            self.fullname, self.email = email.utils.parseaddr(sendemail_from)
+        else:
+            self.fullname = self.git.get_config('user.name')
+            self.email = self.git.get_config('user.email')
         self.smtp_host = self.git.get_config('sendemail.smtpserver')
         self.smtp_port = self.git.get_config('sendemail.smtpserverport')
         self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
