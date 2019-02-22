@@ -1233,7 +1233,7 @@ class PWCLI():
                 return valid[answer]
 
             self.output(
-                'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                   ', '.join(valid)))
 
         # should not be reached
@@ -1671,7 +1671,7 @@ class PWCLI():
                 break
 
             self.output(
-                'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                   ', '.join(valid)))
 
         if answer == 'a':
@@ -1974,9 +1974,9 @@ class PWCLI():
 
         if self.pending_mode == 'stgit':
             while True:
-                choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(
+                choices = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(
                     patches)
-                answer = self.input(choises)
+                answer = self.input(choices)
                 answer = answer.lower()
 
                 valid = ['a', 's', 'b']
@@ -1985,7 +1985,7 @@ class PWCLI():
                     break
 
                 self.output(
-                    'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                    'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                       ', '.join(valid)))
 
             # Apply
