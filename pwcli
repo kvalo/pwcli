@@ -1700,7 +1700,7 @@ class PWCLI():
             for patch in patches:
                 # show progressbar if applying all patches in one go
                 if not commit_individually:
-                    self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
+                    self.output('\rCommitting patches (%d/%d)' % (i, len(patches)),
                                 newline=False)
 
                 # edit can be chosen multiple times, that's why the loop
