@@ -31,6 +31,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import print_function
 import xmlrpclib
 import base64
 import logging
@@ -308,7 +309,7 @@ class GitError(Exception):
     def __str__(self):
         return self.msg
 
-    def __init__(self, msg, log=None):
+    def __init__(self, msg, log=''):
         self.msg = msg
         self.log = log
 
@@ -1233,7 +1234,7 @@ class PWCLI():
                 return valid[answer]
 
             self.output(
-                'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                   ', '.join(valid)))
 
         # should not be reached
@@ -1671,7 +1672,7 @@ class PWCLI():
                 break
 
             self.output(
-                'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                   ', '.join(valid)))
 
         if answer == 'a':
@@ -1699,7 +1700,7 @@ class PWCLI():
             for patch in patches:
                 # show progressbar if applying all patches in one go
                 if not commit_individually:
-                    self.output('\rCommiting patches (%d/%d)' % (i, len(patches)),
+                    self.output('\rCommitting patches (%d/%d)' % (i, len(patches)),
                                 newline=False)
 
                 # edit can be chosen multiple times, that's why the loop
@@ -1974,9 +1975,9 @@ class PWCLI():
 
         if self.pending_mode == 'stgit':
             while True:
-                choises = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(
+                choices = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(
                     patches)
-                answer = self.input(choises)
+                answer = self.input(choices)
                 answer = answer.lower()
 
                 valid = ['a', 's', 'b']
@@ -1985,7 +1986,7 @@ class PWCLI():
                     break
 
                 self.output(
-                    'Unknown choise \'%s\', valid choises are: %s' % (answer,
+                    'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                       ', '.join(valid)))
 
             # Apply
@@ -2230,18 +2231,20 @@ class PWCLI():
 
         try:
             index = int(args.index)
+
+            # the index starts from 1
+            index -= 1
+
+            if index < 0 or index > len(self.main_branches) - 1:
+                self.output('branch index out of bounds: %d' % (index + 1))
+                return
+
+            self.selected_main_branch = self.main_branches[index]
         except ValueError as e:
-            self.output('Failed to convert index to integer: %s' % e)
-            return
-
-        # the index starts from 1
-        index -= 1
-
-        if index < 0 or index > len(self.main_branches) - 1:
-            self.output('index out of bounds: %d' % (index + 1))
-            return
-
-        self.selected_main_branch = self.main_branches[index]
+            if not args.index in self.main_branches:
+                self.output('invalid branch index/name: "%s"' % args.index)
+                return
+            self.selected_main_branch = args.index
 
         self.output('Switched main branch to: %s' %
                     (self.selected_main_branch))
@@ -2249,7 +2252,7 @@ class PWCLI():
     def cmd_stg_list(self, args):
         i = 0
         for patch in self.get_pending_branch_patches():
-            print '[%2d] %s' % (i, patch.stg_name)
+            print('[%2d] %s' % (i, patch.stg_name))
             i += 1
 
     def cmd_stg(self, args):
@@ -2454,15 +2457,15 @@ with # character. Example: #1000,#1005'''
         self.signature_file = os.path.join(self.pwcli_dir, 'signature')
 
         if not os.path.exists(self.pwcli_dir):
-            print '%s does not exist, exiting' % self.pwcli_dir
+            print('%s does not exist, exiting' % self.pwcli_dir)
             sys.exit(1)
 
         if not os.path.isdir(self.pwcli_dir):
-            print '%s is not a directory, exiting' % self.pwcli_dir
+            print('%s is not a directory, exiting' % self.pwcli_dir)
             sys.exit(1)
 
         if os.path.exists(PWCLI_EDIT_FILE):
-            print '%s exists, remove and try again.' % PWCLI_EDIT_FILE
+            print('%s exists, remove and try again.' % PWCLI_EDIT_FILE)
             sys.exit(1)
 
         logging.basicConfig(filename=os.path.join(self.pwcli_dir, 'log'),
@@ -2494,7 +2497,7 @@ with # character. Example: #1000,#1005'''
         self.config = ConfigParser.RawConfigParser()
 
         if not os.path.exists(self.config_file):
-            print 'Could not find %s', self.config_file
+            print('Could not find %s', self.config_file)
             sys.exit(1)
 
         self.config.read(self.config_file)
@@ -2584,8 +2587,12 @@ with # character. Example: #1000,#1005'''
         self.stg_cache = {}
 
         # read settings from git
-        self.fullname = self.git.get_config('user.name')
-        self.email = self.git.get_config('user.email')
+        sendemail_from = self.git.get_config('sendemail.from')
+        if sendemail_from:
+            self.fullname, self.email = email.utils.parseaddr(sendemail_from)
+        else:
+            self.fullname = self.git.get_config('user.name')
+            self.email = self.git.get_config('user.email')
         self.smtp_host = self.git.get_config('sendemail.smtpserver')
         self.smtp_port = self.git.get_config('sendemail.smtpserverport')
         self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
