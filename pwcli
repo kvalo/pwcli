@@ -2240,8 +2240,8 @@ class PWCLI():
                 return
 
             self.selected_main_branch = self.main_branches[index]
-        except ValueError as e:
-            if not args.index in self.main_branches:
+        except ValueError:
+            if args.index not in self.main_branches:
                 self.output('invalid branch index/name: "%s"' % args.index)
                 return
             self.selected_main_branch = args.index
