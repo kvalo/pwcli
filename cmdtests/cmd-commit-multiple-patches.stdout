@@ -26,7 +26,7 @@ commit 1-2
 2 patches
 commit All/commit Individually/aBort? a
 a
-Commiting patches (1/2)Commiting patches (2/2)
+Committing patches (1/2)Committing patches (2/2)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 ============================================================
 2 patches applied:
@@ -57,7 +57,7 @@ commit all
 5 patches
 commit All/commit Individually/aBort? a
 a
-Commiting patches (1/5)Commiting patches (2/5)Commiting patches (3/5)Commiting patches (4/5)Commiting patches (5/5)
+Committing patches (1/5)Committing patches (2/5)Committing patches (3/5)Committing patches (4/5)Committing patches (5/5)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 ============================================================
 5 patches applied:

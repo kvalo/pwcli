@@ -25,7 +25,7 @@ commit 1
 1 patches
 commit All/commit Individually/aBort? a
 a
-Commiting patches (1/1)
+Committing patches (1/1)
 Failed to apply the patch: ['git', 'am', '-s', '-3'] failed: 1
 Applying: foo: conflict patch
 Using index info to reconstruct a base tree...

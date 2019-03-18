@@ -25,7 +25,7 @@ commit 1
 1 patches
 commit All/commit Individually/aBort? a
 a
-Commiting patches (1/1)
+Committing patches (1/1)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 
 Build failed: 1
 ============================================================
