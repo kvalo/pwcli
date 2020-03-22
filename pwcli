@@ -71,6 +71,8 @@ PWCLI_EDIT_FILE = '.pwcli-edit'
 
 DEFAULT_EDITOR = 'nano'
 
+LORE_URL = 'https://lore.kernel.org/r/'
+
 # global variables
 logger = logging.getLogger('pwcli')
 logger.setLevel(logging.INFO)
@@ -495,20 +497,26 @@ class Git():
         return None
 
     # removes a line matching filter from the commit in HEAD
-    def filter_msg(self, filter_string):
-        sed_cmd = 'sed -e "/%s/d"' % (filter_string)
-
+    def filter_msg(self, filter_cmd):
         # --force switch is to work around error "Cannot create a new backup.
         # --A previous backup already exists in refs/original/"
 
         cmd = ['git', 'filter-branch', '--force',
-               '--msg-filter', sed_cmd, 'HEAD^..HEAD']
+               '--msg-filter', filter_cmd, 'HEAD^..HEAD']
 
         p = RunProcess(cmd)
 
         if p.returncode != 0:
             raise GitError('git filter-branch failed: %d' % (p.returncode),
                            log=p.stderrdata)
+
+    def remove_tag(self, tag):
+        cmd = 'sed -e "/^%s/d"' % (tag)
+        self.filter_msg(cmd)
+
+    def add_tag(self, tag):
+        cmd = 'cat && echo "%s"' % (tag)
+        self.filter_msg(cmd)
 
     def cherry_pick(self, commit_id):
         cmd = ['git', 'cherry-pick', commit_id]
@@ -656,6 +664,10 @@ class Patch():
 
     def get_url(self):
         return '%s%s/' % (self.pw.patch_url, self.get_id())
+
+    def get_message_id(self):
+        # remove '<' and '>' chars, we don't want to use them
+        return self.attributes['msgid'][1:-1]
 
     def get_mbox(self):
         if self.mbox is None:
@@ -1748,9 +1760,13 @@ class PWCLI():
                     self.git.cherry_pick(patch.pending_commit.commit_id)
 
                     # remove Patchwork-Id from the commit log
-                    self.git.filter_msg('^Patchwork-Id:')
+                    self.git.remove_tag('Patchwork-Id:')
                 else:
                     self.git.am(patch.get_mbox())
+
+                # add Link tag
+                url = LORE_URL + patch.get_message_id()
+                self.git.add_tag('Link: %s' % url)
 
                 # store the commit id temporarily
                 patch.final_commit = self.git.get_commit('HEAD')
