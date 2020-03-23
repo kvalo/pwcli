@@ -1288,7 +1288,10 @@ class PWCLI():
 
         while not done:
             try:
-                server = smtplib.SMTP(self.smtp_host, self.smtp_port)
+                if self.smtp_encryption == 'ssl':
+                    server = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port)
+                else:
+                    server = smtplib.SMTP(self.smtp_host, self.smtp_port)
 
                 if self.smtp_encryption == 'tls':
                     server.starttls()
