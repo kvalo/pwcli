@@ -57,6 +57,7 @@ import socket
 import functools
 import traceback
 import mailbox
+import codecs
 
 import readline
 assert readline  # to shut up pyflakes
@@ -1380,7 +1381,7 @@ class PWCLI():
 
         subprocess.call([self.editor, PWCLI_EDIT_FILE])
 
-        f = open(PWCLI_EDIT_FILE, 'r')
+        f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='r')
         new_buf = f.read()
         f.close
 
