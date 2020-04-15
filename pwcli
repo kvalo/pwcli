@@ -112,8 +112,17 @@ STATE_ABORTED = 'Aborted'
 PATCHINDEX_ALL = 'all'
 
 
-def utf8(buf):
+# Note about unicode support:
+#
+# pwcli internally is supposed to use unicode type for internal
+# strings but when calling external interfaces use to_utf8() to
+# convert them to UTF-8
+def to_utf8(buf):
     return unicode(buf).encode('utf-8')
+
+
+def is_unicode(buf):
+    return isinstance(buf, unicode)
 
 
 def clean(buf):
@@ -385,7 +394,7 @@ class Stg():
 
         logger.debug('stg.import_patch(): %s' % (mbox))
 
-        p = RunProcess(cmd, input=mbox)
+        p = RunProcess(cmd, input=to_utf8(mbox))
 
         ret = p.returncode
         logger.debug('%s returned: %s' % (cmd, ret))
@@ -548,7 +557,7 @@ class Git():
             self.output('Dry-run: %s' % str(cmd))
             return
 
-        p = RunProcess(cmd, input=mbox)
+        p = RunProcess(cmd, input=to_utf8(mbox))
 
         ret = p.returncode
         logger.debug('%s returned: %s' % (cmd, ret))
@@ -676,7 +685,11 @@ class Patch():
             self.mbox = self.pw.rpc.patch_get_mbox(self.get_id())
             logger.debug(repr(self.mbox))
 
-        return utf8(self.mbox)
+            # TODO: add 'assert is_unicode(self.mbox)' after test
+            # framework is fixed
+
+        # Note: the returned type is unicode
+        return self.mbox
 
     # removes all extra '[ ]' tags _before_ the actual title
     def clean_subject(self, subject):
@@ -708,6 +721,8 @@ class Patch():
             logger.debug('dry-run: %s().set_mbox(%s)' % (self, mbox))
             return
 
+        assert is_unicode(mbox)
+
         logger.debug('%s: set_mbox(): %s' % (self, repr(mbox)))
         self.mbox = mbox
 
@@ -716,7 +731,7 @@ class Patch():
         self.attributes['name'] = msg['Subject']
 
     def get_diffstat(self):
-        p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
+        p = RunProcess(['diffstat', '-p1'], input=to_utf8(self.get_mbox()))
 
         diffstat = p.stdoutdata
         diffstat = diffstat.rstrip()
@@ -724,7 +739,8 @@ class Patch():
         return diffstat
 
     def get_email(self):
-        return email.message_from_string(self.get_mbox())
+        # parsing fails unless mbox is converted to utf-8 first
+        return email.message_from_string(to_utf8(self.get_mbox()))
 
     def get_reply_msg(self, from_name, from_email, text='', signature=None):
         msg = self.get_email()
@@ -1375,7 +1391,7 @@ class PWCLI():
         return None
 
     def edit_file(self, buf):
-        f = open(PWCLI_EDIT_FILE, 'w')
+        f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='w')
         f.write(buf)
         f.close()
 
@@ -1384,6 +1400,8 @@ class PWCLI():
         f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='r')
         new_buf = f.read()
         f.close
+
+        assert is_unicode(new_buf)
 
         os.remove(PWCLI_EDIT_FILE)
 
@@ -2272,6 +2290,7 @@ class PWCLI():
     def cmd_stg_list(self, args):
         i = 0
         for patch in self.get_pending_branch_patches():
+            # FIXME: shouldn't this use self.output() instead of print()?
             print('[%2d] %s' % (i, patch.stg_name))
             i += 1
 
