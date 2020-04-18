@@ -32,7 +32,6 @@
 #
 
 import unittest
-import mock
 
 import pwcli
 
@@ -83,17 +82,6 @@ class TestUtils(unittest.TestCase):
 
         # last space should be replaced with a dot
         self.assertEqual(f('yyy kaa koo nee', 11), 'yyy kaa....')
-
-    def test_person(self):
-        p = pwcli.Person
-        self.assertEqual(p('Ed Example <ed@example.com>').get_name(),
-                         'Ed Example')
-        self.assertEqual(p('Ed Example <ed@example.com>').get_email(),
-                         'ed@example.com')
-
-        # if no name the email address should be returned
-        self.assertEqual(p('<ed@example.com>').get_name(),
-                         'ed@example.com')
 
 if __name__ == '__main__':
     unittest.main()

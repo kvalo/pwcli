@@ -32,8 +32,6 @@
 #
 
 from __future__ import print_function
-import xmlrpclib
-import base64
 import logging
 import sys
 import subprocess
@@ -58,6 +56,7 @@ import functools
 import traceback
 import mailbox
 import codecs
+import requests
 
 import readline
 assert readline  # to shut up pyflakes
@@ -72,6 +71,7 @@ PWCLI_EDIT_FILE = '.pwcli-edit'
 
 DEFAULT_EDITOR = 'nano'
 
+PATCHWORK_API_DIRECTORY = 'api/1.1'
 LORE_URL = 'https://lore.kernel.org/r/'
 
 # global variables
@@ -81,30 +81,46 @@ logger.setLevel(logging.INFO)
 LOG_SEPARATOR = '\n---\n'
 MAIL_BODY_WIDTH = 72
 
-PATCH_STATE_NEW = 'New'
-PATCH_STATE_UNDER_REVIEW = 'Under Review'
-PATCH_STATE_ACCEPTED = 'Accepted'
-PATCH_STATE_REJECTED = 'Rejected'
-PATCH_STATE_RFC = 'RFC'
-PATCH_STATE_NOT_APPLICABLE = 'Not Applicable'
-PATCH_STATE_CHANGES_REQUESTED = 'Changes Requested'
-PATCH_STATE_AWAITING_UPSTREAM = 'Awaiting Upstream'
-PATCH_STATE_SUPERSEDED = 'Superseded'
-PATCH_STATE_DEFERRED = 'Deferred'
+PATCH_STATE_NEW = 'new'
+PATCH_STATE_UNDER_REVIEW = 'under-review'
+PATCH_STATE_ACCEPTED = 'accepted'
+PATCH_STATE_REJECTED = 'rejected'
+PATCH_STATE_RFC = 'rfc'
+PATCH_STATE_NOT_APPLICABLE = 'not-applicable'
+PATCH_STATE_CHANGES_REQUESTED = 'changes-requested'
+PATCH_STATE_AWAITING_UPSTREAM = 'awaiting-upstream'
+PATCH_STATE_SUPERSEDED = 'superseded'
+PATCH_STATE_DEFERRED = 'deferred'
+
+# special state to print patches in pending branch
+PATCH_STATE_PENDING = 'pending'
 
 PATCH_ACTIVE_STATES = [PATCH_STATE_NEW,
                        PATCH_STATE_UNDER_REVIEW,
                        PATCH_STATE_AWAITING_UPSTREAM,
                        PATCH_STATE_DEFERRED]
 
-PATCH_STATE_KEYWORD_MAP = {
-    'review': [PATCH_STATE_UNDER_REVIEW],
-    'upstream': [PATCH_STATE_AWAITING_UPSTREAM],
-    'new': [PATCH_STATE_NEW],
-    'deferred': [PATCH_STATE_DEFERRED],
+PATCH_ALLOWED_STATES = [PATCH_STATE_NEW,
+                        PATCH_STATE_UNDER_REVIEW,
+                        PATCH_STATE_ACCEPTED,
+                        PATCH_STATE_REJECTED,
+                        PATCH_STATE_RFC,
+                        PATCH_STATE_NOT_APPLICABLE,
+                        PATCH_STATE_AWAITING_UPSTREAM,
+                        PATCH_STATE_DEFERRED,
+                        PATCH_STATE_PENDING]
 
-    # "magic" state handled separately
-    'pending': [],
+OLD_PATCH_STATE_MAP = {
+    PATCH_STATE_NEW: 'New',
+    PATCH_STATE_UNDER_REVIEW: 'Under Review',
+    PATCH_STATE_ACCEPTED: 'Accepted',
+    PATCH_STATE_REJECTED: 'Rejected',
+    PATCH_STATE_RFC: 'RFC',
+    PATCH_STATE_NOT_APPLICABLE: 'Not Applicable',
+    PATCH_STATE_CHANGES_REQUESTED: 'Changes Requested',
+    PATCH_STATE_AWAITING_UPSTREAM: 'Awaiting Upstream',
+    PATCH_STATE_SUPERSEDED: 'Superseded',
+    PATCH_STATE_DEFERRED: 'Deferred',
 }
 
 STATE_ABORTED = 'Aborted'
@@ -295,25 +311,6 @@ class RunProcess():
         return 'RunProcess(%r, %r, %r)' % (self.args,
                                            self.stdout_cb,
                                            self.input)
-
-
-class Person():
-
-    def __init__(self, address):
-        (self.name, self.email) = email.utils.parseaddr(address)
-        if self.name is None or self.email is None:
-            raise Exception('Unparseable address: %r' % (address))
-
-    # returns name if available, otherwise email address to somehow
-    # identify the person
-    def get_name(self):
-        if not self.name:
-            return self.email
-
-        return self.name
-
-    def get_email(self):
-        return self.email
 
 
 class GitError(Exception):
@@ -621,22 +618,32 @@ class Patch():
         return self.attributes['id']
 
     def get_delegate(self):
-        return self.attributes['delegate']
+        return self.attributes['delegate']['username']
 
     def get_submitter(self):
-        return self.attributes['submitter'].data
+        return '%s <%s>' % (self.attributes['submitter']['name'],
+                            self.attributes['submitter']['email'])
+
+    def get_submitter_name(self):
+        return self.attributes['submitter']['name']
 
     def get_date(self):
-        return self.attributes['date'].data
+        return self.attributes['date']
+
+    def get_date_pretty(self):
+        # patchwork uses T to separate date and time, convert that to space
+        return self.attributes['date'].replace('T', ' ')
 
     def get_datetime(self):
-        return datetime.datetime.strptime(self.get_date(), '%Y-%m-%d %H:%M:%S')
-
-    def get_state_id(self):
-        return self.attributes['state_id']
+        return datetime.datetime.strptime(self.get_date(), '%Y-%m-%dT%H:%M:%S')
 
     def get_state_name(self):
         return self.attributes['state']
+
+    # returns legacy state names, for avoiding major changes in
+    # automatic test output
+    def get_state_name_old(self):
+        return OLD_PATCH_STATE_MAP[self.attributes['state']]
 
     def set_state_name(self, state_name):
         if self.dry_run:
@@ -644,16 +651,11 @@ class Patch():
                          (self, state_name))
             return
 
-        state_id = self.pw.get_state_id(state_name)
-
-        params = {}
-        params['state'] = state_id
-        self.pw.rpc.patch_set(self.get_id(), params)
+        self.pw.update_patch(self.get_id(), state=state_name)
 
         self.attributes['state'] = state_name
-        self.attributes['state_id'] = state_id
 
-        logger.debug('%s state changed to %s' % (self.get_id(), state_id))
+        logger.debug('%s state changed to %s' % (self.get_id(), state_name))
 
     def get_commit_ref(self):
         return self.attributes['commit_ref']
@@ -664,16 +666,14 @@ class Patch():
                          (self, commit_ref))
             return
 
-        params = {}
-        params['commit_ref'] = commit_ref
-        self.pw.rpc.patch_set(self.get_id(), params)
+        self.pw.update_patch(self.get_id(), commit_ref=commit_ref)
 
         self.attributes['commit_ref'] = commit_ref
 
         logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
 
     def get_url(self):
-        return '%s%s/' % (self.pw.patch_url, self.get_id())
+        return self.attributes['web_url']
 
     def get_message_id(self):
         # remove '<' and '>' chars, we don't want to use them
@@ -682,7 +682,8 @@ class Patch():
     def get_mbox(self):
         if self.mbox is None:
             logger.debug('patch_get_mbox(%s)' % self.get_id())
-            self.mbox = self.pw.rpc.patch_get_mbox(self.get_id())
+            # KVALO: TODO
+            self.mbox = self.pw.get_mbox(self.attributes['mbox'])
             logger.debug(repr(self.mbox))
 
             # TODO: add 'assert is_unicode(self.mbox)' after test
@@ -738,8 +739,10 @@ class Patch():
 
         return diffstat
 
+    # Note: this returns email.Message object, NOT email address
+    #
+    # TODO: rename the function to avoid confusion
     def get_email(self):
-        # parsing fails unless mbox is converted to utf-8 first
         return email.message_from_string(to_utf8(self.get_mbox()))
 
     def get_reply_msg(self, from_name, from_email, text='', signature=None):
@@ -906,18 +909,17 @@ class Patch():
 
 class Project():
 
-    def _get_patches(self, filters, username=None):
+    def _get_patches(self, delegate=None, states=None):
         results = []
 
-        logger.debug('%s()._get_patches(filters=%s)' % (self, repr(filters)))
-        patches = self.pw.rpc.patch_list(filters)
+        logger.debug('%s()._get_patches(delegate=%s, states=%s)' % (self,
+                                                                    delegate,
+                                                                    repr(states)))
+        patches = self.pw.get_patches(self.name, delegate=delegate, states=states)
         logger.debug('patches:\n%s' % pretty(patches))
 
         for p in patches:
             patch = Patch(self.pw, p, self.dry_run)
-
-            if username is not None and patch.get_delegate() != username:
-                continue
 
             results.append(patch)
             logger.debug('added patch %s' % patch)
@@ -927,6 +929,9 @@ class Project():
     def get_patches(self, state=PATCH_STATE_UNDER_REVIEW, username=None):
         patches = []
 
+        logger.debug('%s().get_patches(state=%s, username=%s)' % (self,
+                                                                  state,
+                                                                  username))
         for patch in self.cache.values():
             if state is not None and patch.get_state_name() != state:
                 continue
@@ -936,42 +941,29 @@ class Project():
 
             patches.append(patch)
 
+        logger.debug('%s().get_patches(): %s patches' % (self, len(patches)))
+
         return patches
 
     def get_patch(self, patchwork_id):
         if patchwork_id in self.cache:
             return self.cache[patchwork_id]
 
-        filters = {}
-        filters['id'] = patchwork_id
-        results = self._get_patches(filters)
+        json = self.pw.get_patch(patchwork_id)
 
-        if len(results) > 1:
-            logger.debug(
-                'Multiple patches found with same patchwork id %s' % (patchwork_id))
-            return None
-        elif len(results) == 0:
-            logger.debug('patchwork id %s not found' % (patchwork_id))
-            return None
+        patch = Patch(self.pw, json, self.dry_run)
 
         # add patch to cache
-        patch = results[0]
         self.cache[patchwork_id] = patch
 
         return patch
 
     def update_cache(self):
-        patches = []
-        username = None
-        filters = {}
-        filters['project_id'] = self.id
-
-        for state in [PATCH_STATE_NEW,
-                      PATCH_STATE_UNDER_REVIEW,
-                      PATCH_STATE_AWAITING_UPSTREAM,
-                      PATCH_STATE_DEFERRED]:
-            filters['state_id'] = self.pw.get_state_id(state)
-            patches += self._get_patches(filters, username)
+        states = [PATCH_STATE_NEW,
+                  PATCH_STATE_UNDER_REVIEW,
+                  PATCH_STATE_AWAITING_UPSTREAM,
+                  PATCH_STATE_DEFERRED]
+        patches = self._get_patches(delegate=self.pw._username, states=states)
 
         # make a copy of the old cache
         old_cache = dict(self.cache)
@@ -1002,93 +994,88 @@ class Project():
             del self.cache[old_patch.get_id()]
 
     def __str__(self):
-        return 'Project(name=%s, id=%s)' % (self.name, self.id)
+        return 'Project(name=%s)' % (self.name)
 
     def __init__(self, name, pw, dry_run):
         self.name = name
-        self.id = None
         self.pw = pw
         self.dry_run = dry_run
         self.cache = {}
 
-        logger.debug('project_list(%s, %d)' % (self.name, 0))
-        projects = pw.rpc.project_list(self.name, 0)
-
-        logger.debug('projects: %s' % pretty(projects))
-
-        for project in projects:
-            if project['linkname'] == self.name:
-                self.id = project['id']
-
-        if self.id is None:
-            raise Exception('No project id found for %s' % self.name)
-
         logger.debug(self)
-
-
-class AuthTransport(xmlrpclib.SafeTransport):
-
-    def send_auth(self, connection):
-        creds = base64.encodestring('%s:%s' % (self.username,
-                                               self.password)).strip()
-        auth_string = 'Basic ' + creds
-        connection.putheader('Authorization', auth_string)
-
-    def send_host(self, connection, host):
-        xmlrpclib.Transport.send_host(self, connection, host)
-
-        if self.username is not None and self.password is not None:
-            self.send_auth(connection)
-
-    def make_connection(self, host):
-        if self.https:
-            return xmlrpclib.SafeTransport.make_connection(self, host)
-        else:
-            return xmlrpclib.Transport.make_connection(self, host)
-
-    def __init__(self, username=None, password=None, https=False):
-        xmlrpclib.SafeTransport.__init__(self)
-
-        self.username = username
-        self.password = password
-        self.https = https
 
 
 class Patchwork():
 
-    def update_state_list(self):
-        logger.debug('patch_state_list()')
-        self.states = self.rpc.state_list('', 0)
-        logger.debug(repr(self.states))
+    def get_patches(self, project, delegate=None, states=None):
+        result = []
 
-    def get_state_id(self, state_name):
-        for state in self.states:
-            if state['name'] == state_name:
-                return state['id']
+        params = {'project': project,
+                  'per_page': 100}
 
-    def get_user_ids(self, username):
-        persons = self.rpc.person_list(username, 0)
-        logger.debug('%s().get_user_id(%s):\n%s' %
-                     (self, username, pretty(persons)))
+        if delegate is not None:
+            params['delegate'] = delegate
 
-        ids = []
+        if states is not None:
+            params['state'] = states
 
-        for person in persons:
-            if person['user'] == username:
-                ids.append(person['id'])
+        url = self._server_url + '/patches/'
+        response = requests.get(url, headers=self._auth_headers, params=params)
 
-        return ids
+        while True:
+            response.raise_for_status()
+
+            result += response.json()
+
+            if 'next' not in response.links:
+                # no more pages to fetch
+                break
+
+            response = requests.get(response.links['next']['url'],
+                                    headers=self._auth_headers)
+
+        return result
+
+    def get_patch(self, patch_id):
+        url = self._server_url + '/patches/%s/' % (patch_id)
+        response = requests.get(url, headers=self._auth_headers)
+
+        response.raise_for_status()
+
+        return response.json()
+
+    def update_patch(self, patch_id, state=None, commit_ref=None):
+        url = self._server_url + '/patches/%s/' % (patch_id)
+
+        headers = self._auth_headers
+        headers['Content-Type'] = 'application/json'
+
+        json = {}
+
+        if state is not None:
+            json['state'] = state
+
+        if commit_ref is not None:
+            json['commit_ref'] = commit_ref
+
+        r = requests.patch(url, json=json, headers=headers)
+
+        r.raise_for_status()
+
+    def get_mbox(self, url):
+        r = requests.get(url, headers=self._auth_headers)
+
+        r.raise_for_status()
+
+        return r.text
 
     def __init__(self, url, username, password):
-        self.xmlrpc_url = url
-        self.patch_url = url.replace('/xmlrpc/', '/patch/')
-        https = url.startswith('https')
-        transport = AuthTransport(username, password, https)
-        self.rpc = xmlrpclib.Server(url, transport=transport)
+        if url[-1] != '/':
+            url.append('/')
 
-        logger.debug('connected to %s (username %s)' % (url, username))
-
-        self.update_state_list()
+        self._server_url = url + PATCHWORK_API_DIRECTORY
+        self._username = username
+        self._auth_headers = {'Authorization': 'Token %s' % (password)}
 
 
 class PWCLI():
@@ -1190,7 +1177,7 @@ class PWCLI():
             elif show_ids:
                 # this is not similarly aligned as the others but that
                 # doesn't matter as we should use this only with emails
-                index = '%d ' % (patch.get_id())
+                index = '%s ' % (patch.get_id())
             else:
                 # For nice alignment add empty columns if indexes are
                 # disabled.
@@ -1202,9 +1189,9 @@ class PWCLI():
 
             name = shrink(patch.get_name(), WIDTH_NAME)
             date = patch.get_datetime().strftime('%Y-%m-%d')
-            submitter = shrink(Person(patch.get_submitter()).get_name(),
+            submitter = shrink(patch.get_submitter_name(),
                                WIDTH_SUBMITTER, ellipsis=False)
-            state = patch.get_state_name()
+            state = patch.get_state_name_old()
 
             # <patchname> <date> <submitter> <state>
             formatstr = '%%s%%-%ds %%-%ds %%-%ds %%s\n' % (WIDTH_NAME,
@@ -1215,7 +1202,7 @@ class PWCLI():
             #                                          patch.get_name(),
             #                                          'John Doe',
             #                                          '2012-01-02',
-            #                                          patch.get_state_name())
+            #                                          patch.get_state_name_old())
             if open_browser:
                 self.open_browser_url(patch.get_url())
 
@@ -1227,7 +1214,7 @@ class PWCLI():
         result = ''
 
         for patch in patches:
-            result += '%d %s\n' % (patch.get_id(), patch.get_name())
+            result += '%s %s\n' % (patch.get_id(), patch.get_name())
 
         return result.strip('\n')
 
@@ -1419,9 +1406,9 @@ class PWCLI():
             final_commit_id = None
 
         self.output('Delegate: %s' % (patch.get_delegate()))
-        self.output('State: %s' % (patch.get_state_name()))
+        self.output('State: %s' % (patch.get_state_name_old()))
         self.output('From: %s' % (patch.get_submitter()))
-        self.output('Date: %s' % (patch.get_date()))
+        self.output('Date: %s' % (patch.get_date_pretty()))
         self.output('Patchwork-Id: %s' % (patch.get_id()))
         self.output('Patchwork-URL: %s' % (patch.get_url()))
         self.output('PendingCommit: %s' % (pending_commit_id))
@@ -1439,9 +1426,7 @@ class PWCLI():
             '============================================================')
 
     def show_info(self):
-        user_ids = ', '.join(str(v) for v in self.user_ids)
-
-        self.print_header('User', '%s (%s)' % (self.username, user_ids))
+        self.print_header('User', '%s' % (self.username))
         self.print_header('Projects', ' '.join(self.project_names))
         self.print_header('Tree', self.tree)
 
@@ -1470,10 +1455,10 @@ class PWCLI():
             self.project.get_patches(PATCH_STATE_DEFERRED, username))
         total = new + review + upstream + deferred
 
-        self.print_header(PATCH_STATE_NEW, new)
+        self.print_header('New', new)
         self.print_header('Review', review)
         self.print_header('Upstream', upstream)
-        self.print_header(PATCH_STATE_DEFERRED, deferred)
+        self.print_header('Deferred', deferred)
         self.print_header('Total', total)
 
     def run_build_script(self):
@@ -1580,6 +1565,13 @@ class PWCLI():
         state_filter = None
         title_filter = None
 
+        # short alias for under-review state
+        # TODO: document this and try to implement in a more clean way
+        if args.state is not None and args.state[0] == 'review':
+            args.state[0] = PATCH_STATE_UNDER_REVIEW
+        if args.filter == 'review':
+            args.filter = PATCH_STATE_UNDER_REVIEW
+
         if args.title is not None:
             title_filter = args.title[0]
 
@@ -1589,18 +1581,19 @@ class PWCLI():
         # Note: the general filter overrules both title and state
         # filters, so this needs to be last.
         if args.filter is not None:
-            if args.filter in PATCH_STATE_KEYWORD_MAP:
+            if args.filter in PATCH_ALLOWED_STATES:
                 state_filter = args.filter
             else:
                 title_filter = args.filter
 
         if state_filter is not None:
-            if state_filter not in PATCH_STATE_KEYWORD_MAP:
+            if state_filter not in PATCH_ALLOWED_STATES:
                 self.output('Unknown state: %s' % state_filter)
                 return
 
             # user defined a state
-            states = PATCH_STATE_KEYWORD_MAP[state_filter]
+            # FIXME: figure out why the list is needed after switching to REST API
+            states = [state_filter]
         else:
             # no state defined, use all active states
             states = PATCH_ACTIVE_STATES
@@ -1900,7 +1893,7 @@ class PWCLI():
         self.output('')
 
         self.output('%s set to %s' % (get_patches_plural(len(patches)),
-                                      state))
+                                      OLD_PATCH_STATE_MAP[state]))
         reply = ''
         reason = None
 
@@ -1936,7 +1929,7 @@ class PWCLI():
                 reply += '%s\n\n' % (faillog)
 
             reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
-                                            state)
+                                            OLD_PATCH_STATE_MAP[state])
 
             # With one patch no point of adding the list, the patchwork
             # id and link is already available from the signature.
@@ -2134,7 +2127,7 @@ class PWCLI():
         self.output('')
 
         self.output('%s set to %s' % (get_patches_plural(len(patches)),
-                                      state))
+                                      OLD_PATCH_STATE_MAP[state]))
 
         if state == PATCH_STATE_UNDER_REVIEW:
             # patches were ok, no further action
@@ -2157,7 +2150,7 @@ class PWCLI():
             reply += '%s\n\n' % (faillog)
 
         reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
-                                        state)
+                                        OLD_PATCH_STATE_MAP[state])
 
         # No point adding patchlist for a single patch, it doesn't
         # bring any extra value which isn't already in the title or
@@ -2315,7 +2308,7 @@ class PWCLI():
             self.output('No patches downloaded')
             return
 
-        path = '%d.mbox' % (patches[0].get_id())
+        path = '%s.mbox' % (patches[0].get_id())
 
         mbox = mailbox.mbox(path)
         for patch in patches:
@@ -2548,6 +2541,8 @@ with # character. Example: #1000,#1005'''
         # read settings from pwcli config file
         self.url = self.config.get('general', 'url')
         self.username = self.config.get('general', 'username')
+
+        # TODO: should be renamed to token
         self.password = self.config.get('general', 'password')
 
         if self.config.has_option('general', 'build-command'):
@@ -2670,7 +2665,6 @@ with # character. Example: #1000,#1005'''
         # select the first project as initial project
         self.project = self.projects[0]
 
-        self.user_ids = self.pw.get_user_ids(self.username)
         self.tree = os.path.basename(os.getcwd())
 
         self.patches = None

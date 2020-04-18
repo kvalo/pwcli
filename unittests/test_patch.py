@@ -41,8 +41,7 @@ import pwcli
 FAKE_ATTRIBUTES = {
     'name' : 'nnnn',
     'id' : '11',
-    'delegate' : 'dddd',
-    'state_id' : '1234',
+    'delegate' : {'username': 'dddd'},
     'state' : 'ssss'
 }
 
@@ -56,15 +55,12 @@ class TestPatch(unittest.TestCase):
 
         self.assertEqual(patch.get_name(), attributes['name'])
         self.assertEqual(patch.get_id(), attributes['id'])
-        self.assertEqual(patch.get_delegate(), attributes['delegate'])
-        self.assertEqual(patch.get_state_id(), attributes['state_id'])
+        self.assertEqual(patch.get_delegate(), attributes['delegate']['username'])
         self.assertEqual(patch.get_state_name(), attributes['state'])
 
         pw.get_state_id = mock.Mock(return_value='7777')
-        patch.set_state_name('Accepted')
-        self.assertEqual(patch.get_state_name(), 'Accepted')
-        self.assertEqual(patch.get_state_id(), '7777')
-        pw.rpc.patch_set.assert_called_with(attributes['id'], { 'state' : '7777'})
+        patch.set_state_name('accepted')
+        self.assertEqual(patch.get_state_name(), 'accepted')
 
     def test_reply_msg(self):
         attributes = FAKE_ATTRIBUTES
