@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
@@ -37,8 +37,7 @@ import os
 import subprocess
 import time
 import logging
-import ConfigParser
-import email
+import configparser
 import stubslib
 
 # logging
@@ -157,7 +156,7 @@ class StgStub():
 
         stg_version = stdout.splitlines()[0]
 
-        if stg_version != 'stub-stg':
+        if stg_version != b'stub-stg':
             raise Exception('Not running stg-stub: %s' % stg_version)
 
         self.started = True
@@ -192,7 +191,7 @@ class GitStub():
         os.mkdir(self.gitdir)
         
         # create the config file
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
         user = 'user'
         self.config.add_section(user)
         self.config.set(user, 'email', 'test@example.com')
@@ -221,7 +220,7 @@ class GitStub():
 
         git_version = stdout.splitlines()[0]
 
-        if git_version != 'stub-git':
+        if git_version != b'stub-git':
             raise Exception('Not running git-stub: %s' % git_version)
 
         self.started = True
@@ -370,7 +369,7 @@ class EditorStub():
 class PwcliWrapper():
     def __init__(self, stgit=False, builder='builder', patchworkport=PATCHWORK_PORT,
                  smtpport=SMTP_PORT, signature=None, censor=True):
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
         self.dirname = os.path.dirname(self.configpath)
@@ -421,5 +420,5 @@ class PwcliWrapper():
             f.write(self.signature)
             f.close()
 
-        with open(self.configpath, 'wb') as configfile:
+        with open(self.configpath, 'w') as configfile:
             self.config.write(configfile)

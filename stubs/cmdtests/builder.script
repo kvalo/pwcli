@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
@@ -42,15 +42,11 @@ datadir = os.environ['DATADIR']
 
 def log(msg):
       msg = '* %s\n' % (msg)
-      sys.stdout.write(msg)
-      sys.stderr.write(msg)
+      print(msg, end='', flush=True)
+      print(msg, file=sys.stderr, end='', flush=True)
 
 def main():
       os.chdir(datadir)
-
-      # hack to enable automatic flushing so that printouts are not
-      # out of order
-      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
       builder = stubs.BuilderStub()
       assert builder # pyflakes
@@ -66,7 +62,7 @@ def main():
       builder.set_warning_count(5)
       builder.set_return_value(return_value)
       returncode = subprocess.call('builder')
-      print 'returncode = %d' % (returncode)
+      print('returncode = %d' % (returncode))
 
       builder.cleanup()
 

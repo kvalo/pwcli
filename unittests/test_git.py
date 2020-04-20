@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015, The Linux Foundation.
 # All rights reserved.
@@ -57,7 +57,7 @@ class TestGit(unittest.TestCase):
 
         os.environ['STUB_GIT_DATADIR'] = self.datadir
 
-        if output.splitlines()[0] != 'stub-git':
+        if output.splitlines()[0] != b'stub-git':
             self.fail('Not using stub-git')
             return
 
@@ -86,7 +86,8 @@ Date: Date: Thu,  10 Feb 2011 15:23:31 +0300
 
 foo body
 '''
-        sha1sum = hashlib.sha1(mbox).hexdigest()
+        # TODO: is sha1sum useless?
+        sha1sum = hashlib.sha1(mbox.encode('utf-8')).hexdigest()
 
         git = Git(False, self.dummy_output)
         git.am(mbox)

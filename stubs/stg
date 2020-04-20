@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
@@ -64,16 +64,16 @@ IMPORT_FAILED_MSG = 'error: patch failed: drivers/net/wireless/foo/core.c:1714\n
 def cmd_series(args):
       if not args.noprefix or not args.all:
             # only support --noprefix and --all for now
-            print 'Unsupported args: %s' % (args)
+            print('Unsupported args: %s' % (args))
             sys.exit(1)
 
-      for patch_name in gitrepo.stg_patches.keys():
-            print patch_name
+      for patch_name in list(gitrepo.stg_patches.keys()):
+            print(patch_name)
 
 def cmd_import(args):
       if not args.mbox or not args.sign:
             # only support --mbox and --sign for now
-            print 'Unsupported args: %s' % (args)
+            print('Unsupported args: %s' % (args))
             sys.exit(1)
 
       mbox = sys.stdin.read()
@@ -85,9 +85,9 @@ def cmd_import(args):
             sys.exit(2)
 
       # fake real stg output
-      print 'Checking for changes in the working directory ... done'
-      print 'Importing patch "%s" ... done' % (commit.stg_name)
-      print 'Now at patch "%s"' % (commit.stg_name)
+      print('Checking for changes in the working directory ... done')
+      print('Importing patch "%s" ... done' % (commit.stg_name))
+      print('Now at patch "%s"' % (commit.stg_name))
 
 # Output format:
 #
@@ -107,26 +107,26 @@ def cmd_show(args):
       else:
             commit = gitrepo.get_commits()[-1]
 
-      print 'commit %s' % (commit.id)
-      print 'Author: %s' % (commit.author)
-      print 'Date:   %s' % (commit.date)
+      print('commit %s' % (commit.id))
+      print('Author: %s' % (commit.author))
+      print('Date:   %s' % (commit.date))
 
       # terminate headers with an extra newline
-      print
+      print()
 
-      print '    %s' % (commit.subject)
+      print('    %s' % (commit.subject))
 
       for line in commit.body.splitlines():
-            print '    %s' % (line)
+            print('    %s' % (line))
 
       # terminate commit log with an extra newline
-      print
+      print()
 
-      print 'diff...\n'
+      print('diff...\n')
 
 def cmd_delete(args):
       if not args.top:
-            print 'Unsupported arguments for stg delete command: %s' % (args)
+            print('Unsupported arguments for stg delete command: %s' % (args))
             sys.exit(1)
 
       gitrepo.delete_stg_top_commit()
@@ -182,8 +182,8 @@ def main():
             # Note: have to be called with 'stg --version branch' as I
             # didn't know how to implement 'stg --version' with
             # argparse
-            print 'stub-stg'
-            print 'STUB_GIT_DATADIR=%s' % gitdir
+            print('stub-stg')
+            print('STUB_GIT_DATADIR=%s' % gitdir)
             sys.exit(0)
 
       args.func(args)

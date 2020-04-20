@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016,2020, The Linux Foundation.
 # All rights reserved.
@@ -55,7 +55,7 @@ def main():
       # TODO: add token
 
       # TODO: the stub server does not support filtering per state yet
-      print 'retrieve all patches under review'
+      print('retrieve all patches under review')
       params = {'project' : project,
                 'delegate' : username,
                 'state' : 'under-review',
@@ -66,19 +66,19 @@ def main():
 
       i = 1
       for patch in r.json():
-            print '[%d] %s' % (i, patch['name'])
+            print('[%d] %s' % (i, patch['name']))
             i += 1
 
-      print
+      print()
 
-      print 'retrieve patch id 1030'
+      print('retrieve patch id 1030')
       r = requests.get('%s/patches/%s/' % (server_url, 1030))
 
       r.raise_for_status()
 
-      print '%s' % (patch['name'])
+      print('%s' % (patch['name']))
 
-      print
+      print()
 
       pw_stub.stop()
       pw_stub.cleanup()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2017, The Linux Foundation.
 # All rights reserved.
@@ -48,9 +48,9 @@ def test_info(ctxt, pwcli):
    path = '1030.mbox'
    mbox = mailbox.mbox(path)
 
-   print '%d messages found from %s:' % (len(mbox), path)
+   print('%d messages found from %s:' % (len(mbox), path))
    for msg in mbox:
-      print msg['Subject']
+      print(msg['Subject'])
    mbox.close()
 
 if __name__ == "__main__":

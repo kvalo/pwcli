@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
@@ -106,7 +106,7 @@ class StubContext():
         try:
             func(ctxt, pwcli)
         except Exception as e:
-            print e
+            print(e)
 
         ctxt.stop_and_cleanup()
 
@@ -130,7 +130,7 @@ class StubContext():
             self.pwcli = PwcliSpawn(debug=self.debug, stgit=stgit,
                                     builder=self.builder_cmd)
         except Exception as e:
-            print 'Failed to start stubs: %s' % (e)
+            print('Failed to start stubs: %s' % (e))
             self.stop_and_cleanup()
             sys.exit(1)
 
@@ -185,7 +185,8 @@ class PwcliSpawn(pexpect.spawn):
         # use short timeout so that failures don't take too long to detect
         super(PwcliSpawn, self).__init__(os.path.join(srcdir, cmd),
                                          timeout=3,
-                                         logfile=sys.stdout)
+                                         logfile=sys.stdout,
+                                         encoding='utf-8')
 
     def cleanup(self):
         self.pwcli_wrapper.cleanup()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015, The Linux Foundation.
 # All rights reserved.
@@ -49,7 +49,7 @@ gitrepo = None
 # config - config file, almost same format as in real git but using ConfigParser
 
 def cmd_branch(args):
-      print '\n'.join(gitrepo.get_branches())
+      print('\n'.join(gitrepo.get_branches()))
 
 def cmd_am_conflict(args):
       conflict_msg = '''Applying: foo: conflict patch
@@ -88,9 +88,9 @@ def cmd_config(args):
       name = names[1]
 
       try:
-            print gitrepo.get_config(section, name)
+            print(gitrepo.get_config(section, name))
       except ValueError:
-            print '%s not found' % (name)
+            print('%s not found' % (name))
             sys.exit(1)
 
 def cmd_log(args):
@@ -98,21 +98,21 @@ def cmd_log(args):
 
       if len(args.max_count) > 0:
             max_count = int(args.max_count[0])
-            print gitrepo.get_commits_oneline(max_count)
+            print(gitrepo.get_commits_oneline(max_count))
 
 def cmd_show(args):
       # FIXME: only support HEAD for now
       if args.commitid != 'HEAD':
-            print 'Unsupported commit id: %s' % (args.commitid)
+            print('Unsupported commit id: %s' % (args.commitid))
             return
 
-      print 'commit %s' % (gitrepo.get_commits()[-1].id)
+      print('commit %s' % (gitrepo.get_commits()[-1].id))
 
 def cmd_cherry_pick(args):
       try:
             gitrepo.cherry_pick(args.commit_id)
       except ValueError:
-            print 'Commit id %s not found.' % (args.commit_id)
+            print('Commit id %s not found.' % (args.commit_id))
 
 def cmd_checkout(args):
       # FIXME: just a dummy command for now
@@ -125,11 +125,11 @@ def cmd_filter_branch(args):
 
 def cmd_reset(args):
       if not args.hard:
-            print 'Only --reset switch is supported'
+            print('Only --reset switch is supported')
             sys.exit(1)
 
       if args.commit != 'HEAD^':
-            print 'Only HEAD^ commit is supported'
+            print('Only HEAD^ commit is supported')
             sys.exit(1)
 
       gitrepo.delete_top_commit()
@@ -200,8 +200,8 @@ def main():
             # Note: have to be called with 'git --version branch' as I
             # didn't know how to implement 'git --version' with
             # argparse
-            print 'stub-git'
-            print 'STUB_GIT_DATADIR=%s' % gitdir
+            print('stub-git')
+            print('STUB_GIT_DATADIR=%s' % gitdir)
             sys.exit(0)
 
       args.func(args)

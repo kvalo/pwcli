@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
@@ -44,21 +44,21 @@ def send_mail(pwcli):
    pwcli.sendline('s')
 
 def test_reply(ctxt, pwcli):
-   print '* make sure that the list is also CCed'
+   print('* make sure that the list is also CCed')
    pwcli.expect_prompt()
    pwcli.sendline('list new')
    pwcli.expect_prompt()
    pwcli.sendline('reply 1')
    send_mail(pwcli)
 
-   print '* list and two persons CCed'
+   print('* list and two persons CCed')
    pwcli.expect_prompt()
    pwcli.sendline('list new')
    pwcli.expect_prompt()
    pwcli.sendline('reply 2')
    send_mail(pwcli)
 
-   print '* two lists CCed'
+   print('* two lists CCed')
    pwcli.expect_prompt()
    pwcli.sendline('list new')
    pwcli.expect_prompt()
@@ -69,7 +69,7 @@ def test_reply(ctxt, pwcli):
    pwcli.sendline('quit')
 
    # to avoid any races print the mails only after pwcli has stopped
-   print ctxt.smtpd.get_mails_as_string()
+   print(ctxt.smtpd.get_mails_as_string())
 
 if __name__ == "__main__":
    cmdtestlib.StubContext.run_test(test_reply)

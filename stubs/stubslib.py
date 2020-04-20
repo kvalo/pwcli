@@ -31,7 +31,7 @@
 
 import hashlib
 import os
-import ConfigParser
+import configparser
 import email
 import re
 import pickle
@@ -71,7 +71,7 @@ class GitRepository():
         if not os.path.exists(path):
             return GitRepository(gitdir)
 
-        f = open(path, 'r')
+        f = open(path, 'rb')
         repo = pickle.load(f)
         f.close()
 
@@ -80,7 +80,7 @@ class GitRepository():
     def __init__(self, gitdir):
         self.gitdir = gitdir
 
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
         self.config.read(os.path.join(gitdir, 'config'))
 
         # default branch name
@@ -105,7 +105,7 @@ class GitRepository():
     def dump(self):
         path = os.path.join(self.gitdir, GIT_DB_NAME)
         
-        f = open(path, 'w')
+        f = open(path, 'wb')
         pickle.dump(self, f)
         f.close()
 
@@ -161,7 +161,7 @@ class GitRepository():
         return commit
 
     def add_commit(self, mbox):
-        commit_id = hashlib.sha1(mbox).hexdigest()
+        commit_id = hashlib.sha1(mbox.encode('utf-8')).hexdigest()
         return self._add_commit(commit_id, mbox)
 
     def delete_top_commit(self):
@@ -221,7 +221,7 @@ class GitRepository():
         # strip out the date ('From nobody <date>') from the first line,
         # which is added by email.message.Message.as_string(unixfrom=True)
         buf_cleaned = re.sub(r'^From nobody.*\n', 'From nobody\n', mbox)
-        commit_id = hashlib.sha1(buf_cleaned).hexdigest()
+        commit_id = hashlib.sha1(buf_cleaned.encode('utf-8')).hexdigest()
 
         commit = self._add_commit(commit_id, mbox, patch_name)
         self.stg_patches[patch_name] = commit

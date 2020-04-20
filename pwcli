@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015-2019, The Linux Foundation.
 # All rights reserved.
@@ -31,13 +31,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import print_function
+
 import logging
 import sys
 import subprocess
 import argparse
 import os
-import ConfigParser
+import configparser
 import email
 import email.mime.text
 import email.header
@@ -128,21 +128,11 @@ STATE_ABORTED = 'Aborted'
 PATCHINDEX_ALL = 'all'
 
 
-# Note about unicode support:
-#
-# pwcli internally is supposed to use unicode type for internal
-# strings but when calling external interfaces use to_utf8() to
-# convert them to UTF-8
-def to_utf8(buf):
-    return unicode(buf).encode('utf-8')
-
-
-def is_unicode(buf):
-    return isinstance(buf, unicode)
-
-
 def clean(buf):
-    buf = buf.translate(None, '\n\t')
+    # FIXME: is this translate call really needed, for example in
+    # emails? And is the whole clean() function useless?
+    # buf = buf.translate(None, '\n\t')
+
     buf = buf.strip()
     return buf
 
@@ -198,7 +188,7 @@ def parse_list(arg):
         # when we say 0-5 we also want the index 5, not just 0-4
         end += 1
 
-        ids += range(start, end)
+        ids += list(range(start, end))
 
     ids = sorted(ids)
 
@@ -267,10 +257,12 @@ class RunProcess():
 
         self.timer.start()
 
+        # universal_newlines=True switches to unicode
         self.p = subprocess.Popen(args,
                                   stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
+                                  stderr=subprocess.PIPE,
+                                  universal_newlines=True)
 
         if input:
             self.p.stdin.write(input)
@@ -391,7 +383,7 @@ class Stg():
 
         logger.debug('stg.import_patch(): %s' % (mbox))
 
-        p = RunProcess(cmd, input=to_utf8(mbox))
+        p = RunProcess(cmd, input=mbox)
 
         ret = p.returncode
         logger.debug('%s returned: %s' % (cmd, ret))
@@ -554,7 +546,7 @@ class Git():
             self.output('Dry-run: %s' % str(cmd))
             return
 
-        p = RunProcess(cmd, input=to_utf8(mbox))
+        p = RunProcess(cmd, input=mbox)
 
         ret = p.returncode
         logger.debug('%s returned: %s' % (cmd, ret))
@@ -722,8 +714,6 @@ class Patch():
             logger.debug('dry-run: %s().set_mbox(%s)' % (self, mbox))
             return
 
-        assert is_unicode(mbox)
-
         logger.debug('%s: set_mbox(): %s' % (self, repr(mbox)))
         self.mbox = mbox
 
@@ -732,7 +722,7 @@ class Patch():
         self.attributes['name'] = msg['Subject']
 
     def get_diffstat(self):
-        p = RunProcess(['diffstat', '-p1'], input=to_utf8(self.get_mbox()))
+        p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
 
         diffstat = p.stdoutdata
         diffstat = diffstat.rstrip()
@@ -743,7 +733,7 @@ class Patch():
     #
     # TODO: rename the function to avoid confusion
     def get_email(self):
-        return email.message_from_string(to_utf8(self.get_mbox()))
+        return email.message_from_string(self.get_mbox())
 
     def get_reply_msg(self, from_name, from_email, text='', signature=None):
         msg = self.get_email()
@@ -932,7 +922,7 @@ class Project():
         logger.debug('%s().get_patches(state=%s, username=%s)' % (self,
                                                                   state,
                                                                   username))
-        for patch in self.cache.values():
+        for patch in list(self.cache.values()):
             if state is not None and patch.get_state_name() != state:
                 continue
 
@@ -1232,7 +1222,7 @@ class PWCLI():
             for c in copy:
                 table[c] = c
 
-        for name in table.keys():
+        for name in list(table.keys()):
             # find the one char shortcut
             match = re.search('([A-Z])', name)
             if len(match.groups()) != 1:
@@ -1242,7 +1232,7 @@ class PWCLI():
             valid[shortcut] = table[name]
 
         while True:
-            choices = '%s%s? ' % (prefix, '/'.join(table.keys()))
+            choices = '%s%s? ' % (prefix, '/'.join(list(table.keys())))
             answer = self.input(choices)
             answer = answer.lower()
 
@@ -1387,8 +1377,6 @@ class PWCLI():
         f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='r')
         new_buf = f.read()
         f.close
-
-        assert is_unicode(new_buf)
 
         os.remove(PWCLI_EDIT_FILE)
 
@@ -2471,7 +2459,7 @@ with # character. Example: #1000,#1005'''
 
     def input(self, prompt):
         logger.debug('> \'%s\'' % prompt)
-        cmd = raw_input(prompt)
+        cmd = input(prompt)
         logger.debug('< \'%s\'' % cmd)
 
         return cmd
@@ -2526,7 +2514,7 @@ with # character. Example: #1000,#1005'''
 
         self.dry_run = args.dry_run
 
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
 
         if not os.path.exists(self.config_file):
             print('Could not find %s', self.config_file)

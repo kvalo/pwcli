@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015, The Linux Foundation.
 # All rights reserved.
@@ -42,13 +42,14 @@ def git_am(stub_git, buf):
       cmd = [stub_git, 'am', '-s']
 
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                           stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                           stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+                           universal_newlines=True)
 
       (stdoutdata, stderrdata) = p.communicate(input=buf)
       if len(stdoutdata) > 0:
-            print stdoutdata
+            print(stdoutdata)
       if len(stderrdata) > 0:
-            print repr(stderrdata)
+            print(repr(stderrdata))
 
 def main():
       srcdir = os.environ['SRCDIR']
@@ -62,31 +63,32 @@ def main():
 
       # hack to enable automatic flushing so that printouts are not
       # out of order
-      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+      # https://stackoverflow.com/questions/27067713/why-text-i-o-must-be-buffered-in-python-3
+      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', buffering=1)
 
       gitstub = stubs.GitStub()
       gitdir = gitstub.gitdir
       gitstub.start()
       
-      print 'check branch'
+      print('check branch')
       sys.stdout.flush()
       subprocess.call([stub_git, 'branch'])
-      print
+      print()
 
-      print 'check configs'
+      print('check configs')
       subprocess.call([stub_git, 'config', '--get', 'user.email'])
       subprocess.call([stub_git, 'config', '--get', 'user.name'])
       subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserver'])
       subprocess.call([stub_git, 'config', '--get', 'sendemail.smtpserverport'])
-      print
+      print()
 
-      print 'check return value from a config field which does not exist'
+      print('check return value from a config field which does not exist')
       returncode = subprocess.call([stub_git, 'config', '--get', 'no.existance'])
       if returncode == 0:
-            print 'Wrong return value from no.existance: %d' % (returncode)
-      print
+            print('Wrong return value from no.existance: %d' % (returncode))
+      print()
 
-      print 'add patches'
+      print('add patches')
       f = open(os.path.join(patchesdir, '1001-review-foo-test-1.patch'), 'r')
       buf = f.read()
       f.close()
@@ -96,7 +98,7 @@ def main():
       # verify patch
       gitrepo = stubslib.GitRepository.load(gitdir)
       if buf != gitrepo.get_commits()[0].mbox:
-            print 'test-1.patch not correct'
+            print('test-1.patch not correct')
             sys.exit(2)
 
       f = open(os.path.join(patchesdir, '1002-review-foo-test-2.patch'), 'r')
@@ -108,41 +110,41 @@ def main():
       # verify patch
       gitrepo = stubslib.GitRepository.load(gitdir)
       if buf != gitrepo.get_commits()[-1].mbox:
-            print 'test-2.patch not correct'
+            print('test-2.patch not correct')
             sys.exit(2)
 
-      print 'test git log'
+      print('test git log')
       f = open(os.path.join(patchesdir, '1030-new-foo-new-patch.patch'), 'r')
       buf = f.read()
       f.close()
       git_am(stub_git, buf)
       subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
-      print
+      print()
 
-      print 'test git show HEAD'
+      print('test git show HEAD')
       subprocess.call([stub_git, 'show', 'HEAD'])
-      print
+      print()
 
-      print 'test git cherry-pick'
+      print('test git cherry-pick')
       subprocess.call([stub_git, 'cherry-pick',
                        'fb409caeb2ecda7176f3d6af845e87b1c60f6665'])
       subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
-      print
+      print()
 
-      print 'test git filter-branch'
+      print('test git filter-branch')
       subprocess.call([stub_git, 'filter-branch', '--force', '--msg-filter',
                        'sed -e "/foo/d"', 'HEAD^..HEAD'])
-      print
+      print()
 
-      print 'test git am conflict'
+      print('test git am conflict')
       gitstub.set_commit_failure(1)
       git_am(stub_git, buf)
-      print
+      print()
 
-      print 'test git reset'
+      print('test git reset')
       subprocess.call([stub_git, 'reset', '--hard', 'HEAD^'])
       subprocess.call([stub_git, 'show', 'HEAD'])
-      print
+      print()
 
       # cleanup
       gitstub.cleanup()
