@@ -1,5 +1,5 @@
 Connecting to http://localhost:8105/
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Main branches : master
@@ -52,10 +52,10 @@ State: Under Review
 From: Timo Tiger <timo@example.com>
 Date: 2011-02-11 05:23:31
 Patchwork-Id: 1030
-Patchwork-URL: http://localhost:8105/1030/
+Patchwork-URL: http://localhost/fixme/12345
 PendingCommit: 627a93a4aa38417e4d130d02240fc54d21893024
 FinalCommit: None
-CommitRef: 
+CommitRef: None
 PatchIndex: None
 StgIndex: 0
 ============================================================

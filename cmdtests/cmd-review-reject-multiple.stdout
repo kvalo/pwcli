@@ -1,5 +1,5 @@
 Connecting to http://localhost:8105/
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Branch        : master
@@ -57,7 +57,7 @@ I will never take these.
 
 -- 
 Sent by pwcli
-http://localhost:8105/1001/
+http://localhost/fixme/12345
 
 
 ============================================================
@@ -67,7 +67,7 @@ Send/Edit/aBort? s
 s
 master@data > info
 info
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Branch        : master
@@ -107,6 +107,6 @@ I will never take these.
 
 -- 
 Sent by pwcli
-http://localhost:8105/1001/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 

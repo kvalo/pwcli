@@ -1,5 +1,5 @@
 Connecting to http://localhost:8105/
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Branch        : master
@@ -101,7 +101,7 @@ b50b875961e9 foo: test 1
 
 -- 
 Sent by pwcli
-http://localhost:8105/1001/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 mail 1:
 ----------------------------------------------------------------------
@@ -134,6 +134,6 @@ d26c37c16f91 koo: yyy bbb cc 3
 
 -- 
 Sent by pwcli
-http://localhost:8105/1060/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 

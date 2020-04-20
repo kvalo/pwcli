@@ -1,5 +1,5 @@
 Connecting to http://localhost:8105/
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Branch        : master
@@ -127,7 +127,7 @@ Patch failed at 0001 foo: conflict patch
 
 -- 
 Sent by pwcli
-http://localhost:8105/1001/
+http://localhost/fixme/12345
 
 
 ============================================================
@@ -163,7 +163,7 @@ Patch applied to data.git, thanks.
 
 -- 
 Sent by pwcli
-http://localhost:8105/1030/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 mail 1:
 ----------------------------------------------------------------------
@@ -208,7 +208,7 @@ Patch failed at 0001 foo: conflict patch
 
 -- 
 Sent by pwcli
-http://localhost:8105/1001/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 
 9e57ad58266c foo: new patch

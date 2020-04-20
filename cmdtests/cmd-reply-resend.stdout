@@ -1,6 +1,6 @@
 * make sure that the list is also CCed
 Connecting to http://localhost:8105/
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Branch        : master
@@ -52,7 +52,7 @@ Timo Tiger <timo@example.com> wrote:
 
 -- 
 Sent by pwcli
-http://localhost:8105/1030/
+http://localhost/fixme/12345
 
 
 ============================================================
@@ -87,6 +87,6 @@ Timo Tiger <timo@example.com> wrote:
 
 -- 
 Sent by pwcli
-http://localhost:8105/1030/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 

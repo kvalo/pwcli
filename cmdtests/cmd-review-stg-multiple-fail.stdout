@@ -1,5 +1,5 @@
 Connecting to http://localhost:8105/
-User          : test (7477, 30052, 118371)
+User          : test
 Projects      : stub-test
 Tree          : data
 Main branches : master
@@ -103,7 +103,7 @@ stg import: Diff does not apply cleanly
 
 -- 
 Sent by pwcli
-http://localhost:8105/1030/
+http://localhost/fixme/12345
 
 
 ============================================================
@@ -160,6 +160,6 @@ stg import: Diff does not apply cleanly
 
 -- 
 Sent by pwcli
-http://localhost:8105/1030/
+http://localhost/fixme/12345
 ----------------------------------------------------------------------
 
