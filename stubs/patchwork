@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2015,2019, The Linux Foundation.
+# Copyright (c) 2015,2019-2020 The Linux Foundation.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,71 +35,41 @@ import argparse
 import sys
 import os
 import os.path
-import SimpleXMLRPCServer
 import email
 import pprint
-import xmlrpclib
+import flask
+import flask_restful
+import flask_restful.reqparse
+import json
+import logging
+import mock
 
 datadir = None
 
-STATE_LIST = [
-      {'id': 1, 'name': 'New'},
-      {'id': 2, 'name': 'Under Review'},
-      {'id': 3, 'name': 'Accepted'},
-      {'id': 4, 'name': 'Rejected'},
-      {'id': 5, 'name': 'RFC'},
-      {'id': 6, 'name': 'Not Applicable'},
-      {'id': 7, 'name': 'Changes Requested'},
-      {'id': 8, 'name': 'Awaiting Upstream'},
-      {'id': 9, 'name': 'Superseded'},
-      {'id': 10, 'name': 'Deferred'}]
+STATE_MAP = {
+      'New' :                  'new',
+      'Under Review' :         'under-review',
+      'Accepted' :             'accepted',
+      'Rejected' :             'rejected',
+      'RFC' :                  'rfc',
+      'Not Applicable' :       'not-applicaple',
+      'Changes Requested' :    'changes-requested',
+      'Awaiting Upstream' :    'awaiting-upstream',
+      'Superseded' :           'superseded',
+      'Deferred' :             'deferred',
+}
 
-PROJECT_LIST = [
-      {'linkname': 'stub-test', 'id': 15, 'name': 'Linux Wireless Mailing List'}
-      ]
-
-PERSON_LIST = [
-      {'email': 'test@example.com', 'user': 'test',
-       'name': 'Timo Testi', 'id': 7477 },
-      {'email': 'test2@example.com', 'user': 'test',
-       'name': 'Timo Testi', 'id': 30052},
-      {'email': 'test3@example.com', 'user': 'test',
-       'name': 'Timo Testi', 'id': 118371}
-      ]
-
-def state_name_by_id(state_id):
-      for state in STATE_LIST:
-            if state['id'] == state_id:
-                  return state['name']
-
-      return None
+API_PATH = 'api/1.1'
 
 class Patch():
       hdr_map = {
             'name': 'Subject',
-            'submitter': 'From', 
             'date': 'Date',
             'msgid': 'Message-Id',
             'id': 'X-Patchwork-Id',
-            'submitter_id': 'X-Submitter-Id', 
             'project': 'X-Project',
-            'project_id': 'X-Project-Id', 
-            'commit_ref': 'X-Commit-Ref', 
-            'state': 'X-State', 
-            'state_id': 'X-State-Id', 
-            'delegate': 'X-Delegate', 
-            'delegate_id': 'X-Delegate-Id', 
-
-            # Note: 'filename' attribute is special and is stored to
-            # self.filename
+            'commit_ref': 'X-Commit-Ref',
             }
-
-      # parameters which have to be integers
-      hdr_integers = ['id', 'submitter_id', 'project_id', 'state_id',
-                      'delegate_id']
-
-      # parameters which need to be xmlrpclib.Binary
-      hdr_binary = ['date', 'submitter']
 
       def get_params(self):
             return self.params
@@ -112,16 +82,6 @@ class Patch():
 
       def set(self, params):
             for k in params:
-                  # state needs special handling, the 'state'
-                  # attribute actually contains state_id
-                  if k == 'state':
-                        state_id = params[k]
-                        state_name = state_name_by_id(state_id)
-
-                        self.params['state_id'] = state_id
-                        self.params['state'] = state_name
-                        continue
-
                   self.params[k] = params[k]
 
             self.save()
@@ -131,7 +91,6 @@ class Patch():
       def load(self, filename):
             # file name is special
             self.filename = filename
-            self.params['filename'] = os.path.basename(self.filename)
 
             f = open(self.filename)
             buf = f.read()
@@ -144,14 +103,35 @@ class Patch():
                   val = self.msg[hdr]
                   self.params[attr] = val
 
-            for hdr in self.hdr_integers:
-                  self.params[hdr] = int(self.params[hdr])
+            # state names need to be mapped
+            # TODO: the states should be renamed in patches itself so
+            # that this translation could be removed
+            self.params['state'] = STATE_MAP[self.msg['X-State']]
 
-            for hdr in self.hdr_binary:
-                  self.params[hdr] = xmlrpclib.Binary(self.params[hdr])
+            # REST API uses T to separate date and time
+            # TODO: fix this in the patches itself and remove this translation
+            self.params['date'] = self.params['date'].replace(' ', 'T')
+
+            # hardcode this for now
+            self.params['web_url'] = 'http://localhost/fixme/12345'
+
+            # add submitter.name and submitter.email
+            (name, address) = email.utils.parseaddr(self.msg['From'])
+            self.params['submitter'] = {}
+            self.params['submitter']['name'] = name
+            self.params['submitter']['email'] = address
+
+            # add delegate.username
+            self.params['delegate'] = {}
+            self.params['delegate']['username'] = self.msg['X-Delegate']
+
+            # KVALO: add mbox attribute
+            self.params['mbox'] = '%smbox/%s' % (self.pws.get_server_url(),
+                                                 self.params['id'])
+
 
       def save(self):
-            # update headers in self.msg 
+            # update headers in self.msg
             for attr in self.hdr_map.keys():
                   hdr = self.hdr_map[attr]
                   val = self.params[attr]
@@ -166,10 +146,54 @@ class Patch():
       def __repr__(self):
             return 'Patch(%s)' % (pprint.pformat(self.params))
 
-      def __init__(self):
+      def __init__(self, pws):
+            self.pws = pws
             self.params = {}
 
-class PatchContainer():
+class MboxResource(flask_restful.Resource):
+      def get(self, id=None):
+            if id is None:
+                  return 'id is missing'
+
+            return flask.Response(self.patches.get_patch(id).get_mbox(),
+                                  mimetype='text/plain')
+
+      def __init__(self, **kwargs):
+        self.patches = kwargs['patches']
+
+class PatchesResource(flask_restful.Resource):
+      # TODO: implement state filters for get method
+      # TODO: implement delegate filters for get method
+      def get(self, id=None):
+            if id is not None:
+                  # Just one patch requested
+                  return flask.Response(json.dumps(self.patches.get_patch(id).get_params()),
+                                  mimetype='application/json')
+
+            # Return all patches. Need to return using Response
+            # class to avoid escaping hyphens (\") in the json response
+            return flask.Response(json.dumps(self.patches.get_all_patches_as_params()),
+                                  mimetype='application/json')
+
+      def patch(self, id=None):
+            if id is None:
+                  return 'Patch id missing', 400
+
+            parser = flask_restful.reqparse.RequestParser()
+            parser.add_argument('state', location='json')
+            parser.add_argument('commit_ref', location='json')
+            args = parser.parse_args()
+
+            patch = self.patches.get_patch(id)
+            patch.set(args)
+
+            return flask.Response(json.dumps(patch.get_params()),
+                                  mimetype='application/json')
+
+      def __init__(self, **kwargs):
+        self.patches = kwargs['patches']
+
+class Patches():
       def get_patch(self, patch_id):
             return self.patches[patch_id]
 
@@ -182,9 +206,10 @@ class PatchContainer():
             return result
 
       def __repr__(self):
-            return 'PatchContainer(%s)' % (self.patches)
+            return 'Patches(%s)' % (self.patches)
 
-      def __init__(self, dirname):
+      def __init__(self, dirname, pws):
+            self.pws = pws
             self.patches = {}
 
             if not os.path.isdir(dirname):
@@ -197,83 +222,58 @@ class PatchContainer():
                         if not name.endswith('.patch'):
                               continue
 
-                        p = Patch()
+                        p = Patch(self.pws)
                         p.load(os.path.join(dirname, name))
                         self.patches[p.get_id()] = p
 
 class PatchworkStub():
-      def state_list(self, search_str='', max_count=0):
-            return STATE_LIST
+      def get_server_url(self):
+            return 'http://localhost:%d/%s/' % (self.port, API_PATH)
 
-      def project_list(self, search_str='', max_count=0):
-            return PROJECT_LIST
+      def run(self, debug=False):
+            #self.app.logger.removeHandler(flask.logging.default_handler)
+            if not debug:
+                  # don't spam HTTP request information, breaks automatic tests
+                  log = logging.getLogger('werkzeug')
+                  log.setLevel(logging.ERROR)
 
-      def person_list(self, search_str='', max_count=0):
-            return PERSON_LIST
-
-      def _matches_filter(self, patch, filter):
-            for f in filter:
-                  if patch[f] != filter[f]:
-                        return False
-
-            return True
-
-      def patch_list(self, filter={}):
-            result = []
-            params = self.container.get_all_patches_as_params()
-
-            for p in params:
-                  if not self._matches_filter(p, filter):
-                        continue
-
-                  result.append(p)
-
-            return result
-
-      def patch_get_mbox(self, patch_id):
-            patch = self.container.get_patch(patch_id)
-            return patch.get_mbox()
-
-      def patch_set(self, patch_id, params):
-            patch = self.container.get_patch(patch_id)
-            patch.set(params)
-
-            return True
-            
-      def run(self):
-            self.server.serve_forever()
+            self.app.run(port=self.port, debug=debug)
 
       def __init__(self, patchesdir, port):
             self.patchesdir = patchesdir
-            self.container = PatchContainer(self.patchesdir)
+            self.port = port
 
-            self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", port),
-                                                                logRequests=False,
-                                                                requestHandler=SimpleXMLRPCServer.SimpleXMLRPCRequestHandler)
-            self.server.register_introspection_functions()
-            self.server.register_instance(self)
+            self.patches = Patches(self.patchesdir, self)
+
+            self.app = flask.Flask('patchwork')
+            self.api = flask_restful.Api(self.app)
+
+            self.api.add_resource(PatchesResource,
+                                  '/%s/patches/' % (API_PATH),
+                                  '/%s/patches/<string:id>/' % (API_PATH),
+                                  resource_class_kwargs={ 'patches': self.patches })
+            self.api.add_resource(MboxResource,
+                                  '/%s/mbox/' % (API_PATH),
+                                  '/%s/mbox/<string:id>' % (API_PATH),
+                                  resource_class_kwargs={ 'patches': self.patches })
 
 def run_test_load_patches(args):
-      container = PatchContainer(datadir)
+      pws = mock.Mock()
+      pws.get_server_url = mock.Mock(return_value='http://localhost:8000/1001/')
+      container = Patches(datadir, pws)
       patches = container.get_all_patches_as_params()
-
-      # avoid printing "<xmlrpclib.Binary instance at 0x7f9628b3b998>"
-      # and instead print the actual data
-      for patch in patches:
-            for hdr in Patch.hdr_binary:
-                  patch[hdr] = patch[hdr].data
 
       pprint.pprint(patches)
 
 def run_test_set_state(args):
-      container = PatchContainer(datadir)
+      container = Patches(datadir)
       patch = container.get_patch(1002)
 
       patch.set({'state_id': 3})
       print patch
 
 def run_test_get_mbox(args):
-      container = PatchContainer(datadir)
+      container = Patches(datadir)
       patch = container.get_patch(1001)
 
       print patch.get_mbox()
@@ -301,7 +301,9 @@ def main():
 
       parser.add_argument('--version', action='store_true')
       parser.add_argument('--port', action='store', type=int, default=8107)
-      parser.add_argument('--test', nargs=1)
+      parser.add_argument('--test', nargs=1, help='Run few unit tests')
+      parser.add_argument('--debug', action='store_true',
+                          help='Enable debug messages')
 
       args = parser.parse_args()
 
@@ -316,9 +318,9 @@ def main():
 
       try:
             stub = PatchworkStub(datadir, port=args.port)
-            stub.run()
+            stub.run(args.debug)
       except Exception as e:
-            print 'Failed to start PatchworkStub RPC server: %s' % e
+            print 'Failed to start PatchworkStub REST server: %s' % e
             sys.exit(1)
 
 if __name__ == "__main__":

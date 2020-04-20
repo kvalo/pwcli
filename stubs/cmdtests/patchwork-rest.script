@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2016, The Linux Foundation.
+# Copyright (c) 2016,2020, The Linux Foundation.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,36 +33,9 @@
 
 import stubs
 import os
-import xmlrpclib
-import base64
+import requests
 
 PATCHWORK_PORT=8107
-
-class AuthTransport(xmlrpclib.SafeTransport):
-   def send_auth(self, connection):
-      creds = base64.encodestring('%s:%s' % (self.username,
-                                             self.password)).strip()
-      auth_string = 'Basic ' + creds
-      connection.putheader('Authorization', auth_string)
-
-   def send_host(self, connection, host):
-      xmlrpclib.Transport.send_host(self, connection, host)
-
-      if self.username != None and self.password != None:
-         self.send_auth(connection)
-
-   def make_connection(self, host):
-      if self.https:
-         return xmlrpclib.SafeTransport.make_connection(self, host)
-      else:
-         return xmlrpclib.Transport.make_connection(self, host)
-
-   def __init__(self, username = None, password = None, https = False):
-      xmlrpclib.SafeTransport.__init__(self)
-
-      self.username = username
-      self.password = password
-      self.https = https
 
 def main():
       #srcdir = os.environ['SRCDIR']
@@ -76,49 +49,34 @@ def main():
       pw_stub = stubs.PatchworkStub(port=PATCHWORK_PORT)
       pw_stub.start()
 
-      url = 'http://localhost:%d/' % (PATCHWORK_PORT)
-      project_name = 'stub-test'
+      server_url = 'http://localhost:%d/api/1.1' % (PATCHWORK_PORT)
+      project = 'stub-test'
       username = 'test'
-      password = 'password'
+      # TODO: add token
 
-      https = url.startswith('https')
-      transport = AuthTransport(username, password, https)
-      rpc = xmlrpclib.Server(url, transport = transport)
-
-      projects = rpc.project_list(project_name, 0)
-
-      project_id = None
-      for project in projects:
-         if project['linkname'] == project_name:
-            project_id = project['id']
-
-      if not project_id:
-            raise Exception('Failed to find a project id for %s' % (project_name))
-
+      # TODO: the stub server does not support filtering per state yet
       print 'retrieve all patches under review'
-      filters = {}
-      filters['project_id'] = project_id
-      filters['state_id'] = 2
+      params = {'project' : project,
+                'delegate' : username,
+                'state' : 'under-review',
+      }
+      r = requests.get('%s/patches/' % (server_url), params=params)
 
-      patches = rpc.patch_list(filters)
+      r.raise_for_status()
 
       i = 1
-      for patch in patches:
+      for patch in r.json():
             print '[%d] %s' % (i, patch['name'])
             i += 1
 
       print
 
       print 'retrieve patch id 1030'
-      filters = {}
-      filters['id'] = 1030
+      r = requests.get('%s/patches/%s/' % (server_url, 1030))
 
-      patches = rpc.patch_list(filters)
+      r.raise_for_status()
 
-      i = 1
-      for patch in patches:
-            print '[%d] %s' % (i, patch['name'])
-            i += 1
+      print '%s' % (patch['name'])
 
       print
 

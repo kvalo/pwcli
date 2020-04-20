@@ -1,0 +1,35 @@
+retrieve all patches under review
+[1] [9/15] bar: blah blah blah 9
+[2] [11/15] bar: blah blah blah 11
+[3] [12/15] bar: blah blah blah 12
+[4] [13/15] bar: blah blah blah 13
+[5] [14/15] bar: blah blah blah 14
+[6] [15/15] bar: blah blah blah 15
+[7] foo: another minor change with multiple To
+[8] foo: new patch
+[9] foo: minor change with CC
+[10] foo: small cleanup
+[11] [4/15] bar: blah blah blah 4
+[12] [3/15] bar: blah blah blah 3
+[13] [2/15] bar: blah blah blah 2
+[14] [1/15] bar: blah blah blah 1
+[15] [8/15] bar: blah blah blah 8
+[16] [7/15] bar: blah blah blah 7
+[17] [6/15] bar: blah blah blah 6
+[18] [5/15] bar: blah blah blah 5
+[19] [2/4] koo: yyy bbb cc 2
+[20] [1/4] koo: yyy bbb cc 1
+[21] [10/15] bar: blah blah blah 10
+[22] [3/4] koo: yyy bbb cc 3
+[23] [2/7] foo: test 2
+[24] [7/7] foo: test 7
+[25] [6/7] foo: test 6
+[26] [5/7] foo: test 5
+[27] [4/7] foo: test 4
+[28] [3/7] foo: test 3
+[29] [4/4] koo: yyy bbb cc 4
+[30] [1/7] foo: test 1
+
+retrieve patch id 1030
+[1/7] foo: test 1
+
