@@ -93,7 +93,7 @@ foo body
         git.am(mbox)
 
         gitrepo = stubslib.GitRepository.load(self.datadir)
-        self.assertEquals(gitrepo.get_commits()[0].mbox, mbox)
+        self.assertEqual(gitrepo.get_commits()[0].mbox, mbox)
 
     def test_am_dry_run(self):
         mbox = 'dummy mbox file'
@@ -101,7 +101,7 @@ foo body
         git.am(mbox)
 
         gitrepo = stubslib.GitRepository.load(self.datadir)
-        self.assertEquals(len(gitrepo.get_commits()), 0)
+        self.assertEqual(len(gitrepo.get_commits()), 0)
 
 class TestGitCommit(unittest.TestCase):
 

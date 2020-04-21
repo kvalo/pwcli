@@ -78,7 +78,7 @@ class TestPatch(unittest.TestCase):
 
         # make sure that our email is not in CC
         self.assertIn('Cc', reply)
-        self.assertEquals(reply['Cc'].count(from_email), 0)
+        self.assertEqual(reply['Cc'].count(from_email), 0)
 
         self.assertEqual(reply['Subject'], 'Re: [1/7] foo')
 
