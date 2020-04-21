@@ -1,0 +1,25 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: foo: utf-8 tèst
+From: Èd Examplè <ed@example.com>
+Message-Id: <22222@example.com>
+To: list@example.com
+Date: 2011-02-11 15:35:31
+X-Patchwork-Id: 1021
+X-Submitter-Id: 7477
+X-Project: Linux Wireless Mailing List
+X-Project-Id: 15
+X-Commit-Ref: 
+X-State: Deferred
+X-State-Id: 10
+X-Delegate: test
+X-Delegate-Id: 25621
+
+
+Foo commit log. Ignore this text
+
+Signed-off-by: Èd Examplè <ed@example.com>
+
+---
+FIXME: add the patch here

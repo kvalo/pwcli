@@ -6,8 +6,8 @@ Branch        : master
 New           : 18
 Review        : 7
 Upstream      : 0
-Deferred      : 5
-Total         : 30
+Deferred      : 6
+Total         : 31
 master@data > list review
 list review
  [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review

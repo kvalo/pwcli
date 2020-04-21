@@ -343,6 +343,24 @@
     },
     {
         "commit_ref": "",
+        "date": "2011-02-11T15:35:31",
+        "delegate": {
+            "username": "test"
+        },
+        "id": "1021",
+        "mbox": "http://localhost:8000/1001/mbox/1021",
+        "msgid": "<22222@example.com>",
+        "name": "foo: utf-8 t\u00e8st",
+        "project": "Linux Wireless Mailing List",
+        "state": "deferred",
+        "submitter": {
+            "email": "ed@example.com",
+            "name": "\u00c8d Exampl\u00e8"
+        },
+        "web_url": "http://localhost/fixme/12345"
+    },
+    {
+        "commit_ref": "",
         "date": "2011-02-11T15:23:31",
         "delegate": {
             "username": "test"
