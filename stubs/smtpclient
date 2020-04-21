@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015, The Linux Foundation.
 # All rights reserved.
@@ -50,7 +50,7 @@ def run(args):
         server.sendmail(from_address, to, msg.as_string())
         server.quit()
     except Exception as e:
-        print 'failed to connect to the SMTP server: %s' % e
+        print('failed to connect to the SMTP server: %s' % e)
         sys.exit(1)
 
 def main():

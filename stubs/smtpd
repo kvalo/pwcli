@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015, The Linux Foundation.
 # All rights reserved.
@@ -42,7 +42,7 @@ datadir = None
 
 class FakeSMTPServer(smtpd.SMTPServer):
       def process_message(self, peer, mailfrom, rcpttos, data):
-            print 'smtpd: %s -> %s' % (mailfrom, ', '.join(rcpttos))
+            print('smtpd: %s -> %s' % (mailfrom, ', '.join(rcpttos)))
 
             if os.path.isdir(datadir):
                   f = open(os.path.join(datadir, str(self.count)), 'w')
@@ -59,7 +59,7 @@ def run(args):
       if os.path.isdir(datadir):
             files = len(os.listdir(datadir))
             if files > 0:
-                  print '%s directory is not empty: %d' % (datadir, files)
+                  print('%s directory is not empty: %d' % (datadir, files))
                   sys.exit(1)
 
       server = FakeSMTPServer(('127.0.0.1', args.port), None)

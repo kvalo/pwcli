@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015, The Linux Foundation.
 # All rights reserved.
@@ -62,12 +62,12 @@ def main():
       smtpd.kill()
 
       # print all the files to make sure there are no extra mails
-      print 'files: %s' % os.listdir(smtpddir)
+      print('files: %s' % os.listdir(smtpddir))
 
       # cat smtpddir/0
       mail0 = os.path.join(smtpddir, '0')
       f = open(mail0, 'r')
-      print f.read()
+      print(f.read())
 
       # cleanup
       os.remove(mail0)

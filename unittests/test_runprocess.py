@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016, The Linux Foundation.
 # All rights reserved.
@@ -49,7 +49,7 @@ class TestRunProcess(unittest.TestCase):
         msg = 'This is a test'
         python_cmd = 'import sys; sys.stderr.write("%s")' % (msg)
 
-        p = pwcli.RunProcess(['python', '-c', python_cmd])
+        p = pwcli.RunProcess(['python3', '-c', python_cmd])
 
         self.assertEqual(p.returncode, 0)
         self.assertEqual(p.stdoutdata, '')
@@ -59,7 +59,7 @@ class TestRunProcess(unittest.TestCase):
         value = 177
         python_cmd = 'import sys; sys.exit(%d)' % (value)
 
-        p = pwcli.RunProcess(['python', '-c', python_cmd])
+        p = pwcli.RunProcess(['python3', '-c', python_cmd])
 
         self.assertEqual(p.returncode, value)
         self.assertEqual(p.stdoutdata, '')
