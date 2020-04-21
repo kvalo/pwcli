@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2015,2019-2020 The Linux Foundation.
 # All rights reserved.
@@ -43,6 +43,7 @@ import flask_restful.reqparse
 import json
 import logging
 import mock
+import collections
 
 datadir = None
 
@@ -98,7 +99,7 @@ class Patch():
 
             self.msg = email.message_from_string(buf)
 
-            for attr in self.hdr_map.keys():
+            for attr in list(self.hdr_map.keys()):
                   hdr = self.hdr_map[attr]
                   val = self.msg[hdr]
                   self.params[attr] = val
@@ -132,7 +133,7 @@ class Patch():
 
       def save(self):
             # update headers in self.msg
-            for attr in self.hdr_map.keys():
+            for attr in list(self.hdr_map.keys()):
                   hdr = self.hdr_map[attr]
                   val = self.params[attr]
                   self.msg.replace_header(hdr, str(val))
@@ -200,7 +201,7 @@ class Patches():
       def get_all_patches_as_params(self):
             result = []
 
-            for p in self.patches.values():
+            for p in list(self.patches.values()):
                   result.append(p.get_params())
 
             return result
@@ -210,10 +211,12 @@ class Patches():
 
       def __init__(self, dirname, pws):
             self.pws = pws
-            self.patches = {}
+
+            # use OrderedDict to get consistent output for test scripts
+            self.patches = collections.OrderedDict()
 
             if not os.path.isdir(dirname):
-                  print 'directory %s not found' % dirname
+                  print('directory %s not found' % dirname)
                   return
 
             for dirpath, dirnames, filenames in os.walk(dirname):
@@ -263,20 +266,20 @@ def run_test_load_patches(args):
       container = Patches(datadir, pws)
       patches = container.get_all_patches_as_params()
 
-      pprint.pprint(patches)
+      print(json.dumps(patches, indent=4, sort_keys=True))
 
 def run_test_set_state(args):
       container = Patches(datadir)
       patch = container.get_patch(1002)
 
       patch.set({'state_id': 3})
-      print patch
+      print(patch)
 
 def run_test_get_mbox(args):
       container = Patches(datadir)
       patch = container.get_patch(1001)
 
-      print patch.get_mbox()
+      print(patch.get_mbox())
 
 def run_test(args):
       test = args.test[0]
@@ -287,7 +290,7 @@ def run_test(args):
       elif test == 'get-mbox':
             run_test_get_mbox(args)
       else:
-            print 'unknown test: %s', test
+            print('unknown test: %s', test)
 
 def main():
       global datadir
@@ -308,8 +311,8 @@ def main():
       args = parser.parse_args()
 
       if args.version:
-            print 'stub-patchwork'
-            print 'STUB_PATCHWORK_DATADIR=%s' % datadir
+            print('stub-patchwork')
+            print('STUB_PATCHWORK_DATADIR=%s' % datadir)
             sys.exit(0)
 
       if args.test:
@@ -320,7 +323,7 @@ def main():
             stub = PatchworkStub(datadir, port=args.port)
             stub.run(args.debug)
       except Exception as e:
-            print 'Failed to start PatchworkStub REST server: %s' % e
+            print('Failed to start PatchworkStub REST server: %s' % e)
             sys.exit(1)
 
 if __name__ == "__main__":
