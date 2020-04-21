@@ -2318,7 +2318,10 @@ with # character. Example: #1000,#1005'''
             prog='',
             add_help=False)
 
-        subparsers = self.parser.add_subparsers()
+        # dest and required=True are a workaround for
+        # https://bugs.python.org/issue16308
+        subparsers = self.parser.add_subparsers(dest='cmd')
+        subparsers.required = True
 
         subparsers.add_parser('help').set_defaults(func=self.cmd_help,
                                                    help='show summary of available commands')

@@ -36,6 +36,12 @@ import pexpect
 
 def test_control_d(ctxt, pwcli):
    pwcli.expect_prompt()
+
+   # first just send a return
+   pwcli.sendline('')
+   pwcli.expect_prompt()
+
+   # then send CTRL-d
    pwcli.sendcontrol('d')
 
    # wait for EOF from pwcli
