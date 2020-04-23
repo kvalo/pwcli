@@ -377,10 +377,6 @@ class Stg():
     def import_patch(self, mbox):
         cmd = ['stg', 'import', '--mbox', '--sign']
 
-        if self.dry_run:
-            self.output('Dry-run: %s' % str(cmd))
-            return
-
         logger.debug('stg.import_patch(): %s' % (mbox))
 
         p = RunProcess(cmd, input=mbox)
@@ -421,8 +417,7 @@ class Stg():
         except Exception as e:
             raise GitError('Failed to parse patch %s: %s' % (patchname, e))
 
-    def __init__(self, dry_run, output):
-        self.dry_run = dry_run
+    def __init__(self, output):
         self.output = output
 
 
@@ -520,10 +515,6 @@ class Git():
     def cherry_pick(self, commit_id):
         cmd = ['git', 'cherry-pick', commit_id]
 
-        if self.dry_run:
-            self.output('Dry-run: %s' % str(cmd))
-            return
-
         p = RunProcess(cmd)
 
         if p.returncode != 0:
@@ -541,10 +532,6 @@ class Git():
 
     def am(self, mbox):
         cmd = ['git', 'am', '-s', '-3']
-
-        if self.dry_run:
-            self.output('Dry-run: %s' % str(cmd))
-            return
 
         p = RunProcess(cmd, input=mbox)
 
@@ -575,8 +562,7 @@ class Git():
 
             raise GitError('%s failed: %s' % (cmd, ret), log=log)
 
-    def __init__(self, dry_run, output):
-        self.dry_run = dry_run
+    def __init__(self, output):
         self.output = output
 
 
@@ -637,11 +623,6 @@ class Patch():
         return OLD_PATCH_STATE_MAP[self.get_state_name()]
 
     def set_state_name(self, state_name):
-        if self.dry_run:
-            logger.debug('dry-run: %s().set_state_name(%s)' %
-                         (self, state_name))
-            return
-
         self.pw.update_patch(self.get_id(), state=state_name)
 
         self._state = state_name
@@ -652,11 +633,6 @@ class Patch():
         return self._commit_ref
 
     def set_commit_ref(self, commit_ref):
-        if self.dry_run:
-            logger.debug('dry-run: %s().set_commit_ref(%s)' %
-                         (self, commit_ref))
-            return
-
         self.pw.update_patch(self.get_id(), commit_ref=commit_ref)
 
         self._commit_ref = commit_ref
@@ -706,10 +682,6 @@ class Patch():
         return mbox
 
     def set_mbox(self, mbox):
-        if self.dry_run:
-            logger.debug('dry-run: %s().set_mbox(%s)' % (self, mbox))
-            return
-
         logger.debug('%s: set_mbox(): %s' % (self, repr(mbox)))
         self.mbox = mbox
 
@@ -895,9 +867,8 @@ class Patch():
     def __str__(self):
         return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
 
-    def __init__(self, pw, dry_run):
+    def __init__(self, pw):
         self.pw = pw
-        self.dry_run = dry_run
 
         self.mbox = None
 
@@ -918,7 +889,7 @@ class Project():
         logger.debug('patches:\n%s' % pretty(patches))
 
         for p in patches:
-            patch = Patch(self.pw, self.dry_run)
+            patch = Patch(self.pw)
             patch.parse_json(p)
 
             results.append(patch)
@@ -951,7 +922,7 @@ class Project():
 
         json = self.pw.get_patch(patchwork_id)
 
-        patch = Patch(self.pw, self.dry_run)
+        patch = Patch(self.pw)
         patch.parse_json(json)
 
         # add patch to cache
@@ -997,10 +968,9 @@ class Project():
     def __str__(self):
         return 'Project(name=%s)' % (self.name)
 
-    def __init__(self, name, pw, dry_run):
+    def __init__(self, name, pw):
         self.name = name
         self.pw = pw
-        self.dry_run = dry_run
         self.cache = {}
 
         logger.debug(self)
@@ -1285,10 +1255,6 @@ class PWCLI():
                                                         envelope_to,
                                                         msg.as_string()))
 
-        if self.dry_run:
-            self.output('Dry-run: %s -> %s' % (envelope_from, envelope_to))
-            return
-
         done = False
 
         while not done:
@@ -1465,10 +1431,6 @@ class PWCLI():
 
         if not cmd:
             # build command is not specified, skip the build
-            return
-
-        if self.dry_run:
-            self.output('Dry-run: %s' % str(cmd))
             return
 
         empty_line = '                                                                 '
@@ -2425,9 +2387,6 @@ with # character. Example: #1000,#1005'''
                 branch = self.git.get_branch()
             prompt += '%s@%s ' % (branch, self.tree)
 
-            if self.dry_run:
-                prompt += '(dry-run)'
-
             prompt += '> '
 
             try:
@@ -2509,9 +2468,6 @@ with # character. Example: #1000,#1005'''
         parser.add_argument('-d', '--debug', action='store_true',
                             help='enable debug messages')
 
-        parser.add_argument('--dry-run', action='store_true',
-                            help='Don\'t modify anything')
-
         parser.add_argument('--no-browser', action='store_true',
                             help='do not open any patchwork pages on browser')
 
@@ -2524,8 +2480,6 @@ with # character. Example: #1000,#1005'''
             logger.setLevel(logging.DEBUG)
 
         logger.debug('pwcli args %s)' % repr(args))
-
-        self.dry_run = args.dry_run
 
         self.config = configparser.RawConfigParser()
 
@@ -2617,8 +2571,8 @@ with # character. Example: #1000,#1005'''
         else:
             self.signature = None
 
-        self.git = Git(self.dry_run, self.output)
-        self.stg = Stg(self.dry_run, self.output)
+        self.git = Git(self.output)
+        self.stg = Stg(self.output)
         self.stg_cache = {}
 
         # read settings from git
@@ -2659,7 +2613,7 @@ with # character. Example: #1000,#1005'''
 
         self.projects = []
         for project_name in self.project_names:
-            project = Project(project_name, self.pw, self.dry_run)
+            project = Project(project_name, self.pw)
             project.update_cache()
             self.projects.append(project)
 

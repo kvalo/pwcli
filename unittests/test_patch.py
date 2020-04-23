@@ -58,7 +58,7 @@ class TestPatch(unittest.TestCase):
     @mock.patch('pwcli.PWCLI')
     def test_attributes(self, pw):
         attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(pw, False)
+        patch = pwcli.Patch(pw)
         patch.parse_json(attributes)
 
         self.assertEqual(patch.get_name(), attributes['name'])
@@ -71,7 +71,7 @@ class TestPatch(unittest.TestCase):
         self.assertEqual(patch.get_state_name(), 'accepted')
 
     def test_reply_msg(self):
-        patch = pwcli.Patch(None, False)
+        patch = pwcli.Patch(None)
         patch.parse_json(FAKE_ATTRIBUTES)
 
         patch.get_email = mock.Mock(return_value=email.message_from_string(TEST_MBOX))
@@ -92,7 +92,7 @@ class TestPatch(unittest.TestCase):
 
     def test_get_mbox_for_stgit(self):
         attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(None, False)
+        patch = pwcli.Patch(None)
         patch.parse_json(attributes)
 
         patch.get_mbox = mock.Mock(return_value=TEST_MBOX)
@@ -116,7 +116,7 @@ class TestPatch(unittest.TestCase):
         self.assertTrue(search != None)
 
     def test_clean_subject(self):
-        patch = pwcli.Patch(None, False)
+        patch = pwcli.Patch(None)
 
         c = patch.clean_subject
 
@@ -132,7 +132,7 @@ class TestPatch(unittest.TestCase):
                          'bar: use [] in array[]')
 
     def test_get_patch_index(self):
-        patch = pwcli.Patch(None, False)
+        patch = pwcli.Patch(None)
 
         # mock get_name() method for easier testing
         m = mock.Mock()
@@ -151,7 +151,7 @@ class TestPatch(unittest.TestCase):
         self.assertEqual(patch.get_patch_index(), 200)
 
     def test_get_tags(self):
-        patch = pwcli.Patch(None, False)
+        patch = pwcli.Patch(None)
 
         # mock get_name() method for easier testing
         m = mock.Mock()

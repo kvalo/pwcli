@@ -36,7 +36,6 @@ import subprocess
 import tempfile
 import os
 import shutil
-import logging
 import hashlib
 import stubslib
 
@@ -73,7 +72,7 @@ class TestGit(unittest.TestCase):
 
         gitrepo.change_branch('foo')
 
-        git = Git(False, self.dummy_output)
+        git = Git(self.dummy_output)
         branch = git.get_branch()
 
         self.assertEqual(branch, 'foo')
@@ -89,19 +88,11 @@ foo body
         # TODO: is sha1sum useless?
         sha1sum = hashlib.sha1(mbox.encode('utf-8')).hexdigest()
 
-        git = Git(False, self.dummy_output)
+        git = Git(self.dummy_output)
         git.am(mbox)
 
         gitrepo = stubslib.GitRepository.load(self.datadir)
         self.assertEqual(gitrepo.get_commits()[0].mbox, mbox)
-
-    def test_am_dry_run(self):
-        mbox = 'dummy mbox file'
-        git = Git(True, self.dummy_output)
-        git.am(mbox)
-
-        gitrepo = stubslib.GitRepository.load(self.datadir)
-        self.assertEqual(len(gitrepo.get_commits()), 0)
 
 class TestGitCommit(unittest.TestCase):
 
