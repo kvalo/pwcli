@@ -2271,8 +2271,7 @@ class PWCLI():
     def cmd_stg_list(self, args):
         i = 0
         for patch in self.get_pending_branch_patches():
-            # FIXME: shouldn't this use self.output() instead of print()?
-            print('[%2d] %s' % (i, patch.stg_name))
+            self.output('[%2d] %s' % (i, patch.stg_name))
             i += 1
 
     def cmd_stg(self, args):
