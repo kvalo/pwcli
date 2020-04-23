@@ -877,34 +877,16 @@ class Patch():
         self.stg_index = None
 
 
-class Project():
+class PatchworkCache():
 
-    def _get_patches(self, delegate=None, states=None):
-        results = []
-
-        logger.debug('%s()._get_patches(delegate=%s, states=%s)' % (self,
-                                                                    delegate,
-                                                                    repr(states)))
-        patches = self.pw.get_patches(self.name, delegate=delegate, states=states)
-        logger.debug('patches:\n%s' % pretty(patches))
-
-        for p in patches:
-            patch = Patch(self.pw)
-            patch.parse_json(p)
-
-            results.append(patch)
-            logger.debug('added patch %s' % patch)
-
-        return results
-
-    def get_patches(self, state=PATCH_STATE_UNDER_REVIEW, username=None):
+    def get_patches(self, states=[PATCH_STATE_UNDER_REVIEW], username=None):
         patches = []
 
-        logger.debug('%s().get_patches(state=%s, username=%s)' % (self,
-                                                                  state,
-                                                                  username))
+        logger.debug('%s().get_patches(states=%s, username=%s)' % (self,
+                                                                   states,
+                                                                   username))
         for patch in list(self.cache.values()):
-            if state is not None and patch.get_state_name() != state:
+            if states is not None and patch.get_state_name() not in states:
                 continue
 
             if username is not None and patch.get_delegate() != username:
@@ -916,26 +898,22 @@ class Project():
 
         return patches
 
+    # returns None if a patch is not found
     def get_patch(self, patchwork_id):
-        if patchwork_id in self.cache:
-            return self.cache[patchwork_id]
+        if patchwork_id not in self.cache:
+            return None
 
-        json = self.pw.get_patch(patchwork_id)
+        return self.cache[patchwork_id]
 
-        patch = Patch(self.pw)
-        patch.parse_json(json)
-
-        # add patch to cache
-        self.cache[patchwork_id] = patch
-
-        return patch
+    def add_patch(self, patch):
+        self.cache[patch.get_id()] = patch
 
     def update_cache(self):
         states = [PATCH_STATE_NEW,
                   PATCH_STATE_UNDER_REVIEW,
                   PATCH_STATE_AWAITING_UPSTREAM,
                   PATCH_STATE_DEFERRED]
-        patches = self._get_patches(delegate=self.pw._username, states=states)
+        patches = self.pw._get_patches(states=states, delegate=self.pw._username)
 
         # make a copy of the old cache
         old_cache = dict(self.cache)
@@ -945,7 +923,7 @@ class Project():
 
             if pid not in self.cache:
                 # patch is not in cache, add it
-                self.cache[pid] = new_patch
+                self.add_patch(new_patch)
                 continue
 
             # patch already exists in the cache
@@ -966,22 +944,26 @@ class Project():
             del self.cache[old_patch.get_id()]
 
     def __str__(self):
-        return 'Project(name=%s)' % (self.name)
+        return 'PatchworkCache(%d patches)' % (len(self.cache))
 
-    def __init__(self, name, pw):
-        self.name = name
+    def __init__(self, pw):
         self.pw = pw
-        self.cache = {}
+
+        # we want to store ordering as we rely on the ordering from
+        # the server
+        self.cache = collections.OrderedDict()
 
         logger.debug(self)
 
 
 class Patchwork():
 
-    def get_patches(self, project, delegate=None, states=None):
-        result = []
+    def _get_patches(self, states=None, delegate=None):
+        logger.debug('%s()._get_patches(states=%r, delegate=%s)' % (self,
+                                                                    states,
+                                                                    delegate))
 
-        params = {'project': project,
+        params = {'project': self._project,
                   'per_page': 100}
 
         if delegate is not None:
@@ -993,10 +975,12 @@ class Patchwork():
         url = self._server_url + '/patches/'
         response = requests.get(url, headers=self._auth_headers, params=params)
 
+        json = []
+
         while True:
             response.raise_for_status()
 
-            result += response.json()
+            json += response.json()
 
             if 'next' not in response.links:
                 # no more pages to fetch
@@ -1005,15 +989,52 @@ class Patchwork():
             response = requests.get(response.links['next']['url'],
                                     headers=self._auth_headers)
 
-        return result
+        patches = []
 
-    def get_patch(self, patch_id):
+        for p in json:
+            patch = Patch(self)
+            patch.parse_json(p)
+
+            patches.append(patch)
+
+        logger.debug('patches:\n%s' % pretty(patches))
+
+        return patches
+
+    def get_patches(self, states=None, delegate=None):
+        logger.debug('%s().get_patches(states=%r, delegate=%s)' % (self,
+                                                                   states,
+                                                                   delegate))
+
+        patches = self.cache.get_patches(states, delegate)
+        if len(patches) > 0:
+            return patches
+
+        return self._get_patches(states, delegate)
+
+    def _get_patch(self, patch_id):
+        logger.debug('%s()._get_patch(patch_id=%s)' % (self, patch_id))
+
         url = self._server_url + '/patches/%s/' % (patch_id)
         response = requests.get(url, headers=self._auth_headers)
 
         response.raise_for_status()
 
-        return response.json()
+        patch = Patch(self)
+        patch.parse_json(response.json())
+
+        self.cache.add_patch(patch)
+
+        return patch
+
+    def get_patch(self, patch_id):
+        logger.debug('%s().get_patch(patch_id=%s)' % (self, patch_id))
+
+        patch = self.cache.get_patch(patch_id)
+        if patch is not None:
+            return patch
+
+        return self._get_patch(patch_id)
 
     def update_patch(self, patch_id, state=None, commit_ref=None):
         url = self._server_url + '/patches/%s/' % (patch_id)
@@ -1040,13 +1061,16 @@ class Patchwork():
 
         return r.text
 
-    def __init__(self, url, username, password):
+    def __init__(self, url, project, username, password):
         if url[-1] != '/':
             url.append('/')
 
         self._server_url = url + PATCHWORK_API_DIRECTORY
+        self._project = project
         self._username = username
         self._auth_headers = {'Authorization': 'Token %s' % (password)}
+
+        self.cache = PatchworkCache(self)
 
 
 class PWCLI():
@@ -1077,7 +1101,7 @@ class PWCLI():
             except:
                 raise Exception('Invalid patchwork server patch id: %s' % (arg_id))
 
-            patch = self.project.get_patch(patchwork_id)
+            patch = self.pw.get_patch(patchwork_id)
             if patch is None:
                 raise Exception('Patchwork id %s not found' % (patchwork_id))
 
@@ -1410,14 +1434,11 @@ class PWCLI():
         if self.pending_mode == 'stgit':
             review = len(self.get_pending_branch_patches(state_filter=[PATCH_STATE_UNDER_REVIEW]))
         else:
-            review = len(self.project.get_patches(
-                PATCH_STATE_UNDER_REVIEW, username))
+            review = len(self.pw.get_patches([PATCH_STATE_UNDER_REVIEW], username))
 
-        new = len(self.project.get_patches(PATCH_STATE_NEW, username))
-        upstream = len(self.project.get_patches(
-            PATCH_STATE_AWAITING_UPSTREAM, username))
-        deferred = len(
-            self.project.get_patches(PATCH_STATE_DEFERRED, username))
+        new = len(self.pw.get_patches([PATCH_STATE_NEW], username))
+        upstream = len(self.pw.get_patches([PATCH_STATE_AWAITING_UPSTREAM], username))
+        deferred = len(self.pw.get_patches([PATCH_STATE_DEFERRED], username))
         total = new + review + upstream + deferred
 
         self.print_header('New', new)
@@ -1481,7 +1502,7 @@ class PWCLI():
                             (stg_commit_name, patchwork_id))
                 continue
 
-            patch = self.project.get_patch(patchwork_id)
+            patch = self.pw.get_patch(patchwork_id)
 
             if not patch:
                 self.output('Patch id %s not found' % (patchwork_id))
@@ -1561,8 +1582,7 @@ class PWCLI():
             username = None
 
         patches = []
-        for state in states:
-            patches += self.project.get_patches(state, username)
+        patches += self.pw.get_patches(states, username)
 
         if self.pending_mode == 'stgit':
             # patches in pending branch can be applied, tests or
@@ -2367,6 +2387,17 @@ with # character. Example: #1000,#1005'''
                 logger.error('%s failed: %s' % (args.func, traceback.format_exc().strip()))
                 self.output('command failed: %s' % (e))
 
+                # Uncomment this to get proper stack traces when a
+                # command fails
+                #
+                # TODO: this should be enabled automatically in
+                # pautomatic tests, but first we need
+                # PatchworkException() or something like that to
+                # differentiate between normal errors and unexpected
+                # errors
+                #
+                # traceback.print_exc()
+
     def print_header(self, name, value):
         fmt = "%- 14s: %s"
         self.output(fmt % (name, value))
@@ -2561,10 +2592,9 @@ with # character. Example: #1000,#1005'''
 
         self.output('Connecting to %s' % self.url)
 
-        self.pw = Patchwork(self.url, self.username, self.password)
-
-        self.project = Project(self.project_name, self.pw)
-        self.project.update_cache()
+        self.pw = Patchwork(self.url, self.project_name, self.username,
+                            self.password)
+        self.pw.cache.update_cache()
 
         self.tree = os.path.basename(os.getcwd())
 
