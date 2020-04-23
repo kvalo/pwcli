@@ -1,35 +1,36 @@
 retrieve all patches under review
-[1] [9/15] bar: blah blah blah 9
-[2] [11/15] bar: blah blah blah 11
-[3] [12/15] bar: blah blah blah 12
-[4] [13/15] bar: blah blah blah 13
-[5] [14/15] bar: blah blah blah 14
-[6] [15/15] bar: blah blah blah 15
-[7] foo: another minor change with multiple To
-[8] foo: new patch
-[9] foo: minor change with CC
-[10] foo: small cleanup
-[11] [4/15] bar: blah blah blah 4
-[12] [3/15] bar: blah blah blah 3
-[13] [2/15] bar: blah blah blah 2
-[14] [1/15] bar: blah blah blah 1
-[15] [8/15] bar: blah blah blah 8
+[1] [6/7] foo: test 6
+[2] [1/7] foo: test 1
+[3] [2/15] bar: blah blah blah 2
+[4] [1/15] bar: blah blah blah 1
+[5] [7/7] foo: test 7
+[6] [4/7] foo: test 4
+[7] [3/4] koo: yyy bbb cc 3
+[8] [12/15] bar: blah blah blah 12
+[9] [5/7] foo: test 5
+[10] [9/15] bar: blah blah blah 9
+[11] [2/7] foo: test 2
+[12] [3/7] foo: test 3
+[13] [5/15] bar: blah blah blah 5
+[14] [15/15] bar: blah blah blah 15
+[15] [4/15] bar: blah blah blah 4
 [16] [7/15] bar: blah blah blah 7
-[17] [6/15] bar: blah blah blah 6
-[18] [5/15] bar: blah blah blah 5
-[19] [2/4] koo: yyy bbb cc 2
-[20] [1/4] koo: yyy bbb cc 1
-[21] [10/15] bar: blah blah blah 10
-[22] [3/4] koo: yyy bbb cc 3
-[23] [2/7] foo: test 2
-[24] [7/7] foo: test 7
-[25] [6/7] foo: test 6
-[26] [5/7] foo: test 5
-[27] [4/7] foo: test 4
-[28] [3/7] foo: test 3
-[29] [4/4] koo: yyy bbb cc 4
-[30] [1/7] foo: test 1
+[17] [10/15] bar: blah blah blah 10
+[18] [3/15] bar: blah blah blah 3
+[19] [1/4] koo: yyy bbb cc 1
+[20] foo: utf-8 tèst
+[21] [4/4] koo: yyy bbb cc 4
+[22] [6/15] bar: blah blah blah 6
+[23] [14/15] bar: blah blah blah 14
+[24] [2/4] koo: yyy bbb cc 2
+[25] foo: another minor change with multiple To
+[26] foo: minor change with CC
+[27] [8/15] bar: blah blah blah 8
+[28] foo: new patch
+[29] [13/15] bar: blah blah blah 13
+[30] foo: small cleanup
+[31] [11/15] bar: blah blah blah 11
 
 retrieve patch id 1030
-[1/7] foo: test 1
+[11/15] bar: blah blah blah 11
 
