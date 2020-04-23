@@ -1,6 +1,6 @@
 Connecting to http://localhost:8105/
 User          : test
-Projects      : stub-test
+Project       : stub-test
 Tree          : data
 Main branches : master
 Pending branch: pending

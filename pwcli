@@ -1392,7 +1392,7 @@ class PWCLI():
 
     def show_info(self):
         self.print_header('User', '%s' % (self.username))
-        self.print_header('Projects', self.project_name)
+        self.print_header('Project', self.project_name)
         self.print_header('Tree', self.tree)
 
         if self.pending_mode == 'stgit':

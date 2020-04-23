@@ -1,6 +1,6 @@
 Connecting to http://localhost:8105/
 User          : test
-Projects      : stub-test
+Project       : stub-test
 Tree          : data
 Branch        : master
 New           : 18
@@ -63,7 +63,7 @@ s
 master@data > info
 info
 User          : test
-Projects      : stub-test
+Project       : stub-test
 Tree          : data
 Branch        : master
 New           : 18

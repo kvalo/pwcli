@@ -1,7 +1,7 @@
 * make sure that the list is also CCed
 Connecting to http://localhost:8105/
 User          : test
-Projects      : stub-test
+Project       : stub-test
 Tree          : data
 Branch        : master
 New           : 18

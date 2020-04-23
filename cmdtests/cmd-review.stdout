@@ -1,6 +1,6 @@
 Connecting to http://localhost:8105/
 User          : test
-Projects      : stub-test
+Project       : stub-test
 Tree          : data
 Branch        : master
 New           : 18
@@ -48,7 +48,7 @@ Patch set to Under Review
 master@data > info
 info
 User          : test
-Projects      : stub-test
+Project       : stub-test
 Tree          : data
 Branch        : master
 New           : 17
