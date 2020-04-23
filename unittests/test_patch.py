@@ -39,10 +39,17 @@ import re
 import pwcli
 
 FAKE_ATTRIBUTES = {
-    'name' : 'nnnn',
-    'id' : '11',
-    'delegate' : {'username': 'dddd'},
-    'state' : 'ssss'
+    'id': '11',
+    'web_url': 'http://www.example.com/',
+    'msgid': '12345678',
+    'date': '2020-04-23T15:06:27',
+    'name': 'nnnn',
+    'commit_ref': '12345678',
+    'state' : 'ssss',
+    'submitter': {'name': 'Ed Example',
+                   'email': 'ed@example.com'},
+    'delegate': {'username': 'dddd'},
+    'mbox': 'http://www.example.com',
 }
 
 TEST_MBOX = 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [1/7] foo\nFrom: Dino Dinosaurus <dino@example.com>\nX-Patchwork-Id: 12345\nMessage-Id: <11111@example.com>\nTo: list@example.com\nDate: Thu,  10 Feb 2011 15:23:31 +0300\n\nFoo commit log. Ignore this text\n\nSigned-off-by: Dino Dinosaurus <dino@example.com>\n\n---\nFIXME: add the patch here\n'
@@ -51,7 +58,8 @@ class TestPatch(unittest.TestCase):
     @mock.patch('pwcli.PWCLI')
     def test_attributes(self, pw):
         attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(pw, attributes, False)
+        patch = pwcli.Patch(pw, False)
+        patch.parse_json(attributes)
 
         self.assertEqual(patch.get_name(), attributes['name'])
         self.assertEqual(patch.get_id(), attributes['id'])
@@ -63,8 +71,8 @@ class TestPatch(unittest.TestCase):
         self.assertEqual(patch.get_state_name(), 'accepted')
 
     def test_reply_msg(self):
-        attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(None, attributes, False)
+        patch = pwcli.Patch(None, False)
+        patch.parse_json(FAKE_ATTRIBUTES)
 
         patch.get_email = mock.Mock(return_value=email.message_from_string(TEST_MBOX))
         patch.get_url = mock.Mock(return_value='http://localhost:8000/1001/')
@@ -84,7 +92,8 @@ class TestPatch(unittest.TestCase):
 
     def test_get_mbox_for_stgit(self):
         attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(None, attributes, False)
+        patch = pwcli.Patch(None, False)
+        patch.parse_json(attributes)
 
         patch.get_mbox = mock.Mock(return_value=TEST_MBOX)
 
@@ -107,8 +116,7 @@ class TestPatch(unittest.TestCase):
         self.assertTrue(search != None)
 
     def test_clean_subject(self):
-        attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(None, attributes, False)
+        patch = pwcli.Patch(None, False)
 
         c = patch.clean_subject
 
@@ -124,8 +132,7 @@ class TestPatch(unittest.TestCase):
                          'bar: use [] in array[]')
 
     def test_get_patch_index(self):
-        attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(None, attributes, False)
+        patch = pwcli.Patch(None, False)
 
         # mock get_name() method for easier testing
         m = mock.Mock()
@@ -144,8 +151,7 @@ class TestPatch(unittest.TestCase):
         self.assertEqual(patch.get_patch_index(), 200)
 
     def test_get_tags(self):
-        attributes = FAKE_ATTRIBUTES
-        patch = pwcli.Patch(None, attributes, False)
+        patch = pwcli.Patch(None, False)
 
         # mock get_name() method for easier testing
         m = mock.Mock()

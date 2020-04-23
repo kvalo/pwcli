@@ -584,7 +584,7 @@ class Git():
 class Patch():
 
     def get_name_original(self):
-        return self.attributes['name']
+        return self._name
 
     def get_name(self):
         if self.pending_commit is not None:
@@ -607,35 +607,34 @@ class Patch():
         return match.group(1)
 
     def get_id(self):
-        return self.attributes['id']
+        return self._id
 
     def get_delegate(self):
-        return self.attributes['delegate']['username']
+        return self._delegate_username
 
     def get_submitter(self):
-        return '%s <%s>' % (self.attributes['submitter']['name'],
-                            self.attributes['submitter']['email'])
+        return '%s <%s>' % (self._submitter_name, self._submitter_email)
 
     def get_submitter_name(self):
-        return self.attributes['submitter']['name']
+        return self._submitter_name
 
     def get_date(self):
-        return self.attributes['date']
+        return self._date
 
     def get_date_pretty(self):
         # patchwork uses T to separate date and time, convert that to space
-        return self.attributes['date'].replace('T', ' ')
+        return self.get_date().replace('T', ' ')
 
     def get_datetime(self):
         return datetime.datetime.strptime(self.get_date(), '%Y-%m-%dT%H:%M:%S')
 
     def get_state_name(self):
-        return self.attributes['state']
+        return self._state
 
     # returns legacy state names, for avoiding major changes in
     # automatic test output
     def get_state_name_old(self):
-        return OLD_PATCH_STATE_MAP[self.attributes['state']]
+        return OLD_PATCH_STATE_MAP[self.get_state_name()]
 
     def set_state_name(self, state_name):
         if self.dry_run:
@@ -645,12 +644,12 @@ class Patch():
 
         self.pw.update_patch(self.get_id(), state=state_name)
 
-        self.attributes['state'] = state_name
+        self._state = state_name
 
         logger.debug('%s state changed to %s' % (self.get_id(), state_name))
 
     def get_commit_ref(self):
-        return self.attributes['commit_ref']
+        return self._commit_ref
 
     def set_commit_ref(self, commit_ref):
         if self.dry_run:
@@ -660,26 +659,23 @@ class Patch():
 
         self.pw.update_patch(self.get_id(), commit_ref=commit_ref)
 
-        self.attributes['commit_ref'] = commit_ref
+        self._commit_ref = commit_ref
 
         logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
 
     def get_url(self):
-        return self.attributes['web_url']
+        return self._web_url
 
     def get_message_id(self):
         # remove '<' and '>' chars, we don't want to use them
-        return self.attributes['msgid'][1:-1]
+        return self._msgid[1:-1]
 
     def get_mbox(self):
         if self.mbox is None:
             logger.debug('patch_get_mbox(%s)' % self.get_id())
-            # KVALO: TODO
-            self.mbox = self.pw.get_mbox(self.attributes['mbox'])
-            logger.debug(repr(self.mbox))
 
-            # TODO: add 'assert is_unicode(self.mbox)' after test
-            # framework is fixed
+            self.mbox = self.pw.get_mbox(self._mbox_url)
+            logger.debug(repr(self.mbox))
 
         # Note: the returned type is unicode
         return self.mbox
@@ -719,7 +715,7 @@ class Patch():
 
         # need to also update the name from mbox
         msg = self.get_email()
-        self.attributes['name'] = msg['Subject']
+        self._name = msg['Subject']
 
     def get_diffstat(self):
         p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
@@ -882,12 +878,25 @@ class Patch():
 
         return False
 
+    # https://patchwork.readthedocs.io/en/latest/api/rest/schemas/v1.1/#get--api-1.1-patches-
+    def parse_json(self, data):
+        self._id = data['id']
+        self._web_url = data['web_url']
+        self._msgid = data['msgid']
+        self._date = data['date']
+        self._name = data['name']
+        self._commit_ref = data['commit_ref']
+        self._state = data['state']
+        self._submitter_name = data['submitter']['name']
+        self._submitter_email = data['submitter']['email']
+        self._delegate_username = data['delegate']['username']
+        self._mbox_url = data['mbox']
+
     def __str__(self):
         return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
 
-    def __init__(self, pw, attributes, dry_run):
+    def __init__(self, pw, dry_run):
         self.pw = pw
-        self.attributes = attributes
         self.dry_run = dry_run
 
         self.mbox = None
@@ -909,7 +918,8 @@ class Project():
         logger.debug('patches:\n%s' % pretty(patches))
 
         for p in patches:
-            patch = Patch(self.pw, p, self.dry_run)
+            patch = Patch(self.pw, self.dry_run)
+            patch.parse_json(p)
 
             results.append(patch)
             logger.debug('added patch %s' % patch)
@@ -941,7 +951,8 @@ class Project():
 
         json = self.pw.get_patch(patchwork_id)
 
-        patch = Patch(self.pw, json, self.dry_run)
+        patch = Patch(self.pw, self.dry_run)
+        patch.parse_json(json)
 
         # add patch to cache
         self.cache[patchwork_id] = patch
