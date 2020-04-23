@@ -1392,7 +1392,7 @@ class PWCLI():
 
     def show_info(self):
         self.print_header('User', '%s' % (self.username))
-        self.print_header('Projects', ' '.join(self.project_names))
+        self.print_header('Projects', self.project_name)
         self.print_header('Tree', self.tree)
 
         if self.pending_mode == 'stgit':
@@ -1481,11 +1481,7 @@ class PWCLI():
                             (stg_commit_name, patchwork_id))
                 continue
 
-            # the patch can be in any of the projects configured
-            for project in self.projects:
-                patch = project.get_patch(patchwork_id)
-                if patch:
-                    break
+            patch = self.project.get_patch(patchwork_id)
 
             if not patch:
                 self.output('Patch id %s not found' % (patchwork_id))
@@ -2168,41 +2164,6 @@ class PWCLI():
 
         self.run_build_script()
 
-    def cmd_project(self, args):
-        logger.debug('cmd_project(args=%r)' % repr(args))
-
-        if args.index is None:
-            self.output('Projects:')
-            i = 1
-            for project in self.projects:
-                if self.project == project:
-                    selected = '*'
-                else:
-                    selected = ' '
-
-                self.output('%s %d: %s' % (selected, i, project.name))
-
-                i += 1
-
-            return
-
-        try:
-            index = int(args.index)
-        except ValueError as e:
-            self.output('Failed to convert index to integer: %s' % e)
-            return
-
-        # the index starts from 1
-        index -= 1
-
-        if index < 0 or index > len(self.projects) - 1:
-            self.output('index out of bounds: %d' % (index + 1))
-            return
-
-        self.project = self.projects[index]
-
-        self.output('Switched to project: %s' % (self.project.name))
-
     def cmd_branch(self, args):
         logger.debug('cmd_branch(args=%r)' % repr(args))
 
@@ -2343,13 +2304,6 @@ with # character. Example: #1000,#1005'''
         parser_reply.add_argument('id', metavar='ID', nargs=1,
                                   help='patch index from list command')
         parser_reply.set_defaults(func=self.cmd_reply)
-
-        parser_project = subparsers.add_parser('project',
-                                               help='switch between patchwork projects',
-                                               description='Switch between patchwork projects, if no index is specified list of projects is shown with indexes.')
-        parser_project.add_argument('index', metavar='INDEX', nargs='?',
-                                    help='patchwork project index')
-        parser_project.set_defaults(func=self.cmd_project)
 
         parser_project = subparsers.add_parser('branch',
                                                help='switch between git branches',
@@ -2506,9 +2460,7 @@ with # character. Example: #1000,#1005'''
         else:
             self.build_command = None
 
-        self.project_names = self.config.get('general', 'project')
-
-        self.project_names = self.project_names.split()
+        self.project_name = self.config.get('general', 'project')
 
         # FIXME: ConfigParser supports providing defaults as a dict, use
         # those instead. Also maybe it's better to use self.config
@@ -2593,7 +2545,7 @@ with # character. Example: #1000,#1005'''
         logger.debug('email=%s' % self.email)
         logger.debug('url=%s' % self.url)
         logger.debug('username=%s' % self.username)
-        logger.debug('project_name=%s' % self.project_names)
+        logger.debug('project=%s' % self.project_name)
         logger.debug('editor=%s' % self.editor)
         logger.debug('smtp_host=%s' % self.smtp_host)
         logger.debug('smtp_port=%s' % self.smtp_port)
@@ -2611,14 +2563,8 @@ with # character. Example: #1000,#1005'''
 
         self.pw = Patchwork(self.url, self.username, self.password)
 
-        self.projects = []
-        for project_name in self.project_names:
-            project = Project(project_name, self.pw)
-            project.update_cache()
-            self.projects.append(project)
-
-        # select the first project as initial project
-        self.project = self.projects[0]
+        self.project = Project(self.project_name, self.pw)
+        self.project.update_cache()
 
         self.tree = os.path.basename(os.getcwd())
 
