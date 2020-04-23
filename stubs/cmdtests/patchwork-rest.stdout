@@ -34,3 +34,6 @@ retrieve all patches under review
 retrieve patch id 1030
 [11/15] bar: blah blah blah 11
 
+retrieve patch id 777777 which should not exist
+Response code: 404
+

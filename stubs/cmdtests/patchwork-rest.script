@@ -80,6 +80,16 @@ def main():
 
       print()
 
+      print('retrieve patch id 777777 which should not exist')
+      r = requests.get('%s/patches/%s/' % (server_url, 777777))
+
+      print('Response code: %d' % (r.status_code))
+
+      if r.status_code != 404:
+            print('Status code is wrong!')
+
+      print()
+
       pw_stub.stop()
       pw_stub.cleanup()
 

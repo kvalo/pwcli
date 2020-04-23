@@ -168,8 +168,12 @@ class PatchesResource(flask_restful.Resource):
       def get(self, id=None):
             if id is not None:
                   # Just one patch requested
-                  return flask.Response(json.dumps(self.patches.get_patch(id).get_params()),
-                                  mimetype='application/json')
+                  try:
+                        return flask.Response(json.dumps(self.patches.get_patch(id).get_params()),
+                                              mimetype='application/json')
+                  except (KeyError):
+                        return 'Patch not found', 404
+
 
             # Return all patches. Need to return using Response
             # class to avoid escaping hyphens (\") in the json response
@@ -185,7 +189,11 @@ class PatchesResource(flask_restful.Resource):
             parser.add_argument('commit_ref', location='json')
             args = parser.parse_args()
 
-            patch = self.patches.get_patch(id)
+            try:
+                  patch = self.patches.get_patch(id)
+            except (KeyError):
+                  return 'Not found', 404
+
             patch.set(args)
 
             return flask.Response(json.dumps(patch.get_params()),

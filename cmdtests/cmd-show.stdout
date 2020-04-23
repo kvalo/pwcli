@@ -104,10 +104,10 @@ show #1030,#1031,#1032
       foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
 master@data > show #777777
 show #777777
-command failed: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:8105/api/1.1/patches/777777/
+command failed: 404 Client Error: NOT FOUND for url: http://localhost:8105/api/1.1/patches/777777/
 master@data > show #1030,#1031,#1032,#777777
 show #1030,#1031,#1032,#777777
-command failed: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:8105/api/1.1/patches/777777/
+command failed: 404 Client Error: NOT FOUND for url: http://localhost:8105/api/1.1/patches/777777/
 master@data > show #foobar
 show #foobar
 command failed: Invalid patchwork server patch id: #foobar
