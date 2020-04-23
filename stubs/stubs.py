@@ -333,7 +333,7 @@ class PatchworkStub():
         self.patchwork = subprocess.Popen(cmd)
 
         # wait some time to make sure that the stub started
-        time.sleep(0.2)
+        time.sleep(2)
 
         if self.patchwork.poll() != None:
             raise Exception('Failed to start patchwork stub: %d' % self.patchwork.returncode)
