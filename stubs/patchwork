@@ -239,7 +239,7 @@ class Patches():
                   return
 
             for dirpath, dirnames, filenames in os.walk(dirname):
-                  for name in filenames:
+                  for name in sorted(filenames):
                         # we only use patch files, skip others
                         if not name.endswith('.patch'):
                               continue
