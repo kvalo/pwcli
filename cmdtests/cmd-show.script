@@ -42,7 +42,7 @@ def test_info(ctxt, pwcli):
    pwcli.sendline('show 1-10')
    pwcli.expect_prompt()
 
-   pwcli.sendline('show 31')
+   pwcli.sendline('show 9')
    pwcli.expect_prompt()
 
    pwcli.sendline('show #1020')

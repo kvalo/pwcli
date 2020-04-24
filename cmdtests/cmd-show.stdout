@@ -10,55 +10,55 @@ Deferred      : 6
 Total         : 31
 master@data > list
 list
- [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
- [  2] foo: minor change with CC                                    2011-02-11 Timo Tiger   New
- [  3] foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
- [  4] [1/15] bar: blah blah blah 1                                 2011-02-11 Dino Dinosau New
- [  5] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
- [  6] [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
- [  7] [2/15] bar: blah blah blah 2                                 2011-02-11 Dino Dinosau New
- [  8] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
- [  9] [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
- [ 10] [3/15] bar: blah blah blah 3                                 2011-02-11 Dino Dinosau New
- [ 11] [3/7] foo: test 3                                            2011-02-11 Timo Tiger   Under Review
- [ 12] [3/4] koo: yyy bbb cc 3                                      2011-02-11 Dino Dinosau Deferred
- [ 13] [4/15] bar: blah blah blah 4                                 2011-02-11 Dino Dinosau New
- [ 14] [4/7] foo: test 4                                            2011-02-11 Timo Tiger   Under Review
- [ 15] [4/4] koo: yyy bbb cc 4                                      2011-02-11 Dino Dinosau Deferred
- [ 16] [5/15] bar: blah blah blah 5                                 2011-02-11 Dino Dinosau New
- [ 17] [5/7] foo: test 5                                            2011-02-11 Timo Tiger   Under Review
- [ 18] [6/15] bar: blah blah blah 6                                 2011-02-11 Dino Dinosau New
- [ 19] [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
- [ 20] [7/15] bar: blah blah blah 7                                 2011-02-11 Dino Dinosau New
- [ 21] [7/7] foo: test 7                                            2011-02-11 Timo Tiger   Under Review
- [ 22] [8/15] bar: blah blah blah 8                                 2011-02-11 Dino Dinosau New
- [ 23] [9/15] bar: blah blah blah 9                                 2011-02-11 Dino Dinosau New
- [ 24] [10/15] bar: blah blah blah 10                               2011-02-11 Dino Dinosau New
- [ 25] [11/15] bar: blah blah blah 11                               2011-02-11 Dino Dinosau New
- [ 26] [12/15] bar: blah blah blah 12                               2011-02-11 Dino Dinosau New
- [ 27] [13/15] bar: blah blah blah 13                               2011-02-11 Dino Dinosau New
- [ 28] [14/15] bar: blah blah blah 14                               2011-02-11 Dino Dinosau New
- [ 29] [15/15] bar: blah blah blah 15                               2011-02-11 Dino Dinosau New
- [ 30] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
- [ 31] foo: utf-8 tèst                                              2011-02-11 Èd Examplè   Deferred
+ [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
+ [  2] [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
+ [  3] [3/7] foo: test 3                                            2011-02-11 Timo Tiger   Under Review
+ [  4] [4/7] foo: test 4                                            2011-02-11 Timo Tiger   Under Review
+ [  5] [5/7] foo: test 5                                            2011-02-11 Timo Tiger   Under Review
+ [  6] [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
+ [  7] [7/7] foo: test 7                                            2011-02-11 Timo Tiger   Under Review
+ [  8] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
+ [  9] foo: utf-8 tèst                                              2011-02-11 Èd Examplè   Deferred
+ [ 10] foo: new patch                                               2011-02-11 Timo Tiger   New
+ [ 11] foo: minor change with CC                                    2011-02-12 Timo Tiger   New
+ [ 12] foo: another minor change with multiple To                   2011-02-12 Timo Tiger   New
+ [ 13] [1/15] bar: blah blah blah 1                                 2011-02-12 Dino Dinosau New
+ [ 14] [2/15] bar: blah blah blah 2                                 2011-02-12 Dino Dinosau New
+ [ 15] [3/15] bar: blah blah blah 3                                 2011-02-12 Dino Dinosau New
+ [ 16] [4/15] bar: blah blah blah 4                                 2011-02-12 Dino Dinosau New
+ [ 17] [5/15] bar: blah blah blah 5                                 2011-02-12 Dino Dinosau New
+ [ 18] [6/15] bar: blah blah blah 6                                 2011-02-12 Dino Dinosau New
+ [ 19] [7/15] bar: blah blah blah 7                                 2011-02-12 Dino Dinosau New
+ [ 20] [8/15] bar: blah blah blah 8                                 2011-02-12 Dino Dinosau New
+ [ 21] [9/15] bar: blah blah blah 9                                 2011-02-12 Dino Dinosau New
+ [ 22] [10/15] bar: blah blah blah 10                               2011-02-12 Dino Dinosau New
+ [ 23] [11/15] bar: blah blah blah 11                               2011-02-12 Dino Dinosau New
+ [ 24] [12/15] bar: blah blah blah 12                               2011-02-12 Dino Dinosau New
+ [ 25] [13/15] bar: blah blah blah 13                               2011-02-12 Dino Dinosau New
+ [ 26] [14/15] bar: blah blah blah 14                               2011-02-12 Dino Dinosau New
+ [ 27] [15/15] bar: blah blah blah 15                               2011-02-12 Dino Dinosau New
+ [ 28] [1/4] koo: yyy bbb cc 1                                      2011-02-12 Dino Dinosau Deferred
+ [ 29] [2/4] koo: yyy bbb cc 2                                      2011-02-12 Dino Dinosau Deferred
+ [ 30] [3/4] koo: yyy bbb cc 3                                      2011-02-12 Dino Dinosau Deferred
+ [ 31] [4/4] koo: yyy bbb cc 4                                      2011-02-12 Dino Dinosau Deferred
 master@data > show 1-10
 show 1-10
-      foo: new patch                                               2011-02-11 Timo Tiger   New
-      foo: minor change with CC                                    2011-02-11 Timo Tiger   New
-      foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
-      [1/15] bar: blah blah blah 1                                 2011-02-11 Dino Dinosau New
       [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
-      [1/4] koo: yyy bbb cc 1                                      2011-02-11 Dino Dinosau Deferred
-      [2/15] bar: blah blah blah 2                                 2011-02-11 Dino Dinosau New
       [2/7] foo: test 2                                            2011-02-11 Timo Tiger   Under Review
-      [2/4] koo: yyy bbb cc 2                                      2011-02-11 Dino Dinosau Deferred
-      [3/15] bar: blah blah blah 3                                 2011-02-11 Dino Dinosau New
-master@data > show 31
-show 31
+      [3/7] foo: test 3                                            2011-02-11 Timo Tiger   Under Review
+      [4/7] foo: test 4                                            2011-02-11 Timo Tiger   Under Review
+      [5/7] foo: test 5                                            2011-02-11 Timo Tiger   Under Review
+      [6/7] foo: test 6                                            2011-02-11 Timo Tiger   Under Review
+      [7/7] foo: test 7                                            2011-02-11 Timo Tiger   Under Review
+      foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred
+      foo: utf-8 tèst                                              2011-02-11 Èd Examplè   Deferred
+      foo: new patch                                               2011-02-11 Timo Tiger   New
+master@data > show 9
+show 9
 Delegate: test
 State: Deferred
 From: Èd Examplè <ed@example.com>
-Date: 2011-02-11 15:35:31
+Date: 2011-02-11 18:17:17
 Patchwork-Id: 1021
 Patchwork-URL: http://localhost/fixme/12345
 PendingCommit: None
@@ -80,7 +80,7 @@ show #1020
 Delegate: test
 State: Deferred
 From: Timo Tiger <timo@example.com>
-Date: 2011-02-11 15:23:31
+Date: 2011-02-11 18:00:05
 Patchwork-Id: 1020
 Patchwork-URL: http://localhost/fixme/12345
 PendingCommit: None
@@ -100,8 +100,8 @@ Signed-off-by: Dino Dinosaurus <dino@example.com>
 master@data > show #1030,#1031,#1032
 show #1030,#1031,#1032
       foo: new patch                                               2011-02-11 Timo Tiger   New
-      foo: minor change with CC                                    2011-02-11 Timo Tiger   New
-      foo: another minor change with multiple To                   2011-02-11 Timo Tiger   New
+      foo: minor change with CC                                    2011-02-12 Timo Tiger   New
+      foo: another minor change with multiple To                   2011-02-12 Timo Tiger   New
 master@data > show #777777
 show #777777
 command failed: 404 Client Error: NOT FOUND for url: http://localhost:8105/api/1.1/patches/777777/
