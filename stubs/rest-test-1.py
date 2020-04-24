@@ -1,4 +1,35 @@
 #!/usr/bin/env python3
+#
+# Copyright (c) 2020, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 
 
 import json
@@ -171,6 +202,15 @@ def cmd_tags1(args):
     print('%s: tags %r' % (j['name'], j['tags']))
     print(j['content'])
 
+def cmd_series1(args):
+    r = rest_get(args, '/series/', { 'project' : PROJECT })
+    j = r.json()
+    print('%s patches' % (len(j)))
+
+    # for patch in j:
+    #     print(patch['submitter']['name'], patch['name'], patch['state'],
+    #           patch['date'])
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dump', action='store_true')
@@ -188,6 +228,7 @@ def main():
     subparsers.add_parser('set-delegate1').set_defaults(func=cmd_set_delegate1)
     subparsers.add_parser('mbox1').set_defaults(func=cmd_mbox1)
     subparsers.add_parser('tags1').set_defaults(func=cmd_tags1)
+    subparsers.add_parser('series1').set_defaults(func=cmd_series1)
 
     args = parser.parse_args()
     args.func(args)
