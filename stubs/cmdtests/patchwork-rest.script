@@ -66,7 +66,7 @@ def main():
 
       i = 1
       for patch in r.json():
-            print('[%d] %s' % (i, patch['name']))
+            print('[%d] %s\t\t%s' % (i, patch['name'], patch['state']))
             i += 1
 
       print()
