@@ -76,7 +76,9 @@ def main():
 
       r.raise_for_status()
 
-      print('%s' % (patch['name']))
+      patch = r.json()
+
+      print('%s: %s' % (patch['id'], patch['name']))
 
       print()
 
