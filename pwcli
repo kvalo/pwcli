@@ -1096,32 +1096,18 @@ class PwcliConfig():
         # read settings from pwcli config file
         self.url = self._parser.get('general', 'url')
         self.username = self._parser.get('general', 'username')
-
         self.token = self._parser.get('general', 'token')
 
         if self._parser.has_option('general', 'build-command'):
-            self.build_command = self._parser.get(
-                'general', 'build-command').split(' ')
-        else:
-            self.build_command = None
+            self.build_command = self._parser.get('general',
+                                                  'build-command').split(' ')
 
         self.project_name = self._parser.get('general', 'project')
 
-        # FIXME: ConfigParser supports providing defaults as a dict, use
-        # those instead. Also maybe it's better to use self._parser
-        # directly and get rid of self.foo properties?
-
         if self._parser.has_option('general', 'browser') and not self._args.no_browser:
             self.browser = self._parser.get('general', 'browser')
-        else:
-            self.browser = None
 
         pending_modes = ['disabled', 'stgit']
-
-        # defaults
-        self.pending_mode = 'disabled'
-        self.pending_branch = None
-        self.main_branches = None
 
         if self._parser.has_option('general', 'pending_mode'):
             self.pending_mode = self._parser.get(
@@ -1151,8 +1137,6 @@ class PwcliConfig():
         # read settings from environment variables
         if 'EDITOR' in os.environ:
             self.editor = os.environ['EDITOR']
-        else:
-            self.editor = DEFAULT_EDITOR
 
         # read settings from git
         sendemail_from = self.git.get_config('sendemail.from')
@@ -1190,13 +1174,28 @@ class PwcliConfig():
             f = open(signature_file, 'r')
             self.signature = f.read()
             f.close()
-        else:
-            self.signature = None
+
+        logger.debug('signature=%r' % self.signature)
 
     def __init__(self, args, git):
         self._args = args
         self.git = git
         self._parser = configparser.ConfigParser()
+
+        # add defaults for config options
+        self.url = None
+        self.project_name = None
+        self.username = None
+        self.token = None
+        self.browser = None
+        self.build_command = None
+        self.pending_mode = 'disabled'
+        self.pending_branch = None
+        self.main_branches = None
+        self.editor = DEFAULT_EDITOR
+        self.signature = None
+
+        # TODO: add self.log_level
 
 
 class PWCLI():
