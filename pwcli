@@ -1147,6 +1147,10 @@ class PwcliConfig():
             self.build_command = self._parser.get('general',
                                                   'build-command').split(' ')
 
+        if self._parser.has_option('general', 'automatic-emails'):
+            self.automatic_emails = self._parser.getboolean('general',
+                                                            'automatic-emails')
+
         self.project_name = self._parser.get('general', 'project')
 
         if self._parser.has_option('general', 'browser') and not self._args.no_browser:
@@ -1234,6 +1238,7 @@ class PwcliConfig():
         self.token = None
         self.browser = None
         self.build_command = None
+        self.automatic_emails = False
         self.pending_mode = 'disabled'
         self.pending_branch = None
         self.main_branches = None
@@ -2036,6 +2041,11 @@ class PWCLI():
 
         self.output('%s set to %s' % (get_patches_plural(len(patches)),
                                       OLD_PATCH_STATE_MAP[state]))
+
+        if not self.config.automatic_emails:
+            # no need to send any emails
+            return
+
         reply = ''
         reason = None
 
@@ -2273,6 +2283,10 @@ class PWCLI():
 
         if state == PATCH_STATE_UNDER_REVIEW:
             # patches were ok, no further action
+            return
+
+        if not self.config.automatic_emails:
+            # no need to send any emails
             return
 
         reason = self.input('Reason (RET for no mail): ')

@@ -3,6 +3,7 @@ project = stub-test
 token = abcd1234567890
 username = test
 server-url = http://localhost:8105/
+automatic-emails = true
 build-command = builder
 
 
