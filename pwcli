@@ -76,7 +76,6 @@ LORE_URL = 'https://lore.kernel.org/r/'
 
 # global variables
 logger = logging.getLogger('pwcli')
-logger.setLevel(logging.INFO)
 
 LOG_SEPARATOR = '\n---\n'
 MAIL_BODY_WIDTH = 72
@@ -1092,10 +1091,15 @@ class PwcliConfig():
 
         self._parser.read(config_file)
 
+        # read log-level first so that debug logs are enabled as early as possible
         if self._parser.has_option('general', 'log-level'):
-            # TODO: move setting log level to PWCLI()
-            if self._parser.get('general', 'log-level') == 'debug':
-                logger.setLevel(logging.DEBUG)
+            self.log_level = self._parser.get('general', 'log-level')
+            if self.log_level != 'debug' and self.log_level != 'info':
+                self.output('unknown value for general.log-level: %s',
+                            self.log_level)
+                sys.exit(1)
+
+        logger.debug('logging started')
 
         # read settings from pwcli config file
         self.server_url = self._parser.get('general', 'server-url')
@@ -1153,6 +1157,12 @@ class PwcliConfig():
         self.smtp_username = self.git.get_config('sendemail.smtpuser')
         self.smtp_password = self.git.get_config('sendemail.smtppass')
 
+        if os.path.exists(signature_file):
+            f = open(signature_file, 'r')
+            self.signature = f.read()
+            f.close()
+
+    def print_debug(self):
         # print configs to debug log
         logger.debug('fullname=%s' % self.fullname)
         logger.debug('email=%s' % self.email)
@@ -1160,6 +1170,7 @@ class PwcliConfig():
         logger.debug('username=%s' % self.username)
         logger.debug('project=%s' % self.project_name)
         logger.debug('editor=%s' % self.editor)
+        logger.debug('log_level=%s' % self.log_level)
         logger.debug('smtp_host=%s' % self.smtp_host)
         logger.debug('smtp_port=%s' % self.smtp_port)
         logger.debug('smtp_encryption=%s' % self.smtp_encryption)
@@ -1171,11 +1182,6 @@ class PwcliConfig():
             passwd = '<not set>'
 
         logger.debug('smtp_password=%s' % passwd)
-
-        if os.path.exists(signature_file):
-            f = open(signature_file, 'r')
-            self.signature = f.read()
-            f.close()
 
         logger.debug('signature=%r' % self.signature)
 
@@ -1194,10 +1200,10 @@ class PwcliConfig():
         self.pending_mode = 'disabled'
         self.pending_branch = None
         self.main_branches = None
+        self.log_level = 'info'
+
         self.editor = DEFAULT_EDITOR
         self.signature = None
-
-        # TODO: add self.log_level
 
 
 class PWCLI():
@@ -2580,17 +2586,30 @@ with # character. Example: #1000,#1005'''
 
         args = parser.parse_args()
 
-        if args.debug:
-            logger.setLevel(logging.DEBUG)
-
-        logger.debug('pwcli args %s)' % repr(args))
-
         self.git = Git(self.output)
         self.stg = Stg(self.output)
         self.stg_cache = {}
 
         self.config = PwcliConfig(args, self.git)
         self.config.read(self.pwcli_dir)
+
+        # read log-level first so that debug logs are enabled as early as possible
+        if args.debug or self.config.log_level == 'debug':
+            logger.setLevel(logging.DEBUG)
+        elif self.config.log_level == 'info':
+            logger.setLevel(logging.INFO)
+        else:
+            self.output('unknown log-level: %s', self.log_level)
+            sys.exit(1)
+
+        logger.debug('logging started')
+
+        # only now debug logging is working (if enabled by the user)
+        logger.debug('logging started')
+
+        logger.debug('pwcli args %s)' % repr(args))
+
+        self.config.print_debug()
 
         if self.config.main_branches is not None:
             self.selected_main_branch = self.config.main_branches[0]
