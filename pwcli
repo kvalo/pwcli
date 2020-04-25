@@ -601,6 +601,11 @@ class Patch():
         return '%s <%s>' % (self._submitter_name, self._submitter_email)
 
     def get_submitter_name(self):
+        # sometimes there might not be a name and only email, return
+        # only empty string in that case
+        if self._submitter_name is None:
+            return ''
+
         return self._submitter_name
 
     def get_date(self):
@@ -860,7 +865,11 @@ class Patch():
         self._state = data['state']
         self._submitter_name = data['submitter']['name']
         self._submitter_email = data['submitter']['email']
-        self._delegate_username = data['delegate']['username']
+
+        # if the patch is unassigned data['delegate'] is None
+        if data['delegate'] is not None:
+            self._delegate_username = data['delegate']['username']
+
         self._mbox_url = data['mbox']
 
     def __str__(self):
@@ -1143,7 +1152,9 @@ class PwcliConfig():
 
         # read settings from pwcli config file
         self.server_url = self._parser.get('general', 'server-url')
-        self.username = self._parser.get('general', 'username')
+
+        if self._parser.has_option('general', 'username'):
+            self.username = self._parser.get('general', 'username')
 
         if self._parser.has_option('general', 'token'):
             self.token = self._parser.get('general', 'token')
