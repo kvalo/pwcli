@@ -237,7 +237,7 @@ class Timer():
         self.end_time = timeit.default_timer()
 
     def get_seconds(self):
-        return self.end_time - self.start_time
+        return '{:.3f}s'.format(self.end_time - self.start_time)
 
 
 class RunProcess():
@@ -284,9 +284,10 @@ class RunProcess():
 
         self.timer.stop()
 
-        logger.debug('%s took %.1fs: (%r, %r, %r)' %
-                     (self, self.timer.get_seconds(), self.returncode,
-                      self.stdoutdata, self.stderrdata))
+        logger.info('%s took %s: %s' %
+                    (self, self.timer.get_seconds(), self.returncode))
+        logger.debug('stdout: %r' % self.stdoutdata)
+        logger.debug('stderr: %r' % self.stderrdata)
 
     def __str__(self):
         if self.input:
@@ -959,10 +960,9 @@ class PatchworkCache():
 class Patchwork():
 
     def _get_patches(self, states=None, delegate=None):
-        logger.debug('%s()._get_patches(states=%r, delegate=%s)' % (self,
-                                                                    states,
-                                                                    delegate))
-
+        logger.info('%s._get_patches(states=%r, delegate=%s)' % (self,
+                                                                 states,
+                                                                 delegate))
         params = {'project': self.config.project_name,
                   'per_page': 100}
 
@@ -972,10 +972,13 @@ class Patchwork():
         if states is not None:
             params['state'] = states
 
+        self.timer.start()
+
         url = self._api_url + '/patches/'
         response = requests.get(url, headers=self._auth_headers, params=params)
 
         json = []
+        roundtrips = 1
 
         while True:
             response.raise_for_status()
@@ -989,6 +992,10 @@ class Patchwork():
             response = requests.get(response.links['next']['url'],
                                     headers=self._auth_headers)
 
+            roundtrips += 1
+
+        self.timer.stop()
+
         patches = []
 
         for p in json:
@@ -997,6 +1004,8 @@ class Patchwork():
 
             patches.append(patch)
 
+        logger.info('received %d patches, %d roundtrips and took %s'
+                    % (len(patches), roundtrips, self.timer.get_seconds()))
         logger.debug('patches:\n%s' % pretty(patches))
 
         return patches
@@ -1013,7 +1022,8 @@ class Patchwork():
         return self._get_patches(states, delegate)
 
     def _get_patch(self, patch_id):
-        logger.debug('%s()._get_patch(patch_id=%s)' % (self, patch_id))
+        logger.info('%s()._get_patch(patch_id=%s)' % (self, patch_id))
+        self.timer.start()
 
         url = self._api_url + '/patches/%s/' % (patch_id)
         response = requests.get(url, headers=self._auth_headers)
@@ -1021,6 +1031,9 @@ class Patchwork():
         if response.status_code == 404:
             # patch id not found from server
             return None
+
+        self.timer.stop()
+        logger.info('received 1 patch, took %s' % (self.timer.get_seconds()))
 
         response.raise_for_status()
 
@@ -1041,6 +1054,11 @@ class Patchwork():
         return self._get_patch(patch_id)
 
     def update_patch(self, patch_id, state=None, commit_ref=None):
+        logger.info('%s.update_patch(patch_id=%s, state=%s, commit_ref=%s)' % (self,
+                                                                               patch_id,
+                                                                               state,
+                                                                               commit_ref))
+
         url = self._api_url + '/patches/%s/' % (patch_id)
 
         headers = self._auth_headers
@@ -1054,19 +1072,38 @@ class Patchwork():
         if commit_ref is not None:
             json['commit_ref'] = commit_ref
 
+        self.timer.start()
+
         r = requests.patch(url, json=json, headers=headers)
 
+        self.timer.stop()
+
         r.raise_for_status()
+
+        logger.info('patch updated, took %s' % (self.timer.get_seconds()))
 
     def get_mbox(self, url):
+        logger.info('%s.get_mbox(url=%s)' % (self, url))
+
+        self.timer.start()
+
         r = requests.get(url, headers=self._auth_headers)
 
+        self.timer.stop()
+
         r.raise_for_status()
+
+        logger.info('downloaded %d B, took %s' % (len(r.text),
+                                                  self.timer.get_seconds()))
 
         return r.text
 
+    def __str__(self):
+        return 'Patchwork()'
+
     def __init__(self, config):
         self.config = config
+        self.timer = Timer()
 
         url = self.config.server_url
         if url[-1] != '/':
@@ -1445,7 +1482,8 @@ class PWCLI():
                 elif answer == ANSWER_ABORT:
                     return
 
-        logger.debug('email sent to %s:%s' % (self.config.smtp_host, self.config.smtp_port))
+        logger.info('email sent to %s:%s' % (self.config.smtp_host,
+                                             self.config.smtp_port))
 
     def edit_email(self, msg):
         logger.debug('%s.edit_email(msg=%r)' % (self, msg.as_string()))
