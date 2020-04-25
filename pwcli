@@ -72,7 +72,6 @@ PWCLI_EDIT_FILE = '.pwcli-edit'
 DEFAULT_EDITOR = 'nano'
 
 PATCHWORK_API_DIRECTORY = 'api/1.1'
-LORE_URL = 'https://lore.kernel.org/r/'
 
 # global variables
 logger = logging.getLogger('pwcli')
@@ -1151,6 +1150,11 @@ class PwcliConfig():
             self.automatic_emails = self._parser.getboolean('general',
                                                             'automatic-emails')
 
+        if self._parser.has_option('general', 'msgid-tag'):
+            # TODO: check that self.msgid_tag has just one '%s' and
+            # not more or less
+            self.msgid_tag = self._parser.get('general', 'msgid-tag')
+
         self.project_name = self._parser.get('general', 'project')
 
         if self._parser.has_option('general', 'browser') and not self._args.no_browser:
@@ -1229,7 +1233,9 @@ class PwcliConfig():
     def __init__(self, args, git):
         self._args = args
         self.git = git
-        self._parser = configparser.ConfigParser()
+
+        # disable interpolation so that can use '%s' in config options
+        self._parser = configparser.ConfigParser(interpolation=None)
 
         # add defaults for config options
         self.server_url = None
@@ -1239,6 +1245,7 @@ class PwcliConfig():
         self.browser = None
         self.build_command = None
         self.automatic_emails = False
+        self.msgid_tag = None
         self.pending_mode = 'disabled'
         self.pending_branch = None
         self.main_branches = None
@@ -1927,8 +1934,8 @@ class PWCLI():
                     self.git.am(patch.get_mbox())
 
                 # add Link tag
-                url = LORE_URL + patch.get_message_id()
-                self.git.add_tag('Link: %s' % url)
+                if self.config.msgid_tag is not None:
+                    self.git.add_tag(self.config.msgid_tag % patch.get_message_id())
 
                 # store the commit id temporarily
                 patch.final_commit = self.git.get_commit('HEAD')

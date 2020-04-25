@@ -381,7 +381,11 @@ class PwcliWrapper():
         self.config.set(general, 'token', 'abcd1234567890')
         self.config.set(general, 'username', 'test')
         self.config.set(general, 'server-url', 'http://localhost:%d/' % (patchworkport))
+
+        # TODO: write few tests for both of these, currently they are
+        # not tested in any way
         self.config.set(general, 'automatic-emails', 'true')
+        self.config.set(general, 'msgid-tag', 'Link: https://lore.kernel.org/r/%s')
 
         if builder:
             self.config.set(general, 'build-command', builder)
