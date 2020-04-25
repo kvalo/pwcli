@@ -974,7 +974,7 @@ class Patchwork():
         self.timer.start()
 
         url = self._api_url + '/patches/'
-        response = requests.get(url, headers=self._auth_headers, params=params)
+        response = requests.get(url, params=params)
 
         json = []
         roundtrips = 1
@@ -988,8 +988,7 @@ class Patchwork():
                 # no more pages to fetch
                 break
 
-            response = requests.get(response.links['next']['url'],
-                                    headers=self._auth_headers)
+            response = requests.get(response.links['next']['url'])
 
             roundtrips += 1
 
@@ -1025,7 +1024,7 @@ class Patchwork():
         self.timer.start()
 
         url = self._api_url + '/patches/%s/' % (patch_id)
-        response = requests.get(url, headers=self._auth_headers)
+        response = requests.get(url)
 
         if response.status_code == 404:
             # patch id not found from server
@@ -1060,7 +1059,7 @@ class Patchwork():
 
         url = self._api_url + '/patches/%s/' % (patch_id)
 
-        headers = self._auth_headers
+        headers = self._get_auth_headers()
         headers['Content-Type'] = 'application/json'
 
         json = {}
@@ -1086,7 +1085,7 @@ class Patchwork():
 
         self.timer.start()
 
-        r = requests.get(url, headers=self._auth_headers)
+        r = requests.get(url)
 
         self.timer.stop()
 
@@ -1096,6 +1095,12 @@ class Patchwork():
                                                   self.timer.get_seconds()))
 
         return r.text
+
+    def _get_auth_headers(self):
+        if self.config.token is None:
+            raise Exception('general.token not set but is needed for this operation')
+
+        return {'Authorization': 'Token %s' % (self.config.token)}
 
     def __str__(self):
         return 'Patchwork()'
@@ -1109,7 +1114,6 @@ class Patchwork():
             url.append('/')
 
         self._api_url = url + PATCHWORK_API_DIRECTORY
-        self._auth_headers = {'Authorization': 'Token %s' % (self.config.token)}
 
         self.cache = PatchworkCache(self, config)
 
@@ -1140,7 +1144,9 @@ class PwcliConfig():
         # read settings from pwcli config file
         self.server_url = self._parser.get('general', 'server-url')
         self.username = self._parser.get('general', 'username')
-        self.token = self._parser.get('general', 'token')
+
+        if self._parser.has_option('general', 'token'):
+            self.token = self._parser.get('general', 'token')
 
         if not self._args.no_build_command and self._parser.has_option('general',
                                                                        'build-command'):
