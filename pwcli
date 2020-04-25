@@ -1077,6 +1077,135 @@ class Patchwork():
         self.cache = PatchworkCache(self)
 
 
+class PwcliConfig():
+    def read(self, pwcli_dir):
+        config_file = os.path.join(pwcli_dir, 'config')
+        signature_file = os.path.join(pwcli_dir, 'signature')
+
+        if not os.path.exists(config_file):
+            print('Could not find %s', config_file)
+            sys.exit(1)
+
+        self._parser.read(config_file)
+
+        if self._parser.has_option('general', 'log-level'):
+            # TODO: move setting log level to PWCLI()
+            if self._parser.get('general', 'log-level') == 'debug':
+                logger.setLevel(logging.DEBUG)
+
+        # read settings from pwcli config file
+        self.url = self._parser.get('general', 'url')
+        self.username = self._parser.get('general', 'username')
+
+        # TODO: should be renamed to token
+        self.password = self._parser.get('general', 'password')
+
+        if self._parser.has_option('general', 'build-command'):
+            self.build_command = self._parser.get(
+                'general', 'build-command').split(' ')
+        else:
+            self.build_command = None
+
+        self.project_name = self._parser.get('general', 'project')
+
+        # FIXME: ConfigParser supports providing defaults as a dict, use
+        # those instead. Also maybe it's better to use self._parser
+        # directly and get rid of self.foo properties?
+
+        if self._parser.has_option('general', 'default_filter_delegated'):
+            self.default_filter_delegated = self._parser.getboolean('general',
+                                                                    'default_filter_delegated')
+        else:
+            self.default_filter_delegated = True
+
+        if self._parser.has_option('general', 'browser') and not self._args.no_browser:
+            self.browser = self._parser.get('general', 'browser')
+        else:
+            self.browser = None
+
+        pending_modes = ['disabled', 'stgit']
+
+        # defaults
+        self.pending_mode = 'disabled'
+        self.pending_branch = None
+        self.main_branches = None
+
+        if self._parser.has_option('general', 'pending_mode'):
+            self.pending_mode = self._parser.get(
+                'general', 'pending_mode').lower()
+
+        if self.pending_mode not in pending_modes:
+            self.output('Invalid stgit.mode "%s"' % self.pending_mode)
+            sys.exit(1)
+
+        if self._parser.has_option('general', 'pending_branch'):
+            self.pending_branch = self._parser.get(
+                'general', 'pending_branch').lower()
+
+        if self._parser.has_option('general', 'main_branches'):
+            branches = self._parser.get('general', 'main_branches').lower()
+            self.main_branches = branches.split()
+
+        if self.pending_mode == 'stgit':
+            if self.pending_branch is None:
+                self.output('general.pending_branch not set')
+                sys.exit(1)
+
+            if self.main_branches is None:
+                self.output('general.main_branches not set')
+                sys.exit(1)
+
+        # read settings from environment variables
+        if 'EDITOR' in os.environ:
+            self.editor = os.environ['EDITOR']
+        else:
+            self.editor = DEFAULT_EDITOR
+
+        # read settings from git
+        sendemail_from = self.git.get_config('sendemail.from')
+        if sendemail_from:
+            self.fullname, self.email = email.utils.parseaddr(sendemail_from)
+        else:
+            self.fullname = self.git.get_config('user.name')
+            self.email = self.git.get_config('user.email')
+        self.smtp_host = self.git.get_config('sendemail.smtpserver')
+        self.smtp_port = self.git.get_config('sendemail.smtpserverport')
+        self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
+        self.smtp_username = self.git.get_config('sendemail.smtpuser')
+        self.smtp_password = self.git.get_config('sendemail.smtppass')
+
+        # print configs to debug log
+        logger.debug('fullname=%s' % self.fullname)
+        logger.debug('email=%s' % self.email)
+        logger.debug('url=%s' % self.url)
+        logger.debug('username=%s' % self.username)
+        logger.debug('project=%s' % self.project_name)
+        logger.debug('editor=%s' % self.editor)
+        logger.debug('smtp_host=%s' % self.smtp_host)
+        logger.debug('smtp_port=%s' % self.smtp_port)
+        logger.debug('smtp_encryption=%s' % self.smtp_encryption)
+        logger.debug('smtp_username=%s' % self.smtp_username)
+
+        if self.smtp_password is not None:
+            passwd = '<hidden>'
+        else:
+            passwd = '<not set>'
+
+        logger.debug('smtp_password=%s' % passwd)
+
+        if os.path.exists(signature_file):
+            f = open(signature_file, 'r')
+            self.signature = f.read()
+            f.close()
+        else:
+            self.signature = None
+
+    def __init__(self, args, git):
+        self._args = args
+        self.git = git
+        self._parser = configparser.RawConfigParser()
+
+
 class PWCLI():
 
     # retrieve all mbox files in one for "smoother user experience"
@@ -1145,10 +1274,10 @@ class PWCLI():
         return selected_patches
 
     def open_browser_url(self, url):
-        if not self.browser:
+        if not self.config.browser:
             return
 
-        cmd = [self.browser, url]
+        cmd = [self.config.browser, url]
 
         # to avoid call() unnecessarily spamming stdout and stderr
         devnull = open(os.devnull, "w")
@@ -1287,16 +1416,16 @@ class PWCLI():
 
         while not done:
             try:
-                if self.smtp_encryption == 'ssl':
-                    server = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port)
+                if self.config.smtp_encryption == 'ssl':
+                    server = smtplib.SMTP_SSL(self.config.smtp_host, self.config.smtp_port)
                 else:
-                    server = smtplib.SMTP(self.smtp_host, self.smtp_port)
+                    server = smtplib.SMTP(self.config.smtp_host, self.config.smtp_port)
 
-                if self.smtp_encryption == 'tls':
+                if self.config.smtp_encryption == 'tls':
                     server.starttls()
 
-                if self.smtp_username is not None and self.smtp_password is not None:
-                    server.login(self.smtp_username, self.smtp_password)
+                if self.config.smtp_username is not None and self.config.smtp_password is not None:
+                    server.login(self.config.smtp_username, self.config.smtp_password)
 
                 server.sendmail(envelope_from, envelope_to, msg.as_string())
                 server.quit()
@@ -1304,7 +1433,7 @@ class PWCLI():
                 done = True
             except (smtplib.SMTPException, socket.error) as e:
                 self.output('Failed to send email via %s: %s' %
-                            (self.smtp_host, e))
+                            (self.config.smtp_host, e))
 
                 ANSWER_RETRY = 'Retry'
                 ANSWER_ABORT = 'aBort'
@@ -1316,7 +1445,7 @@ class PWCLI():
                 elif answer == ANSWER_ABORT:
                     return
 
-        logger.debug('email sent to %s:%s' % (self.smtp_host, self.smtp_port))
+        logger.debug('email sent to %s:%s' % (self.config.smtp_host, self.config.smtp_port))
 
     def edit_email(self, msg):
         logger.debug('%s.edit_email(msg=%r)' % (self, msg.as_string()))
@@ -1377,7 +1506,7 @@ class PWCLI():
         f.write(buf)
         f.close()
 
-        subprocess.call([self.editor, PWCLI_EDIT_FILE])
+        subprocess.call([self.config.editor, PWCLI_EDIT_FILE])
 
         f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='r')
         new_buf = f.read()
@@ -1419,23 +1548,23 @@ class PWCLI():
             '============================================================')
 
     def show_info(self):
-        self.print_header('User', '%s' % (self.username))
-        self.print_header('Project', self.project_name)
+        self.print_header('User', '%s' % (self.config.username))
+        self.print_header('Project', self.config.project_name)
         self.print_header('Tree', self.tree)
 
-        if self.pending_mode == 'stgit':
-            self.print_header('Main branches', ' '.join(self.main_branches))
-            self.print_header('Pending branch', self.pending_branch)
+        if self.config.pending_mode == 'stgit':
+            self.print_header('Main branches', ' '.join(self.config.main_branches))
+            self.print_header('Pending branch', self.config.pending_branch)
         else:
             self.print_header('Branch', self.git.get_branch())
 
-        if self.default_filter_delegated:
-            username = self.username
+        if self.config.default_filter_delegated:
+            username = self.config.username
         else:
             username = None
 
         # in stgit mode we should get the count from the pending branch
-        if self.pending_mode == 'stgit':
+        if self.config.pending_mode == 'stgit':
             review = len(self.get_pending_branch_patches(state_filter=[PATCH_STATE_UNDER_REVIEW]))
         else:
             review = len(self.pw.get_patches([PATCH_STATE_UNDER_REVIEW], username))
@@ -1452,7 +1581,7 @@ class PWCLI():
         self.print_header('Total', total)
 
     def run_build_script(self):
-        cmd = self.build_command
+        cmd = self.config.build_command
 
         if not cmd:
             # build command is not specified, skip the build
@@ -1483,7 +1612,7 @@ class PWCLI():
     def get_pending_branch_patches(self, state_filter=None):
         patches = []
 
-        self.git.checkout(self.pending_branch)
+        self.git.checkout(self.config.pending_branch)
 
         stg_series = self.stg.get_series()
 
@@ -1580,15 +1709,15 @@ class PWCLI():
             # no state defined, use all active states
             states = PATCH_ACTIVE_STATES
 
-        if self.default_filter_delegated:
-            username = self.username
+        if self.config.default_filter_delegated:
+            username = self.config.username
         else:
             username = None
 
         patches = []
         patches += self.pw.get_patches(states, username)
 
-        if self.pending_mode == 'stgit':
+        if self.config.pending_mode == 'stgit':
             # patches in pending branch can be applied, tests or
             # whatever, so skip those
             pending_patches = self.get_pending_branch_patches(state_filter=[PATCH_STATE_UNDER_REVIEW])
@@ -1696,7 +1825,7 @@ class PWCLI():
             self.output('Aborted commit command')
             return
 
-        if self.pending_mode == 'stgit':
+        if self.config.pending_mode == 'stgit':
             self.git.checkout(self.selected_main_branch)
 
         applied = []
@@ -1744,7 +1873,7 @@ class PWCLI():
                         break
 
                 # apply the patch
-                if self.pending_mode == 'stgit':
+                if self.config.pending_mode == 'stgit':
                     # FIXME: add sanity check that the patch really is in
                     # review state. Also applies to main ('non-pending')
                     # mode?
@@ -1881,7 +2010,7 @@ class PWCLI():
         if state == PATCH_STATE_ACCEPTED:
             tree_name = '%s.git' % self.tree
 
-            if self.pending_mode == 'stgit' and len(self.main_branches) > 1:
+            if self.config.pending_mode == 'stgit' and len(self.config.main_branches) > 1:
                 branch_name = '%s branch of ' % (self.selected_main_branch)
             else:
                 branch_name = ''
@@ -1918,8 +2047,8 @@ class PWCLI():
                 reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
 
         first_patch = patches[0]
-        msg = first_patch.get_reply_msg(self.fullname, self.email,
-                                        reply, signature=self.signature)
+        msg = first_patch.get_reply_msg(self.config.fullname, self.config.email,
+                                        reply, signature=self.config.signature)
 
         # if the patches are accepted, there's no reason and no need to edit
         # the mail
@@ -1985,7 +2114,7 @@ class PWCLI():
         faillog = ''
         builder = None
 
-        if self.pending_mode == 'stgit':
+        if self.config.pending_mode == 'stgit':
             while True:
                 choices = 'Apply %d patches to the pending branch? [Apply/Skip/aBort] ' % len(
                     patches)
@@ -2004,7 +2133,7 @@ class PWCLI():
             # Apply
             if answer == 'a':
                 # git checkout self.pending_branch
-                self.git.checkout(self.pending_branch)
+                self.git.checkout(self.config.pending_branch)
 
                 try:
                     i = 1
@@ -2045,7 +2174,7 @@ class PWCLI():
 
         # In pending mode Under Review state should be shown only if the
         # patches were succesfully applied to the pending branch
-        if self.pending_mode != 'stgit' or len(patches) == len(applied):
+        if self.config.pending_mode != 'stgit' or len(patches) == len(applied):
             state_table['Under review'] = PATCH_STATE_UNDER_REVIEW
 
         state_table['Changes requested'] = PATCH_STATE_CHANGES_REQUESTED
@@ -2068,7 +2197,7 @@ class PWCLI():
                 elif len(builder.stderrdata) > 0:
                     result = 'Build had WARNINGS!'
 
-            if self.pending_mode == 'stgit' and state != PATCH_STATE_UNDER_REVIEW:
+            if self.config.pending_mode == 'stgit' and state != PATCH_STATE_UNDER_REVIEW:
                 # User rejected the patches (or aborted) for some
                 # reason, so remove the patches from the pending branch.
                 for i in range(len(applied)):
@@ -2140,8 +2269,8 @@ class PWCLI():
             reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
 
         first_patch = patches[0]
-        msg = first_patch.get_reply_msg(self.fullname, self.email,
-                                        reply, signature=self.signature)
+        msg = first_patch.get_reply_msg(self.config.fullname, self.config.email,
+                                        reply, signature=self.config.signature)
 
         msg = self.edit_email(msg)
         if msg is None:
@@ -2169,7 +2298,7 @@ class PWCLI():
 
         patch = self.patches[i - 1]
         reply = patch.get_reply_msg(
-            self.fullname, self.email, signature=self.signature)
+            self.config.fullname, self.config.email, signature=self.config.signature)
 
         reply = self.edit_email(reply)
 
@@ -2194,7 +2323,7 @@ class PWCLI():
         if args.index is None:
             self.output('Main branches:')
             i = 1
-            for branch in self.main_branches:
+            for branch in self.config.main_branches:
                 if self.selected_main_branch == branch:
                     selected = '*'
                 else:
@@ -2212,13 +2341,13 @@ class PWCLI():
             # the index starts from 1
             index -= 1
 
-            if index < 0 or index > len(self.main_branches) - 1:
+            if index < 0 or index > len(self.config.main_branches) - 1:
                 self.output('branch index out of bounds: %d' % (index + 1))
                 return
 
-            self.selected_main_branch = self.main_branches[index]
+            self.selected_main_branch = self.config.main_branches[index]
         except ValueError:
-            if args.index not in self.main_branches:
+            if args.index not in self.config.main_branches:
                 self.output('invalid branch index/name: "%s"' % args.index)
                 return
             self.selected_main_branch = args.index
@@ -2235,7 +2364,7 @@ class PWCLI():
     def cmd_stg(self, args):
         logger.debug('cmd_stg(args=%r)' % repr(args))
 
-        if self.pending_mode != 'stgit':
+        if self.config.pending_mode != 'stgit':
             self.output('stgit mode is not enabled')
             return
 
@@ -2359,7 +2488,7 @@ with # character. Example: #1000,#1005'''
         while True:
             prompt = ''
 
-            if self.pending_mode == 'stgit':
+            if self.config.pending_mode == 'stgit':
                 branch = self.selected_main_branch
             else:
                 branch = self.git.get_branch()
@@ -2434,8 +2563,6 @@ with # character. Example: #1000,#1005'''
             self.git_dir = '.git'
 
         self.pwcli_dir = os.path.join(self.git_dir, 'pwcli')
-        self.config_file = os.path.join(self.pwcli_dir, 'config')
-        self.signature_file = os.path.join(self.pwcli_dir, 'signature')
 
         if not os.path.exists(self.pwcli_dir):
             print('%s does not exist, exiting' % self.pwcli_dir)
@@ -2470,134 +2597,20 @@ with # character. Example: #1000,#1005'''
 
         logger.debug('pwcli args %s)' % repr(args))
 
-        self.config = configparser.RawConfigParser()
-
-        if not os.path.exists(self.config_file):
-            print('Could not find %s', self.config_file)
-            sys.exit(1)
-
-        self.config.read(self.config_file)
-
-        if self.config.has_option('general', 'log-level'):
-            if self.config.get('general', 'log-level') == 'debug':
-                logger.setLevel(logging.DEBUG)
-
-        # read settings from pwcli config file
-        self.url = self.config.get('general', 'url')
-        self.username = self.config.get('general', 'username')
-
-        # TODO: should be renamed to token
-        self.password = self.config.get('general', 'password')
-
-        if self.config.has_option('general', 'build-command'):
-            self.build_command = self.config.get(
-                'general', 'build-command').split(' ')
-        else:
-            self.build_command = None
-
-        self.project_name = self.config.get('general', 'project')
-
-        # FIXME: ConfigParser supports providing defaults as a dict, use
-        # those instead. Also maybe it's better to use self.config
-        # directly and get rid of self.foo properties?
-
-        if self.config.has_option('general', 'default_filter_delegated'):
-            self.default_filter_delegated = self.config.getboolean('general',
-                                                                   'default_filter_delegated')
-        else:
-            self.default_filter_delegated = True
-
-        if self.config.has_option('general', 'browser') and not args.no_browser:
-            self.browser = self.config.get('general', 'browser')
-        else:
-            self.browser = None
-
-        pending_modes = ['disabled', 'stgit']
-
-        # defaults
-        self.pending_mode = 'disabled'
-        self.pending_branch = None
-        self.main_branches = None
-
-        if self.config.has_option('general', 'pending_mode'):
-            self.pending_mode = self.config.get(
-                'general', 'pending_mode').lower()
-
-        if self.pending_mode not in pending_modes:
-            self.output('Invalid stgit.mode "%s"' % self.pending_mode)
-            sys.exit(1)
-
-        if self.config.has_option('general', 'pending_branch'):
-            self.pending_branch = self.config.get(
-                'general', 'pending_branch').lower()
-
-        if self.config.has_option('general', 'main_branches'):
-            branches = self.config.get('general', 'main_branches').lower()
-            self.main_branches = branches.split()
-            self.selected_main_branch = self.main_branches[0]
-
-        if self.pending_mode == 'stgit':
-            if self.pending_branch is None:
-                self.output('general.pending_branch not set')
-                sys.exit(1)
-
-            if self.main_branches is None:
-                self.output('general.main_branches not set')
-                sys.exit(1)
-
-        # read settings from environment variables
-        if 'EDITOR' in os.environ:
-            self.editor = os.environ['EDITOR']
-        else:
-            self.editor = DEFAULT_EDITOR
-
-        if os.path.exists(self.signature_file):
-            f = open(self.signature_file, 'r')
-            self.signature = f.read()
-            f.close()
-        else:
-            self.signature = None
-
         self.git = Git(self.output)
         self.stg = Stg(self.output)
         self.stg_cache = {}
 
-        # read settings from git
-        sendemail_from = self.git.get_config('sendemail.from')
-        if sendemail_from:
-            self.fullname, self.email = email.utils.parseaddr(sendemail_from)
-        else:
-            self.fullname = self.git.get_config('user.name')
-            self.email = self.git.get_config('user.email')
-        self.smtp_host = self.git.get_config('sendemail.smtpserver')
-        self.smtp_port = self.git.get_config('sendemail.smtpserverport')
-        self.smtp_encryption = self.git.get_config('sendemail.smtpencryption')
-        self.smtp_username = self.git.get_config('sendemail.smtpuser')
-        self.smtp_password = self.git.get_config('sendemail.smtppass')
+        self.config = PwcliConfig(args, self.git)
+        self.config.read(self.pwcli_dir)
 
-        # print configs to debug log
-        logger.debug('fullname=%s' % self.fullname)
-        logger.debug('email=%s' % self.email)
-        logger.debug('url=%s' % self.url)
-        logger.debug('username=%s' % self.username)
-        logger.debug('project=%s' % self.project_name)
-        logger.debug('editor=%s' % self.editor)
-        logger.debug('smtp_host=%s' % self.smtp_host)
-        logger.debug('smtp_port=%s' % self.smtp_port)
-        logger.debug('smtp_encryption=%s' % self.smtp_encryption)
-        logger.debug('smtp_username=%s' % self.smtp_username)
+        if self.config.main_branches is not None:
+            self.selected_main_branch = self.config.main_branches[0]
 
-        if self.smtp_password is not None:
-            passwd = '<hidden>'
-        else:
-            passwd = '<not set>'
+        self.output('Connecting to %s' % self.config.url)
 
-        logger.debug('smtp_password=%s' % passwd)
-
-        self.output('Connecting to %s' % self.url)
-
-        self.pw = Patchwork(self.url, self.project_name, self.username,
-                            self.password)
+        self.pw = Patchwork(self.config.url, self.config.project_name,
+                            self.config.username, self.config.password)
         self.pw.cache.update_cache()
 
         self.tree = os.path.basename(os.getcwd())
