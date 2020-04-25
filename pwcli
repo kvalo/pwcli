@@ -1109,20 +1109,20 @@ class PwcliConfig():
         if self._parser.has_option('general', 'browser') and not self._args.no_browser:
             self.browser = self._parser.get('general', 'browser')
 
-        if self._parser.has_option('general', 'pending_mode'):
+        if self._parser.has_option('general', 'pending-mode'):
             self.pending_mode = self._parser.get(
-                'general', 'pending_mode').lower()
+                'general', 'pending-mode').lower()
 
         if self.pending_mode not in PwcliConfig.ALLOWED_PENDING_MODES:
             self.output('Invalid stgit.mode "%s"' % self.pending_mode)
             sys.exit(1)
 
-        if self._parser.has_option('general', 'pending_branch'):
+        if self._parser.has_option('general', 'pending-branch'):
             self.pending_branch = self._parser.get(
-                'general', 'pending_branch').lower()
+                'general', 'pending-branch').lower()
 
-        if self._parser.has_option('general', 'main_branches'):
-            branches = self._parser.get('general', 'main_branches').lower()
+        if self._parser.has_option('general', 'main-branches'):
+            branches = self._parser.get('general', 'main-branches').lower()
             self.main_branches = branches.split()
 
         if self.pending_mode == 'stgit':

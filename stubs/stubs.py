@@ -386,9 +386,9 @@ class PwcliWrapper():
             self.config.set(general, 'build-command', builder)
 
         if stgit:
-            self.config.set(general, 'pending_mode', 'stgit')
-            self.config.set(general, 'pending_branch', 'pending')
-            self.config.set(general, 'main_branches', 'master')
+            self.config.set(general, 'pending-mode', 'stgit')
+            self.config.set(general, 'pending-branch', 'pending')
+            self.config.set(general, 'main-branches', 'master')
 
         self.signature = signature
 
