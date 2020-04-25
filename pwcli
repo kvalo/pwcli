@@ -1065,14 +1065,14 @@ class Patchwork():
 
         return r.text
 
-    def __init__(self, url, project, username, password):
+    def __init__(self, url, project, username, token):
         if url[-1] != '/':
             url.append('/')
 
         self._server_url = url + PATCHWORK_API_DIRECTORY
         self._project = project
         self._username = username
-        self._auth_headers = {'Authorization': 'Token %s' % (password)}
+        self._auth_headers = {'Authorization': 'Token %s' % (token)}
 
         self.cache = PatchworkCache(self)
 
@@ -1097,8 +1097,7 @@ class PwcliConfig():
         self.url = self._parser.get('general', 'url')
         self.username = self._parser.get('general', 'username')
 
-        # TODO: should be renamed to token
-        self.password = self._parser.get('general', 'password')
+        self.token = self._parser.get('general', 'token')
 
         if self._parser.has_option('general', 'build-command'):
             self.build_command = self._parser.get(
@@ -2598,7 +2597,7 @@ with # character. Example: #1000,#1005'''
         self.output('Connecting to %s' % self.config.url)
 
         self.pw = Patchwork(self.config.url, self.config.project_name,
-                            self.config.username, self.config.password)
+                            self.config.username, self.config.token)
         self.pw.cache.update_cache()
 
         self.tree = os.path.basename(os.getcwd())

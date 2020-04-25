@@ -1,6 +1,6 @@
 [general]
 project = stub-test
-password = password
+token = abcd1234567890
 username = test
 url = http://localhost:8105/
 build-command = builder
