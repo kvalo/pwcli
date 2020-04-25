@@ -380,7 +380,7 @@ class PwcliWrapper():
         self.config.set(general, 'project', 'stub-test')
         self.config.set(general, 'token', 'abcd1234567890')
         self.config.set(general, 'username', 'test')
-        self.config.set(general, 'url', 'http://localhost:%d/' % (patchworkport))
+        self.config.set(general, 'server-url', 'http://localhost:%d/' % (patchworkport))
 
         if builder:
             self.config.set(general, 'build-command', builder)

@@ -2,7 +2,7 @@
 project = stub-test
 token = abcd1234567890
 username = test
-url = http://localhost:8105/
+server-url = http://localhost:8105/
 build-command = builder
 
 

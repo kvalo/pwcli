@@ -1096,7 +1096,7 @@ class PwcliConfig():
                 logger.setLevel(logging.DEBUG)
 
         # read settings from pwcli config file
-        self.url = self._parser.get('general', 'url')
+        self.server_url = self._parser.get('general', 'server-url')
         self.username = self._parser.get('general', 'username')
         self.token = self._parser.get('general', 'token')
 
@@ -1154,7 +1154,7 @@ class PwcliConfig():
         # print configs to debug log
         logger.debug('fullname=%s' % self.fullname)
         logger.debug('email=%s' % self.email)
-        logger.debug('url=%s' % self.url)
+        logger.debug('url=%s' % self.server_url)
         logger.debug('username=%s' % self.username)
         logger.debug('project=%s' % self.project_name)
         logger.debug('editor=%s' % self.editor)
@@ -1183,7 +1183,7 @@ class PwcliConfig():
         self._parser = configparser.ConfigParser()
 
         # add defaults for config options
-        self.url = None
+        self.server_url = None
         self.project_name = None
         self.username = None
         self.token = None
@@ -2593,9 +2593,9 @@ with # character. Example: #1000,#1005'''
         if self.config.main_branches is not None:
             self.selected_main_branch = self.config.main_branches[0]
 
-        self.output('Connecting to %s' % self.config.url)
+        self.output('Connecting to %s' % self.config.server_url)
 
-        self.pw = Patchwork(self.config.url, self.config.project_name,
+        self.pw = Patchwork(self.config.server_url, self.config.project_name,
                             self.config.username, self.config.token)
         self.pw.cache.update_cache()
 
