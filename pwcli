@@ -1142,22 +1142,24 @@ class PwcliConfig():
         self.username = self._parser.get('general', 'username')
         self.token = self._parser.get('general', 'token')
 
-        if self._parser.has_option('general', 'build-command'):
+        if not self._args.no_build_command and self._parser.has_option('general',
+                                                                       'build-command'):
             self.build_command = self._parser.get('general',
                                                   'build-command').split(' ')
 
-        if self._parser.has_option('general', 'automatic-emails'):
+        if not self._args.no_automatic_emails and self._parser.has_option('general',
+                                                                          'automatic-emails'):
             self.automatic_emails = self._parser.getboolean('general',
                                                             'automatic-emails')
 
-        if self._parser.has_option('general', 'msgid-tag'):
+        if not self._args.no_msgid_tag and self._parser.has_option('general', 'msgid-tag'):
             # TODO: check that self.msgid_tag has just one '%s' and
             # not more or less
             self.msgid_tag = self._parser.get('general', 'msgid-tag')
 
         self.project_name = self._parser.get('general', 'project')
 
-        if self._parser.has_option('general', 'browser') and not self._args.no_browser:
+        if not self._args.no_browser and self._parser.has_option('general', 'browser'):
             self.browser = self._parser.get('general', 'browser')
 
         if self._parser.has_option('general', 'pending-mode'):
@@ -2642,7 +2644,13 @@ with # character. Example: #1000,#1005'''
                             help='enable debug messages')
 
         parser.add_argument('--no-browser', action='store_true',
-                            help='do not open any patchwork pages on browser')
+                            help='do not open any patchwork pages on browser, overrides config file option')
+        parser.add_argument('--no-build-command', action='store_true',
+                            help='do not try to compile the repository after commit, overrides config file option')
+        parser.add_argument('--no-automatic-emails', action='store_true',
+                            help='do not send any emails without user confirmation, overrides config file option')
+        parser.add_argument('--no-msgid-tag', action='store_true',
+                            help='do not add Link to commit logs , overrides config file option')
 
         parser.add_argument('--version', action='version',
                             version='%(prog)s ' + PWCLI_VERSION)
