@@ -1112,12 +1112,6 @@ class PwcliConfig():
         # those instead. Also maybe it's better to use self._parser
         # directly and get rid of self.foo properties?
 
-        if self._parser.has_option('general', 'default_filter_delegated'):
-            self.default_filter_delegated = self._parser.getboolean('general',
-                                                                    'default_filter_delegated')
-        else:
-            self.default_filter_delegated = True
-
         if self._parser.has_option('general', 'browser') and not self._args.no_browser:
             self.browser = self._parser.get('general', 'browser')
         else:
@@ -1558,10 +1552,7 @@ class PWCLI():
         else:
             self.print_header('Branch', self.git.get_branch())
 
-        if self.config.default_filter_delegated:
-            username = self.config.username
-        else:
-            username = None
+        username = self.config.username
 
         # in stgit mode we should get the count from the pending branch
         if self.config.pending_mode == 'stgit':
@@ -1709,10 +1700,7 @@ class PWCLI():
             # no state defined, use all active states
             states = PATCH_ACTIVE_STATES
 
-        if self.config.default_filter_delegated:
-            username = self.config.username
-        else:
-            username = None
+        username = self.config.username
 
         patches = []
         patches += self.pw.get_patches(states, username)
