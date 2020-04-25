@@ -913,7 +913,7 @@ class PatchworkCache():
                   PATCH_STATE_UNDER_REVIEW,
                   PATCH_STATE_AWAITING_UPSTREAM,
                   PATCH_STATE_DEFERRED]
-        patches = self.pw._get_patches(states=states, delegate=self.pw._username)
+        patches = self.pw._get_patches(states=states, delegate=self.config.username)
 
         # make a copy of the old cache
         old_cache = dict(self.cache)
@@ -946,8 +946,9 @@ class PatchworkCache():
     def __str__(self):
         return 'PatchworkCache(%d patches)' % (len(self.cache))
 
-    def __init__(self, pw):
+    def __init__(self, pw, config):
         self.pw = pw
+        self.config = config
 
         # we want to store ordering as we rely on the ordering from
         # the server
@@ -963,7 +964,7 @@ class Patchwork():
                                                                     states,
                                                                     delegate))
 
-        params = {'project': self._project,
+        params = {'project': self.config.project_name,
                   'per_page': 100}
 
         if delegate is not None:
@@ -972,7 +973,7 @@ class Patchwork():
         if states is not None:
             params['state'] = states
 
-        url = self._server_url + '/patches/'
+        url = self._api_url + '/patches/'
         response = requests.get(url, headers=self._auth_headers, params=params)
 
         json = []
@@ -1015,7 +1016,7 @@ class Patchwork():
     def _get_patch(self, patch_id):
         logger.debug('%s()._get_patch(patch_id=%s)' % (self, patch_id))
 
-        url = self._server_url + '/patches/%s/' % (patch_id)
+        url = self._api_url + '/patches/%s/' % (patch_id)
         response = requests.get(url, headers=self._auth_headers)
 
         if response.status_code == 404:
@@ -1041,7 +1042,7 @@ class Patchwork():
         return self._get_patch(patch_id)
 
     def update_patch(self, patch_id, state=None, commit_ref=None):
-        url = self._server_url + '/patches/%s/' % (patch_id)
+        url = self._api_url + '/patches/%s/' % (patch_id)
 
         headers = self._auth_headers
         headers['Content-Type'] = 'application/json'
@@ -1065,16 +1066,17 @@ class Patchwork():
 
         return r.text
 
-    def __init__(self, url, project, username, token):
+    def __init__(self, config):
+        self.config = config
+
+        url = self.config.server_url
         if url[-1] != '/':
             url.append('/')
 
-        self._server_url = url + PATCHWORK_API_DIRECTORY
-        self._project = project
-        self._username = username
-        self._auth_headers = {'Authorization': 'Token %s' % (token)}
+        self._api_url = url + PATCHWORK_API_DIRECTORY
+        self._auth_headers = {'Authorization': 'Token %s' % (self.config.token)}
 
-        self.cache = PatchworkCache(self)
+        self.cache = PatchworkCache(self, config)
 
 
 class PwcliConfig():
@@ -2595,8 +2597,7 @@ with # character. Example: #1000,#1005'''
 
         self.output('Connecting to %s' % self.config.server_url)
 
-        self.pw = Patchwork(self.config.server_url, self.config.project_name,
-                            self.config.username, self.config.token)
+        self.pw = Patchwork(self.config)
         self.pw.cache.update_cache()
 
         self.tree = os.path.basename(os.getcwd())
