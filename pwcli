@@ -2352,6 +2352,10 @@ class PWCLI():
     def cmd_branch(self, args):
         logger.debug('cmd_branch(args=%r)' % repr(args))
 
+        if self.config.main_branches is None:
+            self.output('not enabled: general.main-branches config option not set')
+        return
+
         if args.index is None:
             self.output('Main branches:')
             i = 1
