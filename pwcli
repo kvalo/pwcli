@@ -1078,6 +1078,8 @@ class Patchwork():
 
 
 class PwcliConfig():
+    ALLOWED_PENDING_MODES = ['disabled', 'stgit']
+
     def read(self, pwcli_dir):
         config_file = os.path.join(pwcli_dir, 'config')
         signature_file = os.path.join(pwcli_dir, 'signature')
@@ -1107,13 +1109,11 @@ class PwcliConfig():
         if self._parser.has_option('general', 'browser') and not self._args.no_browser:
             self.browser = self._parser.get('general', 'browser')
 
-        pending_modes = ['disabled', 'stgit']
-
         if self._parser.has_option('general', 'pending_mode'):
             self.pending_mode = self._parser.get(
                 'general', 'pending_mode').lower()
 
-        if self.pending_mode not in pending_modes:
+        if self.pending_mode not in PwcliConfig.ALLOWED_PENDING_MODES:
             self.output('Invalid stgit.mode "%s"' % self.pending_mode)
             sys.exit(1)
 
