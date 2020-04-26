@@ -57,6 +57,7 @@ import traceback
 import mailbox
 import codecs
 import requests
+import shutil
 
 import readline
 assert readline  # to shut up pyflakes
@@ -205,6 +206,8 @@ def parse_list(arg):
     return ids
 
 
+# Note: cannot use textwrap.shorten() as it drops entire words, this
+# works per character to maximise the use of space
 def shrink(s, width, ellipsis=True):
     ELLIPSIS = '...'
 
@@ -1362,10 +1365,18 @@ class PWCLI():
         i = 1
         result = ''
 
+        columns = shutil.get_terminal_size().columns
+
         WIDTH_INDEX = 5
-        WIDTH_NAME = 60
         WIDTH_DATE = 10
         WIDTH_SUBMITTER = 12
+        WIDTH_STATE = 17
+
+        # number of spaces between fields and mysterious plus one
+        # which I'm not sure about, maybe newline?
+        WIDTH_SEPARATORS = 4 + 1
+
+        WIDTH_NAME = columns - WIDTH_INDEX - WIDTH_DATE - WIDTH_SUBMITTER - WIDTH_STATE - WIDTH_SEPARATORS
 
         for patch in patches:
             if show_indexes:
@@ -1393,6 +1404,9 @@ class PWCLI():
 
             # create format string based on hardocoded field width
             # <index> <patchname> <date> <submitter> <state>
+            #
+            # FIXME: add WIDTH_STATE padding also here, but need to do
+            # it separately to avoid test output changes
             formatstr = '{:%s} {:%s} {:%s} {:%s} {}\n' % (WIDTH_INDEX,
                                                           WIDTH_NAME,
                                                           WIDTH_DATE,

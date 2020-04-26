@@ -10,29 +10,29 @@ Deferred      : 6
 Total         : 32
 master@data > list new
 list new
- [  1] foo: new patch                                               2011-02-11 Timo Tiger   New
- [  2] foo: minor change with CC                                    2011-02-12 Timo Tiger   New
- [  3] foo: another minor change with multiple To                   2011-02-12 Timo Tiger   New
- [  4] [1/15] bar: blah blah blah 1                                 2011-02-12 Dino Dinosau New
- [  5] [2/15] bar: blah blah blah 2                                 2011-02-12 Dino Dinosau New
- [  6] [3/15] bar: blah blah blah 3                                 2011-02-12 Dino Dinosau New
- [  7] [4/15] bar: blah blah blah 4                                 2011-02-12 Dino Dinosau New
- [  8] [5/15] bar: blah blah blah 5                                 2011-02-12 Dino Dinosau New
- [  9] [6/15] bar: blah blah blah 6                                 2011-02-12 Dino Dinosau New
- [ 10] [7/15] bar: blah blah blah 7                                 2011-02-12 Dino Dinosau New
- [ 11] [8/15] bar: blah blah blah 8                                 2011-02-12 Dino Dinosau New
- [ 12] [9/15] bar: blah blah blah 9                                 2011-02-12 Dino Dinosau New
- [ 13] [10/15] bar: blah blah blah 10                               2011-02-12 Dino Dinosau New
- [ 14] [11/15] bar: blah blah blah 11                               2011-02-12 Dino Dinosau New
- [ 15] [12/15] bar: blah blah blah 12                               2011-02-12 Dino Dinosau New
- [ 16] [13/15] bar: blah blah blah 13                               2011-02-12 Dino Dinosau New
- [ 17] [14/15] bar: blah blah blah 14                               2011-02-12 Dino Dinosau New
- [ 18] [15/15] bar: blah blah blah 15                               2011-02-12 Dino Dinosau New
- [ 19] foo: patch with a really long a name and id so I just nee... 2011-02-20 Lasse Really New
+ [  1] foo: new patch                  2011-02-11 Timo Tiger   New
+ [  2] foo: minor change with CC       2011-02-12 Timo Tiger   New
+ [  3] foo: another minor change wi... 2011-02-12 Timo Tiger   New
+ [  4] [1/15] bar: blah blah blah 1    2011-02-12 Dino Dinosau New
+ [  5] [2/15] bar: blah blah blah 2    2011-02-12 Dino Dinosau New
+ [  6] [3/15] bar: blah blah blah 3    2011-02-12 Dino Dinosau New
+ [  7] [4/15] bar: blah blah blah 4    2011-02-12 Dino Dinosau New
+ [  8] [5/15] bar: blah blah blah 5    2011-02-12 Dino Dinosau New
+ [  9] [6/15] bar: blah blah blah 6    2011-02-12 Dino Dinosau New
+ [ 10] [7/15] bar: blah blah blah 7    2011-02-12 Dino Dinosau New
+ [ 11] [8/15] bar: blah blah blah 8    2011-02-12 Dino Dinosau New
+ [ 12] [9/15] bar: blah blah blah 9    2011-02-12 Dino Dinosau New
+ [ 13] [10/15] bar: blah blah blah 10  2011-02-12 Dino Dinosau New
+ [ 14] [11/15] bar: blah blah blah 11  2011-02-12 Dino Dinosau New
+ [ 15] [12/15] bar: blah blah blah 12  2011-02-12 Dino Dinosau New
+ [ 16] [13/15] bar: blah blah blah 13  2011-02-12 Dino Dinosau New
+ [ 17] [14/15] bar: blah blah blah 14  2011-02-12 Dino Dinosau New
+ [ 18] [15/15] bar: blah blah blah 15  2011-02-12 Dino Dinosau New
+ [ 19] foo: patch with a really lon... 2011-02-20 Lasse Really New
 master@data > review 1
 review 1
 Retrieving patches (1/1)
-      foo: new patch                                               2011-02-11 Timo Tiger   New
+      foo: new patch                  2011-02-11 Timo Tiger   New
 ------------------------------------------------------------
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? b
 b
@@ -40,7 +40,7 @@ Aborted.
 master@data > review 1
 review 1
 Retrieving patches (1/1)
-      foo: new patch                                               2011-02-11 Timo Tiger   New
+      foo: new patch                  2011-02-11 Timo Tiger   New
 ------------------------------------------------------------
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
 u
