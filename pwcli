@@ -1362,6 +1362,11 @@ class PWCLI():
         i = 1
         result = ''
 
+        WIDTH_INDEX = 5
+        WIDTH_NAME = 60
+        WIDTH_DATE = 10
+        WIDTH_SUBMITTER = 12
+
         for patch in patches:
             if show_indexes:
                 if patch.pending_commit is not None:
@@ -1369,19 +1374,16 @@ class PWCLI():
                 else:
                     pending = ' '
 
-                index = '%s[%3d] ' % (pending, i)
+                index = '%s[%3d]' % (pending, i)
             elif show_ids:
                 # this is not similarly aligned as the others but that
                 # doesn't matter as we should use this only with emails
-                index = '%s ' % (patch.get_id())
+                #
+                # FIXME: actually WIDTH_INDEX should be increased when
+                # showing_ids is true
+                index = '%s' % (patch.get_id())
             else:
-                # For nice alignment add empty columns if indexes are
-                # disabled.
-                index = '      '
-
-            WIDTH_NAME = 60
-            WIDTH_DATE = 10
-            WIDTH_SUBMITTER = 12
+                index = ''
 
             name = shrink(patch.get_name(), WIDTH_NAME)
             date = patch.get_datetime().strftime('%Y-%m-%d')
@@ -1389,16 +1391,14 @@ class PWCLI():
                                WIDTH_SUBMITTER, ellipsis=False)
             state = patch.get_state_name_old()
 
-            # <patchname> <date> <submitter> <state>
-            formatstr = '%%s%%-%ds %%-%ds %%-%ds %%s\n' % (WIDTH_NAME,
-                                                           WIDTH_DATE,
-                                                           WIDTH_SUBMITTER)
-            result += formatstr % (index, name, date, submitter, state)
-            # result += '%s %-40s %-12s %-10s %s\n' % (index,
-            #                                          patch.get_name(),
-            #                                          'John Doe',
-            #                                          '2012-01-02',
-            #                                          patch.get_state_name_old())
+            # create format string based on hardocoded field width
+            # <index> <patchname> <date> <submitter> <state>
+            formatstr = '{:%s} {:%s} {:%s} {:%s} {}\n' % (WIDTH_INDEX,
+                                                          WIDTH_NAME,
+                                                          WIDTH_DATE,
+                                                          WIDTH_SUBMITTER)
+            result += formatstr.format(index, name, date, submitter, state)
+
             if open_browser:
                 self.open_browser_url(patch.get_url())
 
