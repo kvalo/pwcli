@@ -318,11 +318,16 @@ class GitError(Exception):
 
 
 class GitCommit(object):
+    # stg-show doesn't support --format so have to have separate
+    # parser for it, cannot use parse_simple_format(). But a problem
+    # might be if user has enabled custom output formats in git, this
+    # function might easily fail on that.
     @staticmethod
-    def parse(text):
+    def parse_stg_show(text):
         commit = GitCommit()
 
-        match = re.search(r'^commit ([0-9a-f]{40})$', text, re.MULTILINE)
+        match = re.search(r'^commit ([0-9a-f]{40})', text.splitlines()[0],
+                          re.MULTILINE)
         if match is None:
             raise GitError('commit id not found')
 
@@ -347,6 +352,34 @@ class GitCommit(object):
         if match is not None:
             commit.title = match.group(1)
             commit.log = re.sub(r'\s\s\s\s(.*?)\n', r'\1\n', match.group(2))
+
+        return commit
+
+    # the simple format is:
+    #
+    # commit <full commitid>
+    # <title>
+    # <empty line>
+    # <rest is commit log>
+    #
+    @staticmethod
+    def parse_simple_format(text):
+        commit = GitCommit()
+
+        match = re.search(r'^commit ([0-9a-f]{40})$', text.splitlines()[0])
+        if match is None:
+            raise GitError('commit id not found')
+
+        commit.commit_id = match.group(1)
+        commit.title = text.splitlines()[1]
+        commit.log = '\n'.join(text.splitlines()[3:])
+
+        match = re.search(r'^\s*Patchwork-Id:\s*(\d+)$', commit.log, re.MULTILINE)
+        if match is not None:
+            try:
+                commit.patchwork_id = int(match.group(1))
+            except Exception as e:
+                raise GitError('failed to parse patchwork id: %s' % (e))
 
         return commit
 
@@ -415,7 +448,7 @@ class Stg():
                            log=p.stderrdata)
 
         try:
-            return GitCommit.parse(p.stdoutdata)
+            return GitCommit.parse_stg_show(p.stdoutdata)
         except Exception as e:
             raise GitError('Failed to parse patch %s: %s' % (patchname, e))
 
@@ -439,7 +472,8 @@ class Git():
             raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
     def get_commit(self, commitid):
-        cmd = ['git', 'show', commitid]
+        cmd = ['git', 'show', '--format=commit %H%n%s%n%n%b',
+               '--no-patch', commitid]
 
         p = RunProcess(cmd)
         if p.returncode != 0:
@@ -447,12 +481,14 @@ class Git():
                            log=p.stderrdata)
 
         try:
-            return GitCommit.parse(p.stdoutdata)
+            return GitCommit.parse_simple_format(p.stdoutdata)
         except Exception as e:
             raise GitError('Failed to parse commit %s: %s' % (commitid, e))
 
     def log_oneline(self, max_count):
-        cmd = ['git', 'log', '--oneline', '--reverse',
+        # should try to disable all possible customisations but didn't
+        # figure out yet, so just disable decoration for now
+        cmd = ['git', 'log', '--oneline', '--reverse', '--no-decorate',
                '--max-count', str(max_count)]
         p = RunProcess(cmd)
 

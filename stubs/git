@@ -106,7 +106,20 @@ def cmd_show(args):
             print('Unsupported commit id: %s' % (args.commitid))
             return
 
-      print('commit %s' % (gitrepo.get_commits()[-1].id))
+      if args.format is not None:
+            # print using simple customised format
+            commit = gitrepo.get_commits()[-1]
+            print('commit %s' % (commit.id))
+            print(commit.subject)
+            print()
+            print('TODO: add printing of commit log here, the parsin is just missing')
+      else:
+            # print using the default git show format
+            print('commit %s' % (gitrepo.get_commits()[-1].id))
+
+            # TODO: print rest of the commit, there's an ugly
+            # workaround in GitCommit.parse() due to missing output
+            # here
 
 def cmd_cherry_pick(args):
       try:
@@ -166,9 +179,12 @@ def main():
       parser_log.add_argument('--oneline', action='store_true')
       parser_log.add_argument('--reverse', action='store_true')
       parser_log.add_argument('--max-count', nargs=1, action='store')
+      parser_log.add_argument('--no-decorate', action='store_true')
       parser_log.set_defaults(func=cmd_log)
 
       parser_show = subparsers.add_parser('show')
+      parser_show.add_argument('--format', nargs=1)
+      parser_show.add_argument('--no-patch', action='store_true')
       parser_show.add_argument('commitid')
       parser_show.set_defaults(func=cmd_show)
 

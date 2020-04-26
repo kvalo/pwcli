@@ -125,6 +125,11 @@ def main():
       subprocess.call([stub_git, 'show', 'HEAD'])
       print()
 
+      print('test git show --format')
+      subprocess.call([stub_git, 'show', '--format=commit %H%n%s%n%n%b',
+                       '--no-patch', 'HEAD'])
+      print()
+
       print('test git cherry-pick')
       subprocess.call([stub_git, 'cherry-pick',
                        'fb409caeb2ecda7176f3d6af845e87b1c60f6665'])

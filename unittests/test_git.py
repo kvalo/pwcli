@@ -96,9 +96,9 @@ foo body
 
 class TestGitCommit(unittest.TestCase):
 
-    def test_parse(self):
+    def test_parse_stg_show(self):
         f = open('stg-show-1.data')
-        commit = GitCommit.parse(f.read())
+        commit = GitCommit.parse_stg_show(f.read())
         f.close()
 
         self.assertEqual(commit.commit_id,
@@ -107,6 +107,19 @@ class TestGitCommit(unittest.TestCase):
                          12345)
         self.assertEqual(commit.log,
                          'For now this just runs pyflakes and pep8. Need to extend it later.\nThere should not be any functional changes.\n foo foo bar bar\n\nSigned-off-by: Alice Example <alice@example.com>\nPatchwork-Id: 12345\nSigned-off-by: Ed Example <ed@example.com>\n')
+
+    def test_parse_simple_format(self):
+        f = open('git-show-simple-1.data')
+        commit = GitCommit.parse_simple_format(f.read())
+        f.close()
+
+        self.assertEqual(commit.commit_id,
+                         '07701d002c8c24e73c6cc51177981ce54fdb2b31')
+        self.assertEqual(commit.title,
+                         'foo: this is a test for simple format')
+        self.assertTrue(commit.log.startswith('This format is to'))
+        self.assertTrue(commit.log.endswith('Signed-off-by: Ed Example <ed@example.com>'))
+        self.assertEqual(commit.patchwork_id, 12345678)
 
 if __name__ == '__main__':
     unittest.main()

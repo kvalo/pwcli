@@ -18,6 +18,12 @@ bbd3154f2111 foo: test 2
 test git show HEAD
 commit 750f7254ae57223354ec431fe9978430745ab359
 
+test git show --format
+commit 750f7254ae57223354ec431fe9978430745ab359
+foo: new patch
+
+TODO: add printing of commit log here, the parsin is just missing
+
 test git cherry-pick
 Commit id fb409caeb2ecda7176f3d6af845e87b1c60f6665 not found.
 bbd3154f2111 foo: test 2
