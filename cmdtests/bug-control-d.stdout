@@ -11,7 +11,7 @@ Total         : 32
 master@data > 
 
 usage: 
-        {help,quit,q,list,commit,review,show,reply,branch,info,build,stg,download}
+        {help,quit,q,list,commit,review,show,reply,branch,info,build,stg,download,edit}
         ...
 : error: the following arguments are required: cmd
 master@data > 

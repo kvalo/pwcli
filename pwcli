@@ -2510,6 +2510,27 @@ class PWCLI():
 
         self.output('%d patches written to %s' % (len(patches), path))
 
+    def cmd_edit(self, args):
+        logger.debug('cmd_edit(args=%s)' % repr(args))
+
+        # TODO: implement edit for stg mode using 'stg edit
+        # --save-template' and 'stg-edit --file'
+        if self.config.pending_mode == 'stgit':
+            self.output('edit command not supported in stgit mode')
+            return
+
+        patches = self.get_patches_from_ids(args.id)
+
+        if len(patches) > 1:
+            self.output('editing of multiple patches not supported')
+            return
+
+        patch = patches[0]
+
+        mbox = patch.get_mbox()
+        mbox = self.edit_file(mbox)
+        patch.set_mbox(mbox)
+
     def run_shell(self):
         index_help = '''List of patch ids which can be eiher pwcli list indexes or real
 patchwork ids. The pwcli indexes are found from a previous list
@@ -2602,6 +2623,12 @@ with # character. Example: #1000,#1005'''
         parser_download.add_argument('ids', metavar='PATCHIDS',
                                      help=index_help)
         parser_download.set_defaults(func=self.cmd_download)
+
+        parser_edit = subparsers.add_parser('edit',
+                                            help='edit patch',
+                                            description='Edit a patch. The changes are stored locally and not permanent, so after restarting pwcli the changes are lost.')
+        parser_edit.add_argument('id')
+        parser_edit.set_defaults(func=self.cmd_edit)
 
         while True:
             prompt = ''
