@@ -10,18 +10,18 @@ Deferred      : 6
 Total         : 32
 master@data > list review
 list review
- [  1] [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review
- [  2] [2/7] foo: test 2               2011-02-11 Timo Tiger   Under Review
- [  3] [3/7] foo: test 3               2011-02-11 Timo Tiger   Under Review
- [  4] [4/7] foo: test 4               2011-02-11 Timo Tiger   Under Review
- [  5] [5/7] foo: test 5               2011-02-11 Timo Tiger   Under Review
- [  6] [6/7] foo: test 6               2011-02-11 Timo Tiger   Under Review
- [  7] [7/7] foo: test 7               2011-02-11 Timo Tiger   Under Review
+ [  1] [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review     
+ [  2] [2/7] foo: test 2               2011-02-11 Timo Tiger   Under Review     
+ [  3] [3/7] foo: test 3               2011-02-11 Timo Tiger   Under Review     
+ [  4] [4/7] foo: test 4               2011-02-11 Timo Tiger   Under Review     
+ [  5] [5/7] foo: test 5               2011-02-11 Timo Tiger   Under Review     
+ [  6] [6/7] foo: test 6               2011-02-11 Timo Tiger   Under Review     
+ [  7] [7/7] foo: test 7               2011-02-11 Timo Tiger   Under Review     
 master@data > commit 1-2
 commit 1-2
 Retrieving patches (1/2)Retrieving patches (2/2)
-      [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review
-      [2/7] foo: test 2               2011-02-11 Timo Tiger   Under Review
+      [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review     
+      [2/7] foo: test 2               2011-02-11 Timo Tiger   Under Review     
 ------------------------------------------------------------
 2 patches
 commit All/commit Individually/aBort? a
@@ -40,21 +40,21 @@ a
 2 patches set to Accepted
 master@data > list -s deferred
 list -s deferred
- [  1] foo: small cleanup              2011-02-11 Timo Tiger   Deferred
- [  2] foo: utf-8 tèst                 2011-02-11 Èd Examplè   Deferred
- [  3] [1/4] koo: yyy bbb cc 1         2011-02-12 Dino Dinosau Deferred
- [  4] [2/4] koo: yyy bbb cc 2         2011-02-12 Dino Dinosau Deferred
- [  5] [3/4] koo: yyy bbb cc 3         2011-02-12 Dino Dinosau Deferred
- [  6] [4/4] koo: yyy bbb cc 4         2011-02-12 Dino Dinosau Deferred
+ [  1] foo: small cleanup              2011-02-11 Timo Tiger   Deferred         
+ [  2] foo: utf-8 tèst                 2011-02-11 Èd Examplè   Deferred         
+ [  3] [1/4] koo: yyy bbb cc 1         2011-02-12 Dino Dinosau Deferred         
+ [  4] [2/4] koo: yyy bbb cc 2         2011-02-12 Dino Dinosau Deferred         
+ [  5] [3/4] koo: yyy bbb cc 3         2011-02-12 Dino Dinosau Deferred         
+ [  6] [4/4] koo: yyy bbb cc 4         2011-02-12 Dino Dinosau Deferred         
 master@data > commit all
 commit all
 Retrieving patches (1/6)Retrieving patches (2/6)Retrieving patches (3/6)Retrieving patches (4/6)Retrieving patches (5/6)Retrieving patches (6/6)
-      foo: small cleanup              2011-02-11 Timo Tiger   Deferred
-      foo: utf-8 tèst                 2011-02-11 Èd Examplè   Deferred
-      [1/4] koo: yyy bbb cc 1         2011-02-12 Dino Dinosau Deferred
-      [2/4] koo: yyy bbb cc 2         2011-02-12 Dino Dinosau Deferred
-      [3/4] koo: yyy bbb cc 3         2011-02-12 Dino Dinosau Deferred
-      [4/4] koo: yyy bbb cc 4         2011-02-12 Dino Dinosau Deferred
+      foo: small cleanup              2011-02-11 Timo Tiger   Deferred         
+      foo: utf-8 tèst                 2011-02-11 Èd Examplè   Deferred         
+      [1/4] koo: yyy bbb cc 1         2011-02-12 Dino Dinosau Deferred         
+      [2/4] koo: yyy bbb cc 2         2011-02-12 Dino Dinosau Deferred         
+      [3/4] koo: yyy bbb cc 3         2011-02-12 Dino Dinosau Deferred         
+      [4/4] koo: yyy bbb cc 4         2011-02-12 Dino Dinosau Deferred         
 ------------------------------------------------------------
 6 patches
 commit All/commit Individually/aBort? a

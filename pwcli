@@ -1405,12 +1405,11 @@ class PWCLI():
             # create format string based on hardocoded field width
             # <index> <patchname> <date> <submitter> <state>
             #
-            # FIXME: add WIDTH_STATE padding also here, but need to do
-            # it separately to avoid test output changes
-            formatstr = '{:%s} {:%s} {:%s} {:%s} {}\n' % (WIDTH_INDEX,
-                                                          WIDTH_NAME,
-                                                          WIDTH_DATE,
-                                                          WIDTH_SUBMITTER)
+            formatstr = '{:%s} {:%s} {:%s} {:%s} {:%s}\n' % (WIDTH_INDEX,
+                                                             WIDTH_NAME,
+                                                             WIDTH_DATE,
+                                                             WIDTH_SUBMITTER,
+                                                             WIDTH_STATE)
             result += formatstr.format(index, name, date, submitter, state)
 
             if open_browser:
