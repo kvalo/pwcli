@@ -1,0 +1,25 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: foo: patch with a really long a name and id so I just need to keep typing and come up with something clever, I'm just not good with that
+From: Lasse Really Surpringly Long And Complicated Name <lasse@example.com>
+Message-Id: <22222@example.com>
+To: list@example.com
+Date: 2011-02-20 13:13:13
+X-Patchwork-Id: 123456789
+X-Submitter-Id: 7477
+X-Project: Linux Wireless Mailing List
+X-Project-Id: 15
+X-Commit-Ref: 
+X-State: New
+X-State-Id: 1
+X-Delegate: test
+X-Delegate-Id: 25621
+
+
+Foo commit log. Ignore this text
+
+Signed-off-by: Dino Dinosaurus <dino@example.com>
+
+---
+FIXME: add the patch here

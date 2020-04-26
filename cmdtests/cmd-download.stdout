@@ -3,11 +3,11 @@ User          : test
 Project       : stub-test
 Tree          : data
 Branch        : master
-New           : 18
+New           : 19
 Review        : 7
 Upstream      : 0
 Deferred      : 6
-Total         : 31
+Total         : 32
 master@data > list
 list
  [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
@@ -41,6 +41,7 @@ list
  [ 29] [2/4] koo: yyy bbb cc 2                                      2011-02-12 Dino Dinosau Deferred
  [ 30] [3/4] koo: yyy bbb cc 3                                      2011-02-12 Dino Dinosau Deferred
  [ 31] [4/4] koo: yyy bbb cc 4                                      2011-02-12 Dino Dinosau Deferred
+ [ 32] foo: patch with a really long a name and id so I just nee... 2011-02-20 Lasse Really New
 master@data > download 10-12
 download 10-12
 3 patches written to 1030.mbox

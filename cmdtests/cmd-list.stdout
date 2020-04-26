@@ -3,11 +3,11 @@ User          : test
 Project       : stub-test
 Tree          : data
 Branch        : master
-New           : 18
+New           : 19
 Review        : 7
 Upstream      : 0
 Deferred      : 6
-Total         : 31
+Total         : 32
 master@data > list review
 list review
  [  1] [1/7] foo: test 1                                            2011-02-11 Dino Dinosau Under Review
@@ -46,6 +46,7 @@ list new
  [ 16] [13/15] bar: blah blah blah 13                               2011-02-12 Dino Dinosau New
  [ 17] [14/15] bar: blah blah blah 14                               2011-02-12 Dino Dinosau New
  [ 18] [15/15] bar: blah blah blah 15                               2011-02-12 Dino Dinosau New
+ [ 19] foo: patch with a really long a name and id so I just nee... 2011-02-20 Lasse Really New
 master@data > list deferred
 list deferred
  [  1] foo: small cleanup                                           2011-02-11 Timo Tiger   Deferred

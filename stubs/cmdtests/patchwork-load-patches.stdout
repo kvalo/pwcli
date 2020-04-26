@@ -556,5 +556,23 @@
             "name": "Dino Dinosaurus"
         },
         "web_url": "http://localhost/fixme/12345"
+    },
+    {
+        "commit_ref": "",
+        "date": "2011-02-20T13:13:13",
+        "delegate": {
+            "username": "test"
+        },
+        "id": "123456789",
+        "mbox": "http://localhost:8000/1001/mbox/123456789",
+        "msgid": "<22222@example.com>",
+        "name": "foo: patch with a really long a name and id so I just need to keep typing and come up with something clever, I'm just not good with that",
+        "project": "Linux Wireless Mailing List",
+        "state": "new",
+        "submitter": {
+            "email": "lasse@example.com",
+            "name": "Lasse Really Surpringly Long And Complicated Name"
+        },
+        "web_url": "http://localhost/fixme/12345"
     }
 ]

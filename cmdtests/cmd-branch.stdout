@@ -3,11 +3,11 @@ User          : test
 Project       : stub-test
 Tree          : data
 Branch        : master
-New           : 18
+New           : 19
 Review        : 7
 Upstream      : 0
 Deferred      : 6
-Total         : 31
+Total         : 32
 master@data > branch
 branch
 not enabled: general.main-branches config option not set
