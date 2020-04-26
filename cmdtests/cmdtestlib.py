@@ -52,7 +52,7 @@ PROMPT = 'master@data >'
 PROMPT_REVIEW_STATE = 'aPplicable/rFc/aBort\? '
 
 PROMPT_REVIEW_REASON = 'Reason \(RET for no mail\): '
-PROMPT_COMMIT_ALL = 'commit All/commit Individually/aBort\?'
+PROMPT_COMMIT_ALL = 'commit All/aBort\?'
 
 # there's some odd word wrapping happening (pexpect?) so had to cut this
 PROMPT_COMMIT_ACCEPT = 'aPplicable/rFc/aBort\? '

@@ -23,7 +23,7 @@ commit 1
       [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review     
 ------------------------------------------------------------
 1 patches
-commit All/commit Individually/aBort? a
+commit All/aBort? a
 a
 Committing patches (1/1)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 

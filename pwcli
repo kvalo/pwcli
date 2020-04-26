@@ -1876,7 +1876,6 @@ class PWCLI():
     #
     # * show lists of patches
     # * open patches in browser
-    # * commit All/commit Individually/aBort?
     # * commit patches
     # * run build script
     # * Accept/Under review/request Changes/Reject/New/Defer/Superseed/Wait upstream/not aPplicable/rFc/aBort?
@@ -1905,10 +1904,10 @@ class PWCLI():
         self.output('%d patches' % len(patches))
 
         while True:
-            answer = self.input('commit All/commit Individually/aBort? ')
+            answer = self.input('commit All/aBort? ')
             answer = answer.lower()
 
-            valid = ['a', 'i', 'b']
+            valid = ['a', 'b']
 
             if answer in valid:
                 break
@@ -1916,14 +1915,6 @@ class PWCLI():
             self.output(
                 'Unknown choice \'%s\', valid choices are: %s' % (answer,
                                                                   ', '.join(valid)))
-
-        if answer == 'a':
-            # commit All
-            commit_individually = False
-
-        if answer == 'i':
-            # commit Individually
-            commit_individually = True
 
         if answer == 'b':
             # aBort
@@ -1941,41 +1932,8 @@ class PWCLI():
             i = 1
             for patch in patches:
                 # show progressbar if applying all patches in one go
-                if not commit_individually:
-                    self.output('\rCommitting patches (%d/%d)' % (i, len(patches)),
-                                newline=False)
-
-                # edit can be chosen multiple times, that's why the loop
-                while commit_individually:
-                    # FIXME: in stgit mode we should show the commit log from
-                    # pending branch
-                    self.show_patch(patch)
-
-                    ANSWER_COMMIT = 'Commit'
-                    ANSWER_EDIT = 'Edit'
-                    ANSWER_ABORT = 'aBort'
-
-                    answer = self.show_choose_list(
-                        [ANSWER_COMMIT, ANSWER_EDIT, ANSWER_ABORT],
-                        prefix='[%d/%d] ' % (len(applied) + 1,
-                                             len(patches)))
-
-                    if answer == ANSWER_ABORT:
-                        self.output('Commit command aborted')
-                        return
-
-                    if answer == ANSWER_EDIT:
-                        mbox = patch.get_mbox()
-                        new_mbox = self.edit_file(mbox)
-
-                        if mbox != new_mbox:
-                            patch.set_mbox(new_mbox)
-
-                        continue
-
-                    if answer == ANSWER_COMMIT:
-                        # continue with commit process
-                        break
+                self.output('\rCommitting patches (%d/%d)' % (i, len(patches)),
+                            newline=False)
 
                 # apply the patch
                 if self.config.pending_mode == 'stgit':

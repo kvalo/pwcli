@@ -24,7 +24,7 @@ commit 1-2
       [2/7] foo: test 2               2011-02-11 Timo Tiger   Under Review     
 ------------------------------------------------------------
 2 patches
-commit All/commit Individually/aBort? a
+commit All/aBort? a
 a
 Committing patches (1/2)Committing patches (2/2)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
@@ -57,7 +57,7 @@ commit all
       [4/4] koo: yyy bbb cc 4         2011-02-12 Dino Dinosau Deferred         
 ------------------------------------------------------------
 6 patches
-commit All/commit Individually/aBort? a
+commit All/aBort? a
 a
 Committing patches (1/6)Committing patches (2/6)Committing patches (3/6)Committing patches (4/6)Committing patches (5/6)Committing patches (6/6)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful

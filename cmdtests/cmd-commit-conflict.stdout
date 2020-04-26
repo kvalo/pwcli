@@ -23,7 +23,7 @@ commit 1
       [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review     
 ------------------------------------------------------------
 1 patches
-commit All/commit Individually/aBort? a
+commit All/aBort? a
 a
 Committing patches (1/1)
 Failed to apply the patch: ['git', 'am', '-s', '-3'] failed: 1
