@@ -56,6 +56,30 @@ def test_review(ctxt, pwcli):
    pwcli.sendline('info')
 
    pwcli.expect_prompt()
+   pwcli.sendline('list -s new')
+
+   # review all patches, including 'foo: patch with a really long a
+   # name and id...' to test how the mails with a really long id and
+   # name look like
+   pwcli.expect_prompt()
+   pwcli.sendline('review 1-19')
+
+   # Changes requested
+   pwcli.expect(cmdtestlib.PROMPT_REVIEW_STATE)
+   pwcli.sendline('c')
+
+   # Reason
+   pwcli.expect(cmdtestlib.PROMPT_REVIEW_REASON)
+   pwcli.sendline('Please fix your name.')
+
+   # Send
+   pwcli.expect(cmdtestlib.PROMPT_REPLY)
+   pwcli.sendline('s')
+
+   pwcli.expect_prompt()
+   pwcli.sendline('info')
+
+   pwcli.expect_prompt()
    pwcli.sendline('quit')
 
    print(ctxt.smtpd.get_mails_as_string())
