@@ -1516,20 +1516,11 @@ class PWCLI():
             self.output('No To header found in the message')
             return
 
-        envelope_from = msg['From']
-
-        envelope_to = []
-        for person in msg['To'].split(','):
-            envelope_to.append(clean(person))
-
-        if 'Cc' in msg:
-            for person in msg['Cc'].split(','):
-                envelope_to.append(clean(person))
-
-        logger.debug('%s.send_email(): %s -> %s\n%r' % (self,
-                                                        envelope_from,
-                                                        envelope_to,
-                                                        msg.as_string()))
+        logger.debug('%s.send_email(): %s -> %s %s\n%r' % (self,
+                                                           msg['From'],
+                                                           msg['To'],
+                                                           msg['Cc'],
+                                                           msg.as_string()))
 
         done = False
 
@@ -1546,7 +1537,7 @@ class PWCLI():
                 if self.config.smtp_username is not None and self.config.smtp_password is not None:
                     server.login(self.config.smtp_username, self.config.smtp_password)
 
-                server.sendmail(envelope_from, envelope_to, msg.as_string())
+                server.send_message(msg)
                 server.quit()
 
                 done = True
