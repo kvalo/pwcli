@@ -27,7 +27,7 @@ a
 ============================================================
 1 patches applied:
 
-88e8a4dee32a =?utf-8?q?foo=3A_utf-8_t=C3=A8st?=
+88e8a4dee32a foo: utf-8 tèst
 
 Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
 a
@@ -87,7 +87,7 @@ User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
 
 Patch applied to data.git, thanks.
 
-88e8a4dee32a =?utf-8?q?foo=3A_utf-8_t=C3=A8st?=
+88e8a4dee32a foo: utf-8 tèst
 
 -- 
 Sent by pwcli

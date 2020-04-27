@@ -36,8 +36,13 @@ import email
 import re
 import pickle
 import collections
+import email.header
 
 GIT_DB_NAME = 'db.pickle'
+
+def decode_mime_encoded_words(text):
+    # Yeah, I know this looks stupid but couldn't figure out a better way
+    return str(email.header.make_header(email.header.decode_header(text)))
 
 class GitCommit():
     def __init__(self, commit_id, mbox, stg_name=None):
@@ -48,7 +53,7 @@ class GitCommit():
 
         msg = email.message_from_string(mbox)
 
-        subject = msg['Subject']
+        subject = decode_mime_encoded_words(msg['Subject'])
 
         # remove all '[foo]' tags
         subject = re.sub('\[.*\]', '', subject)
