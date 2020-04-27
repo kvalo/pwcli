@@ -79,7 +79,7 @@ Cc: list@example.com
 User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
  Python/<censored>
 
-b'\xc3\x88d Exampl\xc3\xa8 <ed@example.com>' wrote:
+Èd Examplè <ed@example.com> wrote:
 
 > Foo commit log. Ignore this text
 > 

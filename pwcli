@@ -759,17 +759,7 @@ class Patch():
         from_entries = email.header.decode_header(msg['From'])
         logger.debug('from_entries %r' % (from_entries))
 
-        if len(from_entries) == 0:
-            raise PwcliError('Invalid From header: %r' % (msg['From']))
-
-        (header_from, charset) = from_entries[0]
-
-        # FIXME: what if charset is something else (iso-8859-1 etc), can
-        # we use that still?
-        if charset == 'utf-8' or charset is None:
-            who = header_from
-        else:
-            who = None
+        who = str(email.header.make_header(from_entries))
 
         if who:
             quote.append('%s wrote:' % (who))
