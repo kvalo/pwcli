@@ -157,7 +157,7 @@ def parse_list(arg):
     ids = []
 
     if arg.find(' ') != -1:
-        raise Exception('Spaces are not allowed in an index list: %s' % (arg))
+        raise PwcliError('Spaces are not allowed in an index list: %s' % (arg))
 
     if len(arg) == 0:
         return []
@@ -168,7 +168,7 @@ def parse_list(arg):
         (start_str, sep, end_str) = entry.partition('-')
 
         if not start_str.isdigit():
-            raise Exception('Not a digit: %s' % (start_str))
+            raise PwcliError('Not a digit: %s' % (start_str))
 
         start = int(start_str)
 
@@ -180,7 +180,7 @@ def parse_list(arg):
         # entry is a region
 
         if not end_str.isdigit():
-            raise Exception('Not a digit: %s' % (end_str))
+            raise PwcliError('Not a digit: %s' % (end_str))
 
         end = int(end_str)
 
@@ -240,6 +240,10 @@ class Timer():
 
     def get_seconds(self):
         return '{:.3f}s'.format(self.end_time - self.start_time)
+
+
+class PwcliError(Exception):
+    pass
 
 
 class RunProcess():
@@ -756,7 +760,7 @@ class Patch():
         logger.debug('from_entries %r' % (from_entries))
 
         if len(from_entries) == 0:
-            raise Exception('Invalid From header: %r' % (msg['From']))
+            raise PwcliError('Invalid From header: %r' % (msg['From']))
 
         (header_from, charset) = from_entries[0]
 
@@ -1146,7 +1150,7 @@ class Patchwork():
 
     def _get_auth_headers(self):
         if self.config.token is None:
-            raise Exception('general.token not set but is needed for this operation')
+            raise PwcliError('general.token not set but is needed for this operation')
 
         return {'Authorization': 'Token %s' % (self.config.token)}
 
@@ -1334,16 +1338,16 @@ class PWCLI():
 
         for arg_id in ids_list:
             if not arg_id.startswith('#'):
-                raise Exception('Invalid patchwork server patch id: %s' % (arg_id))
+                raise PwcliError('Invalid patchwork server patch id: %s' % (arg_id))
 
             try:
                 patchwork_id = int(arg_id[1:])
             except:
-                raise Exception('Invalid patchwork server patch id: %s' % (arg_id))
+                raise PwcliError('Invalid patchwork server patch id: %s' % (arg_id))
 
             patch = self.pw.get_patch(patchwork_id)
             if patch is None:
-                raise Exception('Patchwork id %s not found' % (patchwork_id))
+                raise PwcliError('Patchwork id %s not found' % (patchwork_id))
 
             patches.append(patch)
 
@@ -1359,18 +1363,18 @@ class PWCLI():
         indexes = parse_list(ids)
 
         if self.patches is None:
-            raise Exception('No patches listed, forgot to run list command?')
+            raise PwcliError('No patches listed, forgot to run list command?')
 
         if len(self.patches) == 0:
-            raise Exception('No patches available, doing nothing.')
+            raise PwcliError('No patches available, doing nothing.')
             return
 
         # sanity check and populate selected[]
         selected_patches = []
         for index in indexes:
             if index > len(self.patches):
-                raise Exception('Patch index %d not found, max %d' %
-                                (index, len(self.patches)))
+                raise PwcliError('Patch index %d not found, max %d' %
+                                 (index, len(self.patches)))
 
             if index - 1 < 0:
                 self.output('Invalid patch list index: %d %d' % (index))
@@ -1474,8 +1478,8 @@ class PWCLI():
             # find the one char shortcut
             match = re.search('([A-Z])', name)
             if len(match.groups()) != 1:
-                raise Exception('Invalid number (%d) of upper case letters in choose list: %s' %
-                                (len(match.groups()), name))
+                raise PwcliError('Invalid number (%d) of upper case letters in choose list: %s' %
+                                 (len(match.groups()), name))
             shortcut = match.group(0).lower()
             valid[shortcut] = table[name]
 
@@ -2619,20 +2623,13 @@ with # character. Example: #1000,#1005'''
 
             try:
                 args.func(args)
-            except Exception as e:
+            except PwcliError as e:
                 logger.error('%s failed: %s' % (args.func, traceback.format_exc().strip()))
                 self.output('command failed: %s' % (e))
-
-                # Uncomment this to get proper stack traces when a
-                # command fails
-                #
-                # TODO: this should be enabled automatically in
-                # pautomatic tests, but first we need
-                # PatchworkException() or something like that to
-                # differentiate between normal errors and unexpected
-                # errors
-                #
-                # traceback.print_exc()
+            except Exception as e:
+                logger.error('%s failed: %s' % (args.func, traceback.format_exc().strip()))
+                self.output('error: %s' % (e))
+                self.output(traceback.format_exc().strip())
 
     def print_header(self, name, value):
         fmt = "%- 14s: %s"
