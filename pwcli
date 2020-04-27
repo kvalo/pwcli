@@ -1143,9 +1143,14 @@ class Patchwork():
 
         r.raise_for_status()
 
+        # Patchwork v2.1.5 does not specify the encoding and at least
+        # python3-requests 2.9.1-3ubuntu0.1 then uses ISO-8859-1 which
+        # naturally broke utf-8 support in mboxes. Workaround this by
+        # harcoding the encoding to utf-8.
+        r.encoding = 'utf-8'
+
         logger.info('downloaded %d B, took %s' % (len(r.text),
                                                   self.timer.get_seconds()))
-
         return r.text
 
     def _get_auth_headers(self):
@@ -2466,7 +2471,11 @@ class PWCLI():
 
         mbox = mailbox.mbox(path)
         for patch in patches:
-            mbox.add(patch.get_email().as_string())
+            # mbox.add() apparently only takes ASCII strings
+            # ("ValueError: String input must be ASCII-only; use bytes
+            # or a Message instead") so need to encode it to utf-8
+            # bytes
+            mbox.add(patch.get_email().as_string().encode('utf-8'))
 
         mbox.close()
 
