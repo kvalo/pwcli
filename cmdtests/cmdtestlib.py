@@ -36,6 +36,7 @@ import sys
 import os
 import logging
 import stubs
+import email.header
 
 # logging
 logging.basicConfig()
@@ -74,6 +75,10 @@ stubsdir = os.path.join(srcdir, 'stubs')
 logger.debug('srcdir=%r' % (srcdir))
 logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
+
+def decode_mime_encoded_words(text):
+    # Yeah, I know this looks stupid but couldn't figure out a better way
+    return str(email.header.make_header(email.header.decode_header(text)))
 
 class StubContext():
     def __init__(self, start=False, debug=False, stgit=False, builder='builder'):
