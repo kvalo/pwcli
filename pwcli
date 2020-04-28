@@ -1337,7 +1337,7 @@ class PWCLI():
 
             try:
                 patchwork_id = int(arg_id[1:])
-            except:
+            except Exception:
                 raise PwcliError('Invalid patchwork server patch id: %s' % (arg_id))
 
             patch = self.pw.get_patch(patchwork_id)
@@ -2737,6 +2737,7 @@ with # character. Example: #1000,#1005'''
 def main():
     pwcli = PWCLI()
     pwcli.run_shell()
+
 
 if __name__ == "__main__":
     main()
