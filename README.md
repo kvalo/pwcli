@@ -123,8 +123,9 @@ server-url = https://patchwork.kernel.org/
 project = linux-wireless
 ```
 
-And here's a realworld example for maintaining a kernel tree:
+And here's my config file I use for maintaining kernel trees:
 
+```
 [general]
 server-url = https://patchwork.kernel.org/
 project = linux-wireless
@@ -134,6 +135,7 @@ browser = xdg-open
 build-command = make -j 8
 automatic-emails = true
 msgid-tag = Link: https://lore.kernel.org/r/%s
+```
 
 For more information about the configuration options see pwcli.conf.
 
