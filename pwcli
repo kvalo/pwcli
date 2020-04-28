@@ -1985,6 +1985,10 @@ class PWCLI():
             for i in range(len(applied)):
                 self.git.rollback()
 
+        if self.config.token is None:
+            logger.debug('config.token is not set so skip changing patchwork state')
+            return
+
         # need to use ordered dict so that the list is shown in correct order
         state_table = collections.OrderedDict()
 
