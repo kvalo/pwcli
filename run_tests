@@ -93,7 +93,7 @@ def main():
 
         # TODO: run these checkers on _all_ python scripts in the repo
 
-        returncode = subprocess.call(['pyflakes', 'pwcli'])
+        returncode = subprocess.call(['pyflakes3', 'pwcli'])
         if returncode != 0 and not args.ignore_errors:
             sys.exit(1)
 
