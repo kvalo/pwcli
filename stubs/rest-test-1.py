@@ -211,6 +211,28 @@ def cmd_series1(args):
     #     print(patch['submitter']['name'], patch['name'], patch['state'],
     #           patch['date'])
 
+def cmd_utf1(args):
+    # carl9170: remove P2P_GO support
+    r = rest_get(args, '/patches/11509803/')
+    j = r.json()
+    print(j['mbox'])
+
+    r = requests.get(j['mbox'], headers=get_auth_headers())
+    print(r.encoding)
+    r.encoding = 'utf-8'
+    text = r.text
+    print(type(text))
+
+    s = []
+    for l in text.splitlines():
+        s.append(ascii(l))
+        if l.startswith('Reported-by:'):
+            print(type(l))
+            print(l)
+            print(ascii(l))
+
+    #print('\n'.join(s))
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dump', action='store_true')
@@ -229,6 +251,7 @@ def main():
     subparsers.add_parser('mbox1').set_defaults(func=cmd_mbox1)
     subparsers.add_parser('tags1').set_defaults(func=cmd_tags1)
     subparsers.add_parser('series1').set_defaults(func=cmd_series1)
+    subparsers.add_parser('utf1').set_defaults(func=cmd_utf1)
 
     args = parser.parse_args()
     args.func(args)
