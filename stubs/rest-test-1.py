@@ -233,6 +233,11 @@ def cmd_utf1(args):
 
     #print('\n'.join(s))
 
+def cmd_pull1(args):
+    r = rest_get(args, '/patches/11507893/')
+    j = r.json()
+    print(repr(j['pull_url']))
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dump', action='store_true')
@@ -252,6 +257,7 @@ def main():
     subparsers.add_parser('tags1').set_defaults(func=cmd_tags1)
     subparsers.add_parser('series1').set_defaults(func=cmd_series1)
     subparsers.add_parser('utf1').set_defaults(func=cmd_utf1)
+    subparsers.add_parser('pull1').set_defaults(func=cmd_pull1)
 
     args = parser.parse_args()
     args.func(args)
