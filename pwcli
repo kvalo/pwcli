@@ -489,6 +489,17 @@ class Git():
         except Exception as e:
             raise GitError('Failed to parse commit %s: %s' % (commitid, e))
 
+    def show_signature(self, commitid):
+        cmd = ['git', 'show', '--format=', '--no-patch', '--show-signature',
+               commitid]
+
+        p = RunProcess(cmd)
+        if p.returncode != 0:
+            raise GitError('git show --show-signature failed: %d' % (p.returncode),
+                           log=p.stderrdata)
+
+        return p.stdoutdata.strip()
+
     def log_oneline(self, max_count):
         # should try to disable all possible customisations but didn't
         # figure out yet, so just disable decoration for now
@@ -571,6 +582,15 @@ class Git():
         if p.returncode != 0:
             raise GitError('git checkout failed: %d' % (p.returncode),
                            log=p.stderrdata)
+
+    def pull(self, url):
+        cmd = ['git', 'pull', '--no-edit', '--no-ff', '--stat'] + url.split(' ')
+        p = RunProcess(cmd)
+        if p.returncode != 0:
+            raise GitError('git pull failed: %d' % (p.returncode),
+                           log=p.stderrdata)
+
+        return p.stdoutdata.strip()
 
     def am(self, mbox):
         cmd = ['git', 'am', '-s', '-3']
@@ -685,6 +705,9 @@ class Patch():
         self._commit_ref = commit_ref
 
         logger.debug('%s: commit_ref change to %s' % (self, commit_ref))
+
+    def get_pull_url(self):
+        return self._pull_url
 
     def get_url(self):
         return self._web_url
@@ -895,6 +918,7 @@ class Patch():
         self._date = data['date']
         self._name = data['name']
         self._commit_ref = data['commit_ref']
+        self._pull_url = data['pull_url']
         self._state = data['state']
         self._submitter_name = data['submitter']['name']
         self._submitter_email = data['submitter']['email']
@@ -1951,9 +1975,15 @@ class PWCLI():
             else:
                 branch_name = ''
 
-            reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
-                                                          branch_name,
-                                                          tree_name)
+            if patches[0].get_pull_url() is not None:
+                # this is a pull request
+                reply += 'Pulled, thanks.\n\n'
+            else:
+                # this is a normal patchset
+                reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
+                                                              branch_name,
+                                                              tree_name)
+
             reply += '%s\n\n' % self.git.log_oneline(len(patches))
 
             # Note: faillog is not added if the patches are accepted, for
@@ -2013,6 +2043,11 @@ class PWCLI():
     def cmd_commit(self, args):
         logger.debug('cmd_commit(args=%s)' % repr(args))
         patches = self.get_patches_from_ids(args.ids)
+
+        for patch in patches:
+            if patch.get_pull_url() is not None:
+                self.output('Cannot commit pull requests: %s' % (patch.get_name()))
+                return
 
         self.prefetch_patches(patches)
 
@@ -2125,6 +2160,77 @@ class PWCLI():
 
         show_accepted = len(patches) == len(applied)
         self.handle_after_commit(patches, faillog, builder, show_accepted)
+
+    def cmd_pull(self, args):
+        logger.debug('cmd_pull(args=%s)' % repr(args))
+
+        if self.config.pending_mode == 'stgit':
+            self.output('pull command not (yet) supported in stgit mode')
+            return
+
+        patches = self.get_patches_from_ids(args.id[0])
+        patch = patches[0]
+
+        if patch.get_pull_url() is None:
+            self.output('Not a pull request')
+            return
+
+        self.open_browser_url(patch.get_url())
+
+        self.output(patch.get_name())
+        self.output('')
+        self.output(patch.get_log())
+
+        while True:
+            answer = self.input('Pull/aBort? ')
+            answer = answer.lower()
+
+            valid = ['p', 'b']
+
+            if answer in valid:
+                break
+
+            self.output(
+                'Unknown choice \'%s\', valid choices are: %s' % (answer,
+                                                                  ', '.join(valid)))
+
+        if answer == 'b':
+            # aBort
+            self.output('Aborted commit command')
+            return
+
+        faillog = ''
+
+        try:
+            output = self.git.pull(patch.get_pull_url())
+            signature = self.git.show_signature('HEAD')
+
+            self.output(output)
+            self.output(signature)
+
+            # store the commit id temporarily, needed later for
+            # setting commit_ref in the server
+            patch.final_commit = self.git.get_commit('HEAD')
+
+            # run a build test
+            builder = self.run_build_script()
+
+            if builder and len(builder.stderrdata) > 0:
+                faillog += builder.stderrdata
+
+        except GitError as e:
+            # newline to clear the "progress bar"
+            self.output('')
+
+            self.output('Failed to apply the patch: %s' % e)
+            self.output('%s' % e.log)
+            faillog += e.log
+
+        if self.config.token is None:
+            logger.debug('config.token is not set so skip changing patchwork state')
+            return
+
+        self.handle_after_commit([patch], faillog, builder, show_accepted=True)
 
     def cmd_show(self, args):
         logger.debug('cmd_show(args=%s)' % repr(args))
@@ -2536,6 +2642,13 @@ with # character. Example: #1000,#1005'''
         parser_commit.add_argument('ids', metavar='PATCHIDS',
                                    help=index_help)
         parser_commit.set_defaults(func=self.cmd_commit)
+
+        parser_pull = subparsers.add_parser('pull',
+                                            help='pull a pull request',
+                                            description='Pulls a pull request using git, runs a build test (if enabled) and changes patchwork patch state accordingly and sends an email reply. Requires that the list command is run before.')
+        parser_pull.add_argument('id', metavar='PATCHID', nargs=1,
+                                 help='A patch id which can be eiher pwcli list indexes or a real patchwork id (#123456).')
+        parser_pull.set_defaults(func=self.cmd_pull)
 
         parser_review = subparsers.add_parser('review',
                                               help='review patches and change states',

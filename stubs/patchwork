@@ -129,10 +129,12 @@ class Patch():
             self.params['delegate'] = {}
             self.params['delegate']['username'] = self.msg['X-Delegate']
 
-            # KVALO: add mbox attribute
+            # add mbox attribute
             self.params['mbox'] = '%smbox/%s' % (self.pws.get_server_url(),
                                                  self.params['id'])
 
+            # TODO: implement pull requests
+            self.params['pull_url'] = None
 
       def save(self):
             # update headers in self.msg

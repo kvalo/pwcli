@@ -50,6 +50,7 @@ FAKE_ATTRIBUTES = {
                    'email': 'ed@example.com'},
     'delegate': {'username': 'dddd'},
     'mbox': 'http://www.example.com',
+    'pull_url': None,
 }
 
 TEST_MBOX = 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [1/7] foo\nFrom: Dino Dinosaurus <dino@example.com>\nX-Patchwork-Id: 12345\nMessage-Id: <11111@example.com>\nTo: list@example.com\nDate: Thu,  10 Feb 2011 15:23:31 +0300\n\nFoo commit log. Ignore this text\n\nSigned-off-by: Dino Dinosaurus <dino@example.com>\n\n---\nFIXME: add the patch here\n'

@@ -10,6 +10,7 @@
         "msgid": "<11111@example.com>",
         "name": "[1/7] foo: test 1",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "dino@example.com",
@@ -28,6 +29,7 @@
         "msgid": "<22222@example.com>",
         "name": "[2/7] foo: test 2",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "timo@example.com",
@@ -46,6 +48,7 @@
         "msgid": "<22222@example.com>",
         "name": "[3/7] foo: test 3",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "timo@example.com",
@@ -64,6 +67,7 @@
         "msgid": "<22222@example.com>",
         "name": "[4/7] foo: test 4",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "timo@example.com",
@@ -82,6 +86,7 @@
         "msgid": "<22222@example.com>",
         "name": "[5/7] foo: test 5",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "timo@example.com",
@@ -100,6 +105,7 @@
         "msgid": "<22222@example.com>",
         "name": "[6/7] foo: test 6",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "timo@example.com",
@@ -118,6 +124,7 @@
         "msgid": "<22222@example.com>",
         "name": "[7/7] foo: test 7",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "under-review",
         "submitter": {
             "email": "timo@example.com",
@@ -136,6 +143,7 @@
         "msgid": "<22222@example.com>",
         "name": "foo: small cleanup",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "deferred",
         "submitter": {
             "email": "timo@example.com",
@@ -154,6 +162,7 @@
         "msgid": "<22222@example.com>",
         "name": "foo: utf-8 t\u00e8st",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "deferred",
         "submitter": {
             "email": "ed@example.com",
@@ -172,6 +181,7 @@
         "msgid": "<22222@example.com>",
         "name": "foo: new patch",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "timo@example.com",
@@ -190,6 +200,7 @@
         "msgid": "<22222@example.com>",
         "name": "foo: minor change with CC",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "timo@example.com",
@@ -208,6 +219,7 @@
         "msgid": "<22222@example.com>",
         "name": "foo: another minor change with multiple To",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "timo@example.com",
@@ -226,6 +238,7 @@
         "msgid": "<11111@example.com>",
         "name": "[1/15] bar: blah blah blah 1",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -244,6 +257,7 @@
         "msgid": "<11111@example.com>",
         "name": "[2/15] bar: blah blah blah 2",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -262,6 +276,7 @@
         "msgid": "<11111@example.com>",
         "name": "[3/15] bar: blah blah blah 3",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -280,6 +295,7 @@
         "msgid": "<11111@example.com>",
         "name": "[4/15] bar: blah blah blah 4",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -298,6 +314,7 @@
         "msgid": "<11111@example.com>",
         "name": "[5/15] bar: blah blah blah 5",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -316,6 +333,7 @@
         "msgid": "<11111@example.com>",
         "name": "[6/15] bar: blah blah blah 6",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -334,6 +352,7 @@
         "msgid": "<11111@example.com>",
         "name": "[7/15] bar: blah blah blah 7",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -352,6 +371,7 @@
         "msgid": "<11111@example.com>",
         "name": "[8/15] bar: blah blah blah 8",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -370,6 +390,7 @@
         "msgid": "<11111@example.com>",
         "name": "[9/15] bar: blah blah blah 9",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -388,6 +409,7 @@
         "msgid": "<11111@example.com>",
         "name": "[10/15] bar: blah blah blah 10",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -406,6 +428,7 @@
         "msgid": "<11111@example.com>",
         "name": "[11/15] bar: blah blah blah 11",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -424,6 +447,7 @@
         "msgid": "<11111@example.com>",
         "name": "[12/15] bar: blah blah blah 12",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -442,6 +466,7 @@
         "msgid": "<11111@example.com>",
         "name": "[13/15] bar: blah blah blah 13",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -460,6 +485,7 @@
         "msgid": "<11111@example.com>",
         "name": "[14/15] bar: blah blah blah 14",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -478,6 +504,7 @@
         "msgid": "<11111@example.com>",
         "name": "[15/15] bar: blah blah blah 15",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "dino@example.com",
@@ -496,6 +523,7 @@
         "msgid": "<11111@example.com>",
         "name": "[1/4] koo: yyy bbb cc 1",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "deferred",
         "submitter": {
             "email": "dino@example.com",
@@ -514,6 +542,7 @@
         "msgid": "<11111@example.com>",
         "name": "[2/4] koo: yyy bbb cc 2",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "deferred",
         "submitter": {
             "email": "dino@example.com",
@@ -532,6 +561,7 @@
         "msgid": "<11111@example.com>",
         "name": "[3/4] koo: yyy bbb cc 3",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "deferred",
         "submitter": {
             "email": "dino@example.com",
@@ -550,6 +580,7 @@
         "msgid": "<11111@example.com>",
         "name": "[4/4] koo: yyy bbb cc 4",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "deferred",
         "submitter": {
             "email": "dino@example.com",
@@ -568,6 +599,7 @@
         "msgid": "<22222@example.com>",
         "name": "foo: patch with a really long a name and id so I just need to keep typing and come up with something clever, I'm just not good with that",
         "project": "Linux Wireless Mailing List",
+        "pull_url": null,
         "state": "new",
         "submitter": {
             "email": "lasse@example.com",
