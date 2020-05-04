@@ -1862,6 +1862,140 @@ class PWCLI():
         self.output(self.create_patchlist_as_string(self.patches,
                                                     show_indexes=True))
 
+    def handle_after_commit(self, patches, faillog, builder, show_accepted):
+        # need to use ordered dict so that the list is shown in correct order
+        state_table = collections.OrderedDict()
+
+        # Accepted state should not be shown if any of the patches
+        # failed apply
+        if show_accepted:
+            state_table['Accepted'] = PATCH_STATE_ACCEPTED
+
+        state_table['Under review'] = PATCH_STATE_UNDER_REVIEW
+        state_table['Changes requested'] = PATCH_STATE_CHANGES_REQUESTED
+        state_table['Rejected'] = PATCH_STATE_REJECTED
+        state_table['New'] = PATCH_STATE_NEW
+        state_table['Deferred'] = PATCH_STATE_DEFERRED
+        state_table['Superseded'] = PATCH_STATE_SUPERSEDED
+        state_table['aWaiting upstream'] = PATCH_STATE_AWAITING_UPSTREAM
+        state_table['not aPplicable'] = PATCH_STATE_NOT_APPLICABLE
+        state_table['rFc'] = PATCH_STATE_RFC
+        state_table['aBort'] = STATE_ABORTED
+
+        while True:
+            state = self.show_choose_list(state_table)
+            result = None
+
+            if builder is not None:
+                if builder.returncode != 0:
+                    result = 'Build FAILED!'
+                elif len(builder.stderrdata) > 0:
+                    result = 'Build had WARNINGS!'
+
+            if state != PATCH_STATE_ACCEPTED or not result:
+                # no problems with patches
+                break
+
+            # patches had problems and user chose to ACCEPT them
+            self.output(result)
+
+            answer = self.input(
+                'Are you sure want to ACCEPT these patches [y/N]: ')
+            answer = answer.lower()
+            if answer == 'y':
+                # user is sure
+                break
+
+            # user it not sure, ask for the state again
+
+        if state != PATCH_STATE_ACCEPTED:
+            # FIXME: git revert all patches in applied list as the user
+            # didn't accept them
+            pass
+
+        if state == STATE_ABORTED:
+            self.output('Aborted.')
+            return
+
+        i = 1
+        for patch in patches:
+            self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
+                        newline=False)
+            patch.set_state_name(state)
+            i += 1
+
+            if state == PATCH_STATE_ACCEPTED:
+                # Set commit_ref so that the commit id is visible in the
+                # web interface and it's possible to find the patchwork id
+                # based on commit id.
+                patch.set_commit_ref(patch.final_commit.commit_id)
+
+        # newline to clear the "progress bar"
+        self.output('')
+
+        self.output('%s set to %s' % (get_patches_plural(len(patches)),
+                                      OLD_PATCH_STATE_MAP[state]))
+
+        if not self.config.automatic_emails:
+            # no need to send any emails
+            return
+
+        reply = ''
+        reason = None
+
+        if state == PATCH_STATE_ACCEPTED:
+            tree_name = '%s.git' % self.tree
+
+            if self.config.pending_mode == 'stgit' and len(self.config.main_branches) > 1:
+                branch_name = '%s branch of ' % (self.selected_main_branch)
+            else:
+                branch_name = ''
+
+            reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
+                                                          branch_name,
+                                                          tree_name)
+            reply += '%s\n\n' % self.git.log_oneline(len(patches))
+
+            # Note: faillog is not added if the patches are accepted, for
+            # example no need to show false warnings
+        else:
+            reason = self.input('Reason (RET for no mail): ')
+            reason = reason.strip()
+
+            if len(reason) == 0:
+                # no reason specified so no need to send any mail either
+                return
+
+            reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
+            reply += '%s\n\n' % (reason)
+
+            # add possible git and build failures/warnings to the mail
+            faillog = faillog.strip()
+            if len(faillog) > 0:
+                reply += '%s\n\n' % (faillog)
+
+            reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
+                                            OLD_PATCH_STATE_MAP[state])
+
+            # With one patch no point of adding the list, the patchwork
+            # id and link is already available from the signature.
+            if len(patches) > 1:
+                reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
+
+        first_patch = patches[0]
+        msg = first_patch.get_reply_msg(self.config.fullname, self.config.email,
+                                        reply, signature=self.config.signature)
+
+        # if the patches are accepted, there's no reason and no need to edit
+        # the mail
+        if reason:
+            msg = self.edit_email(msg)
+            if msg is None:
+                # user aborted
+                return
+
+        self.send_email(msg)
+
     # Basic operation:
     #
     # * show lists of patches
@@ -1989,138 +2123,8 @@ class PWCLI():
             logger.debug('config.token is not set so skip changing patchwork state')
             return
 
-        # need to use ordered dict so that the list is shown in correct order
-        state_table = collections.OrderedDict()
-
-        # Accepted state should not be shown if any of the patches
-        # failed apply
-        if len(patches) == len(applied):
-            state_table['Accepted'] = PATCH_STATE_ACCEPTED
-
-        state_table['Under review'] = PATCH_STATE_UNDER_REVIEW
-        state_table['Changes requested'] = PATCH_STATE_CHANGES_REQUESTED
-        state_table['Rejected'] = PATCH_STATE_REJECTED
-        state_table['New'] = PATCH_STATE_NEW
-        state_table['Deferred'] = PATCH_STATE_DEFERRED
-        state_table['Superseded'] = PATCH_STATE_SUPERSEDED
-        state_table['aWaiting upstream'] = PATCH_STATE_AWAITING_UPSTREAM
-        state_table['not aPplicable'] = PATCH_STATE_NOT_APPLICABLE
-        state_table['rFc'] = PATCH_STATE_RFC
-        state_table['aBort'] = STATE_ABORTED
-
-        while True:
-            state = self.show_choose_list(state_table)
-            result = None
-
-            if builder is not None:
-                if builder.returncode != 0:
-                    result = 'Build FAILED!'
-                elif len(builder.stderrdata) > 0:
-                    result = 'Build had WARNINGS!'
-
-            if state != PATCH_STATE_ACCEPTED or not result:
-                # no problems with patches
-                break
-
-            # patches had problems and user chose to ACCEPT them
-            self.output(result)
-
-            answer = self.input(
-                'Are you sure want to ACCEPT these patches [y/N]: ')
-            answer = answer.lower()
-            if answer == 'y':
-                # user is sure
-                break
-
-            # user it not sure, ask for the state again
-
-        if state != PATCH_STATE_ACCEPTED:
-            # FIXME: git revert all patches in applied list as the user
-            # didn't accept them
-            pass
-
-        if state == STATE_ABORTED:
-            self.output('Aborted.')
-            return
-
-        i = 1
-        for patch in patches:
-            self.output('\rSetting patch state (%d/%d)' % (i, len(patches)),
-                        newline=False)
-            patch.set_state_name(state)
-            i += 1
-
-            if state == PATCH_STATE_ACCEPTED:
-                # Set commit_ref so that the commit id is visible in the
-                # web interface and it's possible to find the patchwork id
-                # based on commit id.
-                patch.set_commit_ref(patch.final_commit.commit_id)
-
-        # newline to clear the "progress bar"
-        self.output('')
-
-        self.output('%s set to %s' % (get_patches_plural(len(patches)),
-                                      OLD_PATCH_STATE_MAP[state]))
-
-        if not self.config.automatic_emails:
-            # no need to send any emails
-            return
-
-        reply = ''
-        reason = None
-
-        if state == PATCH_STATE_ACCEPTED:
-            tree_name = '%s.git' % self.tree
-
-            if self.config.pending_mode == 'stgit' and len(self.config.main_branches) > 1:
-                branch_name = '%s branch of ' % (self.selected_main_branch)
-            else:
-                branch_name = ''
-
-            reply += '%s applied to %s%s, thanks.\n\n' % (get_patches_plural(len(patches)),
-                                                          branch_name,
-                                                          tree_name)
-            reply += '%s\n\n' % self.git.log_oneline(len(patches))
-
-            # Note: faillog is not added if the patches are accepted, for
-            # example no need to show false warnings
-        else:
-            reason = self.input('Reason (RET for no mail): ')
-            reason = reason.strip()
-
-            if len(reason) == 0:
-                # no reason specified so no need to send any mail either
-                return
-
-            reason = textwrap.fill(reason, MAIL_BODY_WIDTH)
-            reply += '%s\n\n' % (reason)
-
-            # add possible git and build failures/warnings to the mail
-            faillog = faillog.strip()
-            if len(faillog) > 0:
-                reply += '%s\n\n' % (faillog)
-
-            reply += '%s set to %s.\n\n' % (get_patches_plural(len(patches)),
-                                            OLD_PATCH_STATE_MAP[state])
-
-            # With one patch no point of adding the list, the patchwork
-            # id and link is already available from the signature.
-            if len(patches) > 1:
-                reply += '%s\n\n' % (self.create_patchlist_for_mail(patches))
-
-        first_patch = patches[0]
-        msg = first_patch.get_reply_msg(self.config.fullname, self.config.email,
-                                        reply, signature=self.config.signature)
-
-        # if the patches are accepted, there's no reason and no need to edit
-        # the mail
-        if reason:
-            msg = self.edit_email(msg)
-            if msg is None:
-                # user aborted
-                return
-
-        self.send_email(msg)
+        show_accepted = len(patches) == len(applied)
+        self.handle_after_commit(patches, faillog, builder, show_accepted)
 
     def cmd_show(self, args):
         logger.debug('cmd_show(args=%s)' % repr(args))
