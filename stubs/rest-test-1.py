@@ -205,11 +205,26 @@ def cmd_tags1(args):
 def cmd_series1(args):
     r = rest_get(args, '/series/', { 'project' : PROJECT })
     j = r.json()
-    print('%s patches' % (len(j)))
+    print('%s series' % (len(j)))
 
-    # for patch in j:
-    #     print(patch['submitter']['name'], patch['name'], patch['state'],
-    #           patch['date'])
+    for series in j:
+        print(series['submitter']['name'], series['name'], series['date'],
+              '%d patches' % len(series['patches']))
+
+def cmd_series2(args):
+    # [PATCHv2,1/4] ath10k: Add wmi command support for station specific TID config
+    r = rest_get(args, '/patches/11643791/')
+    patch = r.json()
+
+    # note: for some reason series is an array, just use the first one
+    # and ignore the rest
+    print(patch['series'][0]['id'], patch['series'][0]['name'])
+
+    # fetch the full series
+    r = rest_get(args, '/series/%d/' % (patch['series'][0]['id']))
+    series = r.json()
+
+    print(series['cover_letter']['id'], series['cover_letter']['web_url'])
 
 def cmd_utf1(args):
     # carl9170: remove P2P_GO support
@@ -256,6 +271,7 @@ def main():
     subparsers.add_parser('mbox1').set_defaults(func=cmd_mbox1)
     subparsers.add_parser('tags1').set_defaults(func=cmd_tags1)
     subparsers.add_parser('series1').set_defaults(func=cmd_series1)
+    subparsers.add_parser('series2').set_defaults(func=cmd_series2)
     subparsers.add_parser('utf1').set_defaults(func=cmd_utf1)
     subparsers.add_parser('pull1').set_defaults(func=cmd_pull1)
 
