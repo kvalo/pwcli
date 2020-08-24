@@ -50,6 +50,7 @@ FAKE_ATTRIBUTES = {
                    'email': 'ed@example.com'},
     'delegate': {'username': 'dddd'},
     'mbox': 'http://www.example.com',
+    'series': [],
     'pull_url': None,
 }
 

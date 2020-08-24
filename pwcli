@@ -886,6 +886,22 @@ class Patch():
 
         return int(match.group(1))
 
+    def get_series_id(self):
+        return self._series_id
+
+    def set_series(self, series):
+        self._series = series
+
+    def get_series(self):
+        return self._series
+
+    def get_cover(self):
+        series = self.get_series()
+        if series is None:
+            return None
+
+        return series.get_cover()
+
     def __eq__(self, other):
         if self.get_datetime() == other.get_datetime() and \
            self.get_name() == other.get_name():
@@ -929,6 +945,14 @@ class Patch():
 
         self._mbox_url = data['mbox']
 
+        # series is an array and it's documented how there can be
+        # multiple series ids, so just always use the first item on
+        # the array
+        if len(data['series']) > 0:
+            self._series_id = data['series'][0]['id']
+        else:
+            self._series_id = None
+
     def __str__(self):
         return 'Patch(name=%s, id=%s)' % (self.get_name(), self.get_id())
 
@@ -936,10 +960,57 @@ class Patch():
         self.pw = pw
 
         self.mbox = None
+        self._series = None
 
         self.pending_commit = None
         self.final_commit = None
         self.stg_index = None
+
+
+# a patch series
+class Series():
+    def get_cover_letter_id(self):
+        return self._cover_letter_id
+
+    def set_cover(self, cover):
+        self._cover = cover
+
+    def get_cover(self):
+        return self._cover
+
+    def parse_json(self, data):
+        self._id = data['id']
+
+        if data['cover_letter'] is not None:
+            self._cover_letter_id = data['cover_letter']['id']
+        else:
+            self._cover_letter_id = None
+
+    def __str__(self):
+        return 'Series(name=%s, id=%s)' % (self.get_name(), self.get_id())
+
+    def __init__(self, pw):
+        self.pw = pw
+
+
+# a cover letter of a patch series
+class Cover():
+    def get_web_url(self):
+        return self._web_url
+
+    def parse_json(self, data):
+        self._id = data['id']
+        self._web_url = data['web_url']
+        self._date = data['date']
+        self._name = data['name']
+        self._submitter_name = data['submitter']['name']
+        self._submitter_email = data['submitter']['email']
+
+    def __str__(self):
+        return 'Cover(name=%s, id=%s)' % (self.get_name(), self.get_id())
+
+    def __init__(self, pw):
+        self.pw = pw
 
 
 class PatchworkCache():
@@ -1008,6 +1079,31 @@ class PatchworkCache():
         for old_patch in old_cache:
             del self.cache[old_patch.get_id()]
 
+        # download series
+        self.series = {}
+        for patch in self.cache.values():
+            series_id = patch.get_series_id()
+
+            if series_id is None:
+                continue
+
+            if series_id not in self.series:
+                s = self.pw.get_series(series_id)
+                self.series[series_id] = s
+            else:
+                s = self.series[series_id]
+
+            patch.set_series(s)
+
+        # download covers
+        for series in self.series.values():
+            cover_id = series.get_cover_letter_id()
+            if cover_id is None:
+                continue
+
+            c = self.pw.get_cover(cover_id)
+            series.set_cover(c)
+
     def __str__(self):
         return 'PatchworkCache(%d patches)' % (len(self.cache))
 
@@ -1018,6 +1114,8 @@ class PatchworkCache():
         # we want to store ordering as we rely on the ordering from
         # the server
         self.cache = collections.OrderedDict()
+
+        self.series = {}
 
         logger.debug(self)
 
@@ -1145,6 +1243,48 @@ class Patchwork():
         r.raise_for_status()
 
         logger.info('patch updated, took %s' % (self.timer.get_seconds()))
+
+    def get_series(self, series_id):
+        logger.debug('%s().get_series(series_id=%s)' % (self, series_id))
+        self.timer.start()
+
+        url = self._api_url + '/series/%s/' % (series_id)
+        response = requests.get(url)
+
+        if response.status_code == 404:
+            # series id not found from server
+            return None
+
+        self.timer.stop()
+        logger.info('received 1 series, took %s' % (self.timer.get_seconds()))
+
+        response.raise_for_status()
+
+        series = Series(self)
+        series.parse_json(response.json())
+
+        return series
+
+    def get_cover(self, cover_id):
+        logger.debug('%s().get_cover(cover_id=%s)' % (self, cover_id))
+        self.timer.start()
+
+        url = self._api_url + '/covers/%s/' % (cover_id)
+        response = requests.get(url)
+
+        if response.status_code == 404:
+            # cover id not found from server
+            return None
+
+        self.timer.stop()
+        logger.info('received 1 cover, took %s' % (self.timer.get_seconds()))
+
+        response.raise_for_status()
+
+        cover = Cover(self)
+        cover.parse_json(response.json())
+
+        return cover
 
     def get_mbox(self, url):
         logger.info('%s.get_mbox(url=%s)' % (self, url))
@@ -1423,6 +1563,7 @@ class PWCLI():
                                    open_browser=False):
         i = 1
         result = ''
+        covers_opened = []
 
         columns = shutil.get_terminal_size().columns
 
@@ -1465,6 +1606,11 @@ class PWCLI():
             result += formatstr.format(index, name, date, submitter, state)
 
             if open_browser:
+                cover = patch.get_cover()
+                if cover is not None and cover not in covers_opened:
+                    self.open_browser_url(cover.get_web_url())
+                    covers_opened.append(cover)
+
                 self.open_browser_url(patch.get_url())
 
             i += 1
