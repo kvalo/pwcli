@@ -10,13 +10,13 @@ Deferred      : 6
 Total         : 32
 master@data > list review
 list review
- [  1] [1/7] foo: test 1               2011-02-11 Dino Dinosau Under Review     
- [  2] [2/7] foo: test 2               2011-02-11 Timo Tiger   Under Review     
- [  3] [3/7] foo: test 3               2011-02-11 Timo Tiger   Under Review     
- [  4] [4/7] foo: test 4               2011-02-11 Timo Tiger   Under Review     
- [  5] [5/7] foo: test 5               2011-02-11 Timo Tiger   Under Review     
- [  6] [6/7] foo: test 6               2011-02-11 Timo Tiger   Under Review     
- [  7] [7/7] foo: test 7               2011-02-11 Timo Tiger   Under Review     
+ [  1] [1/7] foo: test 1             - - - -   3d Dino Dinosau Under Review     
+ [  2] [2/7] foo: test 2             - - - -   3d Timo Tiger   Under Review     
+ [  3] [3/7] foo: test 3             - - - -   3d Timo Tiger   Under Review     
+ [  4] [4/7] foo: test 4             - - - -   3d Timo Tiger   Under Review     
+ [  5] [5/7] foo: test 5             - - - -   3d Timo Tiger   Under Review     
+ [  6] [6/7] foo: test 6             - - - -   3d Timo Tiger   Under Review     
+ [  7] [7/7] foo: test 7             - - - -   3d Timo Tiger   Under Review     
 master@data > commit foo
 commit foo
 command failed: Not a digit: foo

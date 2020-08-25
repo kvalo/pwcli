@@ -234,6 +234,30 @@ def shrink(s, width, ellipsis=True):
     return s
 
 
+def now():
+    if 'PWCLI_HARDCODE_DATE' in os.environ:
+        return datetime.datetime.strptime(os.environ['PWCLI_HARDCODE_DATE'],
+                                          '%Y-%m-%dT%H:%M:%S')
+
+    return datetime.datetime.now()
+
+
+def get_age(date):
+    delta = now() - date
+
+    if delta.days >= 2 * 12 * 30:
+        # over 2 years
+        return '%dy' % (delta.days // 365)
+    elif delta.days >= 30:
+        return '%dm' % (delta.days // 30)
+    elif delta.days > 0:
+        return '%dd' % (delta.days)
+    elif delta.seconds >= 3600:
+        return '%dh' % (delta.seconds // 3600)
+    else:
+        return '0h'
+
+
 class Timer():
 
     def start(self):
@@ -684,6 +708,9 @@ class Patch():
 
     def get_datetime(self):
         return datetime.datetime.strptime(self.get_date(), '%Y-%m-%dT%H:%M:%S')
+
+    def get_age(self):
+        return get_age(self.get_datetime())
 
     def get_state_name(self):
         return self._state
@@ -1651,14 +1678,21 @@ class PWCLI():
         columns = shutil.get_terminal_size().columns
 
         WIDTH_INDEX = 6
-        WIDTH_DATE = 10
+        WIDTH_ACKED = 1
+        WIDTH_REVIEWED = 1
+        WIDTH_TESTED = 1
+        WIDTH_COMMENTS = 2
+        WIDTH_AGE = 3
         WIDTH_SUBMITTER = 12
         WIDTH_STATE = 17
 
         # number of spaces between fields
-        WIDTH_SEPARATORS = 4
+        WIDTH_SEPARATORS = 8
 
-        WIDTH_NAME = columns - WIDTH_INDEX - WIDTH_DATE - WIDTH_SUBMITTER - WIDTH_STATE - WIDTH_SEPARATORS
+        # pep8 recommends parentheses for line continuations
+        WIDTH_NAME = (columns - WIDTH_INDEX - WIDTH_ACKED - WIDTH_REVIEWED -
+                      WIDTH_TESTED - WIDTH_COMMENTS - WIDTH_AGE - WIDTH_SUBMITTER -
+                      WIDTH_STATE - WIDTH_SEPARATORS)
 
         for patch in patches:
             if show_indexes:
@@ -1672,26 +1706,31 @@ class PWCLI():
                 index = ''
 
             name = shrink(patch.get_name(), WIDTH_NAME)
-            date = patch.get_datetime().strftime('%Y-%m-%d')
+            age = patch.get_age()
             submitter = shrink(patch.get_submitter_name(),
                                WIDTH_SUBMITTER, ellipsis=False)
             state = patch.get_state_name_old()
 
             # create format string based on hardocoded field width
-            # <index> <patchname> <date> <submitter> <state>
+            # <index> <patchname> <acked> <reviewed> <tested> <comments> <age> <submitter> <state>
             #
-            formatstr = '{:%s} {:%s} {:%s} {:%s} {:%s}\n' % (WIDTH_INDEX,
-                                                             WIDTH_NAME,
-                                                             WIDTH_DATE,
-                                                             WIDTH_SUBMITTER,
-                                                             WIDTH_STATE)
+            formatstr = '{:%s} {:%s} {:%s} {:%s} {:%s} {:%s} {:>%s} {:%s} {:%s}\n' % \
+                        (WIDTH_INDEX,
+                         WIDTH_NAME,
+                         WIDTH_ACKED,
+                         WIDTH_REVIEWED,
+                         WIDTH_TESTED,
+                         WIDTH_COMMENTS,
+                         WIDTH_AGE,
+                         WIDTH_SUBMITTER,
+                         WIDTH_STATE)
 
             # cover letter
             cover = patch.get_cover()
             if cover is not None and cover not in covers_opened:
-                result += formatstr.format(' ',
+                result += formatstr.format('',
                                            shrink(cover.get_name(), WIDTH_NAME),
-                                           '', '', '')
+                                           '', '', '', '', '', '', '')
 
                 if open_browser:
                     self.open_browser_url(cover.get_web_url())
@@ -1699,7 +1738,8 @@ class PWCLI():
                 covers_opened.append(cover)
 
             # actual patch
-            result += formatstr.format(index, name, date, submitter, state)
+            result += formatstr.format(index, name, '-', '-', '-', '-', age,
+                                       submitter, state)
 
             if open_browser:
                 self.open_browser_url(patch.get_url())

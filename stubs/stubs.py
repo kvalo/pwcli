@@ -399,6 +399,7 @@ class PwcliWrapper():
 
         if censor:
             os.environ['PWCLI_CENSOR_USER_AGENT'] = '1'
+            os.environ['PWCLI_HARDCODE_DATE'] = '2011-02-15T01:00:00'
 
     def start(self):
         self.pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],

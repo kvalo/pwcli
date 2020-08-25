@@ -32,6 +32,8 @@
 #
 
 import unittest
+import os
+import datetime
 
 import pwcli
 
@@ -82,6 +84,26 @@ class TestUtils(unittest.TestCase):
 
         # last space should be replaced with a dot
         self.assertEqual(f('yyy kaa koo nee', 11), 'yyy kaa....')
+
+    def test_get_age(self):
+        f = pwcli.get_age
+
+        def d(date):
+            return datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+
+        os.environ['PWCLI_HARDCODE_DATE'] = '2020-01-01T01:00:00'
+
+        self.assertEqual(f(d('2017-11-30T01:00:00')), '2y')
+        self.assertEqual(f(d('2018-11-30T01:00:00')), '13m')
+        self.assertEqual(f(d('2019-01-01T01:00:00')), '12m')
+        self.assertEqual(f(d('2019-12-01T01:00:00')), '1m')
+        self.assertEqual(f(d('2019-12-03T01:00:00')), '29d')
+        self.assertEqual(f(d('2019-12-03T01:00:00')), '29d')
+        self.assertEqual(f(d('2019-12-31T00:00:00')), '1d')
+        self.assertEqual(f(d('2019-12-31T01:00:01')), '23h')
+        self.assertEqual(f(d('2020-01-01T00:00:00')), '1h')
+        self.assertEqual(f(d('2020-01-01T00:00:01')), '0h')
+        self.assertEqual(f(d('2020-01-01T00:59:59')), '0h')
 
 if __name__ == '__main__':
     unittest.main()
