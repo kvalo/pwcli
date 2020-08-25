@@ -1646,14 +1646,13 @@ class PWCLI():
 
         columns = shutil.get_terminal_size().columns
 
-        WIDTH_INDEX = 5
+        WIDTH_INDEX = 6
         WIDTH_DATE = 10
         WIDTH_SUBMITTER = 12
         WIDTH_STATE = 17
 
-        # number of spaces between fields and mysterious plus one
-        # which I'm not sure about, maybe newline?
-        WIDTH_SEPARATORS = 4 + 1
+        # number of spaces between fields
+        WIDTH_SEPARATORS = 4
 
         WIDTH_NAME = columns - WIDTH_INDEX - WIDTH_DATE - WIDTH_SUBMITTER - WIDTH_STATE - WIDTH_SEPARATORS
 

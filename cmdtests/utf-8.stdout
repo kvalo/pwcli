@@ -17,7 +17,7 @@ download 1
 master@data > commit 1
 commit 1
 Retrieving patches (1/1)
-      foo: utf-8 tèst                 2011-02-11 Èd Examplè   Deferred         
+       foo: utf-8 tèst                 2011-02-11 Èd Examplè   Deferred         
 ------------------------------------------------------------
 1 patches
 commit All/aBort? a
