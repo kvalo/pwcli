@@ -58,6 +58,8 @@ import mailbox
 import codecs
 import requests
 import shutil
+import queue
+import threading
 
 import readline
 assert readline  # to shut up pyflakes
@@ -73,6 +75,8 @@ PWCLI_EDIT_FILE = '.pwcli-edit'
 DEFAULT_EDITOR = 'nano'
 
 PATCHWORK_API_DIRECTORY = 'api/1.1'
+
+DOWNLOAD_THREADS = 30
 
 # global variables
 logger = logging.getLogger('pwcli')
@@ -1044,12 +1048,47 @@ class PatchworkCache():
     def add_patch(self, patch):
         self.cache[patch.get_id()] = patch
 
+    def _download_series_work(self, q):
+        while True:
+            try:
+                series_id = q.get_nowait()
+            except queue.Empty:
+                # nothing download anymore
+                break
+
+            # TODO: propage errors to the caller
+            s = self.pw.get_series(series_id)
+
+            self.lock.acquire()
+            self.series[series_id] = s
+            self.lock.release()
+
+            q.task_done()
+
+    def _download_covers_work(self, q):
+        while True:
+            try:
+                cover_id = q.get_nowait()
+            except queue.Empty:
+                # nothing download anymore
+                break
+
+            # TODO: propage errors to the caller
+            cover = self.pw.get_cover(cover_id)
+
+            self.lock.acquire()
+            self.covers[cover_id] = cover
+            self.lock.release()
+
+            q.task_done()
+
     def update_cache(self):
         states = [PATCH_STATE_NEW,
                   PATCH_STATE_UNDER_REVIEW,
                   PATCH_STATE_AWAITING_UPSTREAM,
                   PATCH_STATE_DEFERRED]
         patches = self.pw._get_patches(states=states, delegate=self.config.username)
+        timer = Timer()
 
         # make a copy of the old cache
         old_cache = dict(self.cache)
@@ -1081,28 +1120,72 @@ class PatchworkCache():
 
         # download series
         self.series = {}
+        to_download = []
+        q = queue.Queue()
+
+        timer.start()
+
         for patch in self.cache.values():
             series_id = patch.get_series_id()
 
             if series_id is None:
                 continue
 
-            if series_id not in self.series:
-                s = self.pw.get_series(series_id)
-                self.series[series_id] = s
-            else:
-                s = self.series[series_id]
+            if series_id in to_download:
+                continue
 
-            patch.set_series(s)
+            to_download.append(series_id)
+
+        for series_id in to_download:
+            q.put(series_id)
+
+        for i in range(DOWNLOAD_THREADS):
+            t = threading.Thread(target=self._download_series_work,
+                                 args=(q,))
+            t.daemon = True
+            t.start()
+
+        q.join()
+
+        for patch in self.cache.values():
+            if patch.get_series_id() is None:
+                continue
+
+            patch.set_series(self.series[patch.get_series_id()])
+
+        timer.stop()
+        logger.info('downloaded %d series, took %s' % (len(self.series),
+                                                       timer.get_seconds()))
 
         # download covers
+        self.covers = {}
+        timer.start()
+
         for series in self.series.values():
             cover_id = series.get_cover_letter_id()
             if cover_id is None:
                 continue
 
-            c = self.pw.get_cover(cover_id)
-            series.set_cover(c)
+            q.put(cover_id)
+
+        for i in range(DOWNLOAD_THREADS):
+            t = threading.Thread(target=self._download_covers_work,
+                                 args=(q,))
+            t.daemon = True
+            t.start()
+
+        q.join()
+
+        for series in self.series.values():
+            cover_id = series.get_cover_letter_id()
+            if cover_id is None:
+                continue
+
+            series.set_cover(self.covers[cover_id])
+
+        timer.stop()
+        logger.info('downloaded %d covers, took %s' % (len(self.covers),
+                                                       timer.get_seconds()))
 
     def __str__(self):
         return 'PatchworkCache(%d patches)' % (len(self.cache))
@@ -1115,7 +1198,11 @@ class PatchworkCache():
         # the server
         self.cache = collections.OrderedDict()
 
+        # these are protected by self.lock
         self.series = {}
+        self.covers = {}
+
+        self.lock = threading.Lock()
 
         logger.debug(self)
 
@@ -1246,7 +1333,6 @@ class Patchwork():
 
     def get_series(self, series_id):
         logger.debug('%s().get_series(series_id=%s)' % (self, series_id))
-        self.timer.start()
 
         url = self._api_url + '/series/%s/' % (series_id)
         response = requests.get(url)
@@ -1254,9 +1340,6 @@ class Patchwork():
         if response.status_code == 404:
             # series id not found from server
             return None
-
-        self.timer.stop()
-        logger.info('received 1 series, took %s' % (self.timer.get_seconds()))
 
         response.raise_for_status()
 
@@ -1267,7 +1350,6 @@ class Patchwork():
 
     def get_cover(self, cover_id):
         logger.debug('%s().get_cover(cover_id=%s)' % (self, cover_id))
-        self.timer.start()
 
         url = self._api_url + '/covers/%s/' % (cover_id)
         response = requests.get(url)
@@ -1275,9 +1357,6 @@ class Patchwork():
         if response.status_code == 404:
             # cover id not found from server
             return None
-
-        self.timer.stop()
-        logger.info('received 1 cover, took %s' % (self.timer.get_seconds()))
 
         response.raise_for_status()
 
