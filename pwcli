@@ -995,12 +995,16 @@ class Series():
 
     def __init__(self, pw):
         self.pw = pw
+        self._cover = None
 
 
 # a cover letter of a patch series
 class Cover():
     def get_web_url(self):
         return self._web_url
+
+    def get_name(self):
+        return self._name
 
     def parse_json(self, data):
         self._id = data['id']
@@ -1681,14 +1685,23 @@ class PWCLI():
                                                              WIDTH_DATE,
                                                              WIDTH_SUBMITTER,
                                                              WIDTH_STATE)
+
+            # cover letter
+            cover = patch.get_cover()
+            if cover is not None and cover not in covers_opened:
+                result += formatstr.format(' ',
+                                           shrink(cover.get_name(), WIDTH_NAME),
+                                           '', '', '')
+
+                if open_browser:
+                    self.open_browser_url(cover.get_web_url())
+
+                covers_opened.append(cover)
+
+            # actual patch
             result += formatstr.format(index, name, date, submitter, state)
 
             if open_browser:
-                cover = patch.get_cover()
-                if cover is not None and cover not in covers_opened:
-                    self.open_browser_url(cover.get_web_url())
-                    covers_opened.append(cover)
-
                 self.open_browser_url(patch.get_url())
 
             i += 1
