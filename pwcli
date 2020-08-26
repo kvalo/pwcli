@@ -1113,13 +1113,38 @@ class PatchworkCache():
 
             q.task_done()
 
+    def _download_patches_work(self, state, patches):
+        p = self.pw._get_patches(states=[state], delegate=self.config.username)
+
+        self.lock.acquire()
+        patches += p
+        self.lock.release()
+
     def update_cache(self):
         states = [PATCH_STATE_NEW,
                   PATCH_STATE_UNDER_REVIEW,
                   PATCH_STATE_AWAITING_UPSTREAM,
                   PATCH_STATE_DEFERRED]
-        patches = self.pw._get_patches(states=states, delegate=self.config.username)
         timer = Timer()
+        threads = []
+        patches = []
+
+        timer.start()
+
+        for state in states:
+            t = threading.Thread(target=self._download_patches_work,
+                                 args=(state, patches), daemon=True)
+            t.start()
+            threads.append(t)
+
+        # wait for all threads to finish
+        for t in threads:
+            t.join()
+
+        timer.stop()
+
+        logger.info('downloaded %d patches, took %s' % (len(patches),
+                                                        timer.get_seconds()))
 
         # make a copy of the old cache
         old_cache = dict(self.cache)
@@ -1241,9 +1266,9 @@ class PatchworkCache():
 class Patchwork():
 
     def _get_patches(self, states=None, delegate=None):
-        logger.info('%s._get_patches(states=%r, delegate=%s)' % (self,
-                                                                 states,
-                                                                 delegate))
+        logger.debug('%s._get_patches(states=%r, delegate=%s)' % (self,
+                                                                  states,
+                                                                  delegate))
         params = {'project': self.config.project_name,
                   'per_page': 100}
 
@@ -1284,8 +1309,8 @@ class Patchwork():
 
             patches.append(patch)
 
-        logger.info('received %d patches, %d roundtrips and took %s'
-                    % (len(patches), roundtrips, self.timer.get_seconds()))
+        logger.debug('received %d patches, %d roundtrips and took %s'
+                     % (len(patches), roundtrips, self.timer.get_seconds()))
         logger.debug('patches:\n%s' % pretty(patches))
 
         return patches
