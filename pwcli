@@ -3044,6 +3044,7 @@ with # character. Example: #1000,#1005'''
 
     def __init__(self):
         self.timer = Timer()
+        self.timer.start()
 
         if 'GIT_DIR' in os.environ:
             self.git_dir = os.environ['GIT_DIR']
@@ -3125,7 +3126,9 @@ with # character. Example: #1000,#1005'''
 
         self.show_info()
 
-        logger.info('pwcli %s started' % PWCLI_VERSION)
+        self.timer.stop()
+        logger.info('pwcli %s started, took %s' % (PWCLI_VERSION,
+                                                   self.timer.get_seconds()))
 
 
 def main():
