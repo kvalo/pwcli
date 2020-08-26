@@ -926,6 +926,18 @@ class Patch():
     def get_series(self):
         return self._series
 
+    def set_comments(self, comments):
+        self._comments = comments
+
+    def get_comments(self):
+        return self._comments
+
+    def get_comment_count(self):
+        if self._comments is None:
+            return 0
+
+        return self._comments.get_count()
+
     def get_cover(self):
         series = self.get_series()
         if series is None:
@@ -992,6 +1004,7 @@ class Patch():
 
         self.mbox = None
         self._series = None
+        self._comments = None
 
         self.pending_commit = None
         self.final_commit = None
@@ -1046,6 +1059,40 @@ class Cover():
 
     def __init__(self, pw):
         self.pw = pw
+
+
+class Comment():
+    def get_id(self):
+        return self._id
+
+    def parse_json(self, data):
+        self._id = data['id']
+        self._content = data['content']
+
+    def __str__(self):
+        return 'Comment(id=%s)' % (self._id)
+
+    def __init__(self, pw):
+        self.pw = pw
+        self.comments = {}
+
+
+class Comments():
+    def get_count(self):
+        return len(self.comments)
+
+    def parse_json(self, data):
+        for c in data:
+            comment = Comment(self.pw)
+            comment.parse_json(c)
+            self.comments[comment.get_id()] = comment
+
+    def __str__(self):
+        return 'Comments()'
+
+    def __init__(self, pw):
+        self.pw = pw
+        self.comments = {}
 
 
 class PatchworkCache():
@@ -1110,6 +1157,20 @@ class PatchworkCache():
             self.lock.acquire()
             self.covers[cover_id] = cover
             self.lock.release()
+
+            q.task_done()
+
+    def _download_patch_comments_work(self, q):
+        while True:
+            try:
+                patch = q.get_nowait()
+            except queue.Empty:
+                # nothing download anymore
+                break
+
+            # TODO: propage errors to the caller
+            comments = self.pw.get_patch_comments(patch.get_id())
+            patch.set_comments(comments)
 
             q.task_done()
 
@@ -1242,6 +1303,22 @@ class PatchworkCache():
         timer.stop()
         logger.info('downloaded %d covers, took %s' % (len(self.covers),
                                                        timer.get_seconds()))
+
+        # download patch comments
+        timer.start()
+
+        for patch in self.cache.values():
+            q.put(patch)
+
+        for i in range(DOWNLOAD_THREADS):
+            t = threading.Thread(target=self._download_patch_comments_work,
+                                 args=(q,), daemon=True)
+            t.start()
+
+        q.join()
+
+        timer.stop()
+        logger.info('downloaded patch comments, took %s' % (timer.get_seconds()))
 
     def __str__(self):
         return 'PatchworkCache(%d patches)' % (len(self.cache))
@@ -1420,6 +1497,23 @@ class Patchwork():
         cover.parse_json(response.json())
 
         return cover
+
+    def get_patch_comments(self, patch_id):
+        logger.debug('%s().get_patch_comments(patch_id=%s)' % (self, patch_id))
+
+        url = self._api_url + '/patches/%s/comments/' % (patch_id)
+        response = requests.get(url)
+
+        if response.status_code == 404:
+            # patch id not found from server
+            return None
+
+        response.raise_for_status()
+
+        comments = Comments(self)
+        comments.parse_json(response.json())
+
+        return comments
 
     def get_mbox(self, url):
         logger.info('%s.get_mbox(url=%s)' % (self, url))
@@ -1746,6 +1840,11 @@ class PWCLI():
                 index = ''
 
             name = shrink(patch.get_name(), WIDTH_NAME)
+            if patch.get_comment_count() > 0:
+                comments = patch.get_comment_count()
+            else:
+                comments = '-'
+
             age = patch.get_age()
             submitter = shrink(patch.get_submitter_name(),
                                WIDTH_SUBMITTER, ellipsis=False)
@@ -1754,7 +1853,7 @@ class PWCLI():
             # create format string based on hardocoded field width
             # <index> <patchname> <acked> <reviewed> <tested> <comments> <age> <submitter> <state>
             #
-            formatstr = '{:%s} {:%s} {:%s} {:%s} {:%s} {:%s} {:>%s} {:%s} {:%s}\n' % \
+            formatstr = '{:%s} {:%s} {:%s} {:%s} {:%s} {:<%s} {:>%s} {:%s} {:%s}\n' % \
                         (WIDTH_INDEX,
                          WIDTH_NAME,
                          WIDTH_ACKED,
@@ -1778,7 +1877,7 @@ class PWCLI():
                 covers_opened.append(cover)
 
             # actual patch
-            result += formatstr.format(index, name, '-', '-', '-', '-', age,
+            result += formatstr.format(index, name, '-', '-', '-', comments, age,
                                        submitter, state)
 
             if open_browser:
