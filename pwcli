@@ -130,6 +130,10 @@ STATE_ABORTED = 'Aborted'
 
 PATCHINDEX_ALL = 'all'
 
+ACKED_BY = r'^Acked-by:'
+REVIEWED_BY = r'^Reviewed-by:'
+TESTED_BY = r'^Tested-by:'
+
 
 def clean(buf):
     # FIXME: is this translate call really needed, for example in
@@ -938,6 +942,24 @@ class Patch():
 
         return self._comments.get_count()
 
+    def get_acked_by_count(self):
+        if self._comments is None:
+            return 0
+
+        return self._comments.get_acked_by_count()
+
+    def get_reviewed_by_count(self):
+        if self._comments is None:
+            return 0
+
+        return self._comments.get_reviewed_by_count()
+
+    def get_tested_by_count(self):
+        if self._comments is None:
+            return 0
+
+        return self._comments.get_tested_by_count()
+
     def get_cover(self):
         series = self.get_series()
         if series is None:
@@ -1081,6 +1103,18 @@ class Comment():
     def get_id(self):
         return self._id
 
+    def _get_tag_count(self, tag):
+        return len(re.findall(tag, self._content, re.MULTILINE))
+
+    def get_acked_by_count(self):
+        return self._get_tag_count(ACKED_BY)
+
+    def get_reviewed_by_count(self):
+        return self._get_tag_count(REVIEWED_BY)
+
+    def get_tested_by_count(self):
+        return self._get_tag_count(TESTED_BY)
+
     def parse_json(self, data):
         self._id = data['id']
         self._content = data['content']
@@ -1096,6 +1130,30 @@ class Comment():
 class Comments():
     def get_count(self):
         return len(self.comments)
+
+    def get_acked_by_count(self):
+        total = 0
+
+        for comment in self.comments.values():
+            total += comment.get_acked_by_count()
+
+        return total
+
+    def get_reviewed_by_count(self):
+        total = 0
+
+        for comment in self.comments.values():
+            total += comment.get_reviewed_by_count()
+
+        return total
+
+    def get_tested_by_count(self):
+        total = 0
+
+        for comment in self.comments.values():
+            total += comment.get_tested_by_count()
+
+        return total
 
     def parse_json(self, data):
         for c in data:
@@ -1903,6 +1961,22 @@ class PWCLI():
                 index = ''
 
             name = shrink(patch.get_name(), WIDTH_NAME)
+
+            if patch.get_acked_by_count() > 0:
+                acked_by = patch.get_acked_by_count()
+            else:
+                acked_by = '-'
+
+            if patch.get_reviewed_by_count() > 0:
+                reviewed_by = patch.get_reviewed_by_count()
+            else:
+                reviewed_by = '-'
+
+            if patch.get_tested_by_count() > 0:
+                tested_by = patch.get_tested_by_count()
+            else:
+                tested_by = '-'
+
             if patch.get_comment_count() > 0:
                 comments = patch.get_comment_count()
             else:
@@ -1945,7 +2019,8 @@ class PWCLI():
                 covers_opened.append(cover)
 
             # actual patch
-            result += formatstr.format(index, name, '-', '-', '-', comments, age,
+            result += formatstr.format(index, name, acked_by, reviewed_by,
+                                       tested_by, comments, age,
                                        submitter, state)
 
             if open_browser:
