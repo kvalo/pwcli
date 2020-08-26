@@ -1040,11 +1040,26 @@ class Series():
 
 # a cover letter of a patch series
 class Cover():
+    def get_id(self):
+        return self._id
+
     def get_web_url(self):
         return self._web_url
 
     def get_name(self):
         return self._name
+
+    def set_comments(self, comments):
+        self._comments = comments
+
+    def get_comments(self):
+        return self._comments
+
+    def get_comment_count(self):
+        if self._comments is None:
+            return 0
+
+        return self._comments.get_count()
 
     def parse_json(self, data):
         self._id = data['id']
@@ -1059,6 +1074,7 @@ class Cover():
 
     def __init__(self, pw):
         self.pw = pw
+        self._comments = None
 
 
 class Comment():
@@ -1171,6 +1187,20 @@ class PatchworkCache():
             # TODO: propage errors to the caller
             comments = self.pw.get_patch_comments(patch.get_id())
             patch.set_comments(comments)
+
+            q.task_done()
+
+    def _download_cover_comments_work(self, q):
+        while True:
+            try:
+                cover = q.get_nowait()
+            except queue.Empty:
+                # nothing download anymore
+                break
+
+            # TODO: propage errors to the caller
+            comments = self.pw.get_cover_comments(cover.get_id())
+            cover.set_comments(comments)
 
             q.task_done()
 
@@ -1319,6 +1349,22 @@ class PatchworkCache():
 
         timer.stop()
         logger.info('downloaded patch comments, took %s' % (timer.get_seconds()))
+
+        # download cover comments
+        timer.start()
+
+        for cover in self.covers.values():
+            q.put(cover)
+
+        for i in range(DOWNLOAD_THREADS):
+            t = threading.Thread(target=self._download_cover_comments_work,
+                                 args=(q,), daemon=True)
+            t.start()
+
+        q.join()
+
+        timer.stop()
+        logger.info('downloaded cover comments, took %s' % (timer.get_seconds()))
 
     def __str__(self):
         return 'PatchworkCache(%d patches)' % (len(self.cache))
@@ -1506,6 +1552,23 @@ class Patchwork():
 
         if response.status_code == 404:
             # patch id not found from server
+            return None
+
+        response.raise_for_status()
+
+        comments = Comments(self)
+        comments.parse_json(response.json())
+
+        return comments
+
+    def get_cover_comments(self, cover_id):
+        logger.debug('%s().get_cover_comments(cover_id=%s)' % (self, cover_id))
+
+        url = self._api_url + '/covers/%s/comments/' % (cover_id)
+        response = requests.get(url)
+
+        if response.status_code == 404:
+            # cover id not found from server
             return None
 
         response.raise_for_status()
@@ -1867,9 +1930,14 @@ class PWCLI():
             # cover letter
             cover = patch.get_cover()
             if cover is not None and cover not in covers_opened:
+                if cover.get_comment_count() > 0:
+                    cover_comments = cover.get_comment_count()
+                else:
+                    cover_comments = '-'
+
                 result += formatstr.format('',
                                            shrink(cover.get_name(), WIDTH_NAME),
-                                           '', '', '', '', '', '', '')
+                                           '-', '-', '-', cover_comments, '', '', '')
 
                 if open_browser:
                     self.open_browser_url(cover.get_web_url())
