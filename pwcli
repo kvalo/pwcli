@@ -1442,6 +1442,21 @@ class Patchwork():
                                                   self.timer.get_seconds()))
         return r.text
 
+    def check_api_version(self):
+        logger.debug('%s().check_api_version()' % (self))
+
+        self.timer.start()
+
+        url = self._api_url + '/'
+        response = requests.get(url)
+
+        self.timer.stop()
+
+        logger.info('REST API check status code %d, took %s' % (response.status_code,
+                                                                self.timer.get_seconds()))
+
+        response.raise_for_status()
+
     def _get_auth_headers(self):
         if self.config.token is None:
             raise PwcliError('general.token not set but is needed for this operation')
@@ -3141,8 +3156,16 @@ with # character. Example: #1000,#1005'''
             self.selected_main_branch = self.config.main_branches[0]
 
         self.output('Connecting to %s' % self.config.server_url)
-
         self.pw = Patchwork(self.config)
+
+        try:
+            self.pw.check_api_version()
+        except Exception as e:
+            self.output('Failed to connect to the patchwork server: %s' % (e))
+            logger.error(traceback.format_exc().strip())
+            sys.exit(2)
+
+        self.output('Downloading patches from the server')
         self.pw.cache.update_cache()
 
         self.tree = os.path.basename(os.getcwd())
