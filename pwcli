@@ -3152,9 +3152,28 @@ class PWCLI():
 
         patch = patches[0]
 
-        mbox = patch.get_mbox()
-        mbox = self.edit_file(mbox)
-        patch.set_mbox(mbox)
+        original = patch.get_email()
+
+        # we only care about subject and payload, so create a new mbox
+        # containing just those
+        editable = email.message.Message()
+
+        # use get_name() instead of original['Subject'] to use the
+        # patchwork's filterened name, for example then there's no
+        # [PATCH]
+        editable['Subject'] = patch.get_name()
+
+        editable.set_payload(original.get_payload())
+
+        s = self.edit_file(editable.as_string())
+        editable = email.message_from_string(s)
+
+        # old Subject needs to be deleted first
+        del original['Subject']
+        original['Subject'] = editable['Subject']
+        original.set_payload(editable.get_payload())
+
+        patch.set_mbox(original.as_string())
 
     def run_shell(self):
         index_help = '''List of patch ids which can be eiher pwcli list indexes or real
