@@ -794,7 +794,10 @@ class Patch():
 
         # need to also update the name from mbox
         msg = self.get_email()
-        self._name_new = msg['Subject']
+
+        # if Subject is long email.message.Message splits it into
+        # multiple lines, fix that by removing newlines
+        self._name_new = msg['Subject'].replace('\n', '')
 
     def get_diffstat(self):
         p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
