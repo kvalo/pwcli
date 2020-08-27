@@ -676,6 +676,8 @@ class Patch():
 
             name += self.pending_commit.title
             return name
+        elif self._name_new is not None:
+            return self._name_new
         else:
             return self.get_name_original()
 
@@ -792,7 +794,7 @@ class Patch():
 
         # need to also update the name from mbox
         msg = self.get_email()
-        self._name = msg['Subject']
+        self._name_new = msg['Subject']
 
     def get_diffstat(self):
         p = RunProcess(['diffstat', '-p1'], input=self.get_mbox())
@@ -1031,6 +1033,8 @@ class Patch():
         self.pending_commit = None
         self.final_commit = None
         self.stg_index = None
+
+        self._name_new = None
 
 
 # a patch series
