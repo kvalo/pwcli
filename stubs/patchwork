@@ -133,6 +133,9 @@ class Patch():
             self.params['mbox'] = '%smbox/%s' % (self.pws.get_server_url(),
                                                  self.params['id'])
 
+            # TODO: implement series support
+            self.params['series'] = []
+
             # TODO: implement pull requests
             self.params['pull_url'] = None
 
