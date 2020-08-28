@@ -1784,6 +1784,14 @@ class PwcliConfig():
                 self.output('general.main_branches not set')
                 sys.exit(1)
 
+        if self._parser.has_option('general', 'max-terminal-width'):
+            try:
+                width = self._parser.getint('general', 'max-terminal-width')
+            except ValueError as e:
+                print('config option max-terminal-width has an invalid value: %s' % (e))
+                sys.exit(1)
+            self.max_terminal_width = width
+
         # read settings from environment variables
         if 'EDITOR' in os.environ:
             self.editor = os.environ['EDITOR']
@@ -1849,6 +1857,7 @@ class PwcliConfig():
         self.pending_branch = None
         self.main_branches = None
         self.log_level = 'info'
+        self.max_terminal_width = None
 
         self.editor = DEFAULT_EDITOR
         self.signature = None
@@ -1945,6 +1954,9 @@ class PWCLI():
 
         columns = shutil.get_terminal_size().columns
 
+        if self.config.max_terminal_width is not None:
+            columns = min(columns, self.config.max_terminal_width)
+
         WIDTH_INDEX = 6
         WIDTH_ACKED = 1
         WIDTH_REVIEWED = 1
@@ -1961,6 +1973,11 @@ class PWCLI():
         WIDTH_NAME = (columns - WIDTH_INDEX - WIDTH_ACKED - WIDTH_REVIEWED -
                       WIDTH_TESTED - WIDTH_COMMENTS - WIDTH_AGE - WIDTH_SUBMITTER -
                       WIDTH_STATE - WIDTH_SEPARATORS)
+
+        if WIDTH_NAME < 3:
+            logger.warn('terminal width %d too small, overlapping will happen' %
+                        (columns))
+            WIDTH_NAME = 10
 
         for patch in patches:
             if show_indexes:
