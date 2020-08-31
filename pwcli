@@ -219,11 +219,17 @@ def parse_list(arg):
 def shrink(s, width, ellipsis=True):
     ELLIPSIS = '...'
 
+    if width <= 0:
+        return ''
+
     if len(s) <= width:
         return s
 
     if not ellipsis:
         return s[:width]
+
+    if width <= len(ELLIPSIS):
+        return ''
 
     s = s[:width - len(ELLIPSIS)]
 

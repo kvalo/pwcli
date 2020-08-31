@@ -85,6 +85,12 @@ class TestUtils(unittest.TestCase):
         # last space should be replaced with a dot
         self.assertEqual(f('yyy kaa koo nee', 11), 'yyy kaa....')
 
+        # test special values
+        self.assertEqual(f('12345678', 4, ellipsis=True), '1...')
+        self.assertEqual(f('12345678', 3, ellipsis=True), '')
+        self.assertEqual(f('12345678', 0, ellipsis=True), '')
+        self.assertEqual(f('12345678', -10, ellipsis=True), '')
+
     def test_get_age(self):
         f = pwcli.get_age
 
