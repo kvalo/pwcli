@@ -3193,24 +3193,29 @@ class PWCLI():
 
         original = patch.get_email()
 
-        # we only care about subject and payload, so create a new mbox
-        # containing just those
-        editable = email.message.Message()
-
-        # use get_name() instead of original['Subject'] to use the
+        # We only care about subject and payload, so create a new
+        # string where first line is the title, second line empty and
+        # the rest is the commit log plus patch.
+        #
+        # USE get_name() instead of original['Subject'] to use the
         # patchwork's filterened name, for example then there's no
-        # [PATCH]
-        editable['Subject'] = patch.get_name()
+        # [PATCH].
+        s = '%s\n\n%s' % (patch.get_name(), original.get_payload())
 
-        editable.set_payload(original.get_payload())
+        s = self.edit_file(s)
 
-        s = self.edit_file(editable.as_string())
-        editable = email.message_from_string(s)
+        lines = s.splitlines()
+        subject = lines[0]
+        payload = '\n'.join(lines[2:])
+
+        # This last newline is important, otherwise git-am thinks the
+        # patch is malformed!
+        payload += '\n'
 
         # old Subject needs to be deleted first
         del original['Subject']
-        original['Subject'] = editable['Subject']
-        original.set_payload(editable.get_payload())
+        original['Subject'] = subject
+        original.set_payload(payload)
 
         patch.set_mbox(original.as_string())
 
