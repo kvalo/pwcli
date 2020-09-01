@@ -76,8 +76,6 @@ DEFAULT_EDITOR = 'nano'
 
 PATCHWORK_API_DIRECTORY = 'api/1.1'
 
-DOWNLOAD_THREADS = 30
-
 # global variables
 logger = logging.getLogger('pwcli')
 
@@ -1361,7 +1359,7 @@ class PatchworkCache():
         for series_id in to_download:
             q.put(series_id)
 
-        for i in range(DOWNLOAD_THREADS):
+        for i in range(self.config.download_threads):
             t = threading.Thread(target=self._download_series_work,
                                  args=(q,))
             t.daemon = True
@@ -1390,7 +1388,7 @@ class PatchworkCache():
 
             q.put(cover_id)
 
-        for i in range(DOWNLOAD_THREADS):
+        for i in range(self.config.download_threads):
             t = threading.Thread(target=self._download_covers_work,
                                  args=(q,))
             t.daemon = True
@@ -1415,7 +1413,7 @@ class PatchworkCache():
         for patch in self.cache.values():
             q.put(patch)
 
-        for i in range(DOWNLOAD_THREADS):
+        for i in range(self.config.download_threads):
             t = threading.Thread(target=self._download_patch_comments_work,
                                  args=(q,), daemon=True)
             t.start()
@@ -1431,7 +1429,7 @@ class PatchworkCache():
         for cover in self.covers.values():
             q.put(cover)
 
-        for i in range(DOWNLOAD_THREADS):
+        for i in range(self.config.download_threads):
             t = threading.Thread(target=self._download_cover_comments_work,
                                  args=(q,), daemon=True)
             t.start()
@@ -1800,6 +1798,14 @@ class PwcliConfig():
             self.download_series = self._parser.getboolean('general',
                                                            'download-series')
 
+        if self._parser.has_option('general', 'download-threads'):
+            try:
+                threads = self._parser.getint('general', 'download-threads')
+            except ValueError as e:
+                print('config option download-threads has an invalid value: %s' % (e))
+                sys.exit(1)
+            self.download_threads = threads
+
         # read settings from environment variables
         if 'EDITOR' in os.environ:
             self.editor = os.environ['EDITOR']
@@ -1867,6 +1873,7 @@ class PwcliConfig():
         self.log_level = 'info'
         self.max_terminal_width = None
         self.download_series = False
+        self.download_threads = 8
 
         self.editor = DEFAULT_EDITOR
         self.signature = None
