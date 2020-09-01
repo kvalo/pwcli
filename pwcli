@@ -1336,6 +1336,10 @@ class PatchworkCache():
         for old_patch in old_cache:
             del self.cache[old_patch.get_id()]
 
+        if not self.config.download_series:
+            # series support is disabled, skip downloading them
+            return
+
         # download series
         self.series = {}
         to_download = []
@@ -1792,6 +1796,10 @@ class PwcliConfig():
                 sys.exit(1)
             self.max_terminal_width = width
 
+        if self._parser.has_option('general', 'download-series'):
+            self.download_series = self._parser.getboolean('general',
+                                                           'download-series')
+
         # read settings from environment variables
         if 'EDITOR' in os.environ:
             self.editor = os.environ['EDITOR']
@@ -1858,6 +1866,7 @@ class PwcliConfig():
         self.main_branches = None
         self.log_level = 'info'
         self.max_terminal_width = None
+        self.download_series = False
 
         self.editor = DEFAULT_EDITOR
         self.signature = None
