@@ -35,12 +35,15 @@ import os
 import subprocess
 import sys
 import argparse
+import configparser
 
 SUITES = ('stubs', 'cmdtests', 'unittests', 'checks')
 
 CMDTEST_DIRECTORIES = ['cmdtests', 'stubs/cmdtests']
 
 ACTUAL_PREFIX = '-actual'
+
+TESTS_INI = 'tests.ini'
 
 def update_cmdtest_outputdir(args, directory):
     for filename in os.listdir(directory):
@@ -91,18 +94,30 @@ def main():
     if not args.suite or args.suite == 'checks':
         print('* Running code checkers')
 
-        # TODO: run these checkers on _all_ python scripts in the repo
+        python_sources = []
 
-        returncode = subprocess.call(['pyflakes3', 'pwcli'])
-        if returncode != 0 and not args.ignore_errors:
-            sys.exit(1)
+        config = configparser.ConfigParser()
+        if os.path.isfile(TESTS_INI):
+            config.read(TESTS_INI)
 
-        # ignore E501 long line warnings, not really seeing the
-        # benefit from trying to make lines with user messages short
-        # (just like kernel style works)
-        returncode = subprocess.call(['pep8', '--ignore', 'E501', 'pwcli'])
-        if returncode != 0 and not args.ignore_errors:
-            sys.exit(1)
+        if config.has_option('sources', 'python'):
+            python_sources = config.get('sources', 'python').split(' ')
+
+        for filename in python_sources:
+            print('.', end='', flush=True)
+
+            returncode = subprocess.call(['pyflakes3', filename])
+            if returncode != 0 and not args.ignore_errors:
+                sys.exit(1)
+
+            # ignore E501 long line warnings, not really seeing the
+            # benefit from trying to make lines with user messages short
+            # (just like kernel style works)
+            returncode = subprocess.call(['pep8', '--ignore', 'E501', filename])
+            if returncode != 0 and not args.ignore_errors:
+                sys.exit(1)
+
+        print()
 
     if not args.suite or args.suite == 'unittests':
         print('* Running unit tests')
