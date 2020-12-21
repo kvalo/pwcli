@@ -40,9 +40,11 @@ import email.header
 
 GIT_DB_NAME = 'db.pickle'
 
+
 def decode_mime_encoded_words(text):
     # Yeah, I know this looks stupid but couldn't figure out a better way
     return str(email.header.make_header(email.header.decode_header(text)))
+
 
 class GitCommit():
     def __init__(self, commit_id, mbox, stg_name=None):
@@ -68,6 +70,7 @@ class GitCommit():
 
     def get_oneline(self):
         return '%s %s' % (self.abbrev_id, self.get_subject())
+
 
 class GitRepository():
     @staticmethod
@@ -109,7 +112,7 @@ class GitRepository():
 
     def dump(self):
         path = os.path.join(self.gitdir, GIT_DB_NAME)
-        
+
         f = open(path, 'wb')
         pickle.dump(self, f)
         f.close()
@@ -129,7 +132,7 @@ class GitRepository():
             result += commit.get_oneline() + '\n'
 
         return result.strip()
-    
+
     def get_branches(self):
         # strip newline from all lines
         result = []
@@ -172,7 +175,7 @@ class GitRepository():
     def delete_top_commit(self):
         self.branches[self.head].pop()
         self.dump()
-    
+
     def create_branch(self, branch):
         self.branches[branch] = []
         self.dump()
@@ -192,13 +195,13 @@ class GitRepository():
         commit = self.commits[commit_id]
 
         self.branches[self.head].append(commit)
-        
+
     def get_config(self, section, name):
         if not self.config.has_option(section, name):
             raise ValueError('Config not found')
 
         return self.config.get(section, name)
-        
+
     def import_stg_commit(self, mbox):
 
         if self.stg_import_failure > 0:

@@ -49,7 +49,7 @@ X-Patchwork-Id: $ID
 X-Submitter-Id: 7477
 X-Project: Linux Wireless Mailing List
 X-Project-Id: 15
-X-Commit-Ref: 
+X-Commit-Ref:
 X-State: $STATE
 X-State-Id: $STATE_ID
 X-Delegate: test
@@ -64,58 +64,58 @@ Signed-off-by: Dino Dinosaurus <dino@example.com>
 FIXME: add the patch here
 '''
 
+
 def main():
-      # for the help and possible future additions
-      parser = argparse.ArgumentParser(description='create fake patches for patchwork stub. Note: state is hardcoded, you need to manually change that!')
-      parser.add_argument('start_id', type=int, nargs=1,
-                          help='The id of the first patch')
-      parser.add_argument('count', type=int, nargs=1,
-                          help='How many patches to create')
-      parser.add_argument('title', type=str, nargs=1,
-                          help='Title of patches')
+    # for the help and possible future additions
+    parser = argparse.ArgumentParser(description='create fake patches for patchwork stub. Note: state is hardcoded, you need to manually change that!')
+    parser.add_argument('start_id', type=int, nargs=1,
+                        help='The id of the first patch')
+    parser.add_argument('count', type=int, nargs=1,
+                        help='How many patches to create')
+    parser.add_argument('title', type=str, nargs=1,
+                        help='Title of patches')
 
-      args = parser.parse_args()
+    args = parser.parse_args()
 
-      outputdir = os.path.join('data', 'patches')
-      filenames = []
+    outputdir = os.path.join('data', 'patches')
+    filenames = []
 
-      for index in range(1, args.count[0] + 1):
-            t = string.Template(template_patch)
-            patchwork_id = args.start_id[0] + index - 1
+    for index in range(1, args.count[0] + 1):
+        t = string.Template(template_patch)
+        patchwork_id = args.start_id[0] + index - 1
 
-            # FIXME: the state is hardcoded for now
-            state = 'New'
-            state_id = '1'
+        # FIXME: the state is hardcoded for now
+        state = 'New'
+        state_id = '1'
 
-            patch = t.substitute(INDEX=index, INDEX_MAX=args.count[0],
-                                 TITLE=args.title[0], ID=patchwork_id,
-                                 STATE=state, STATE_ID=state_id)
+        patch = t.substitute(INDEX=index, INDEX_MAX=args.count[0],
+                             TITLE=args.title[0], ID=patchwork_id,
+                             STATE=state, STATE_ID=state_id)
 
-            # make the title suitable for a filename
-            title = email.message_from_string(patch)['Subject']
-            title = title.lower()
+        # make the title suitable for a filename
+        title = email.message_from_string(patch)['Subject']
+        title = title.lower()
 
-            # remove tags (from Patch.clean_subject()
-            title = re.sub(r'^\s*(\[.*?\]\s*)*', '', title)
+        # remove tags (from Patch.clean_subject()
+        title = re.sub(r'^\s*(\[.*?\]\s*)*', '', title)
 
-            title = re.sub(r'\W+', '-', title)
+        title = re.sub(r'\W+', '-', title)
 
-            # FIXME: there should be a proper mapping, for example
-            # 'Under Review' -> 'review'
-            state = state.lower()
+        # FIXME: there should be a proper mapping, for example
+        # 'Under Review' -> 'review'
+        state = state.lower()
 
-            filename = '%s-%s-%s.patch' % (patchwork_id, state, title)
-            f = open(os.path.join(outputdir, filename), 'w')
-            f.write(patch)
-            f.close
+        filename = '%s-%s-%s.patch' % (patchwork_id, state, title)
+        f = open(os.path.join(outputdir, filename), 'w')
+        f.write(patch)
+        f.close
 
-            filenames.append(filename)
+        filenames.append(filename)
 
-      
-      print('%d patches wrote to %s:' % (len(filenames), outputdir))
+    print('%d patches wrote to %s:' % (len(filenames), outputdir))
 
-      for filename in filenames:
-            print(filename)
+    for filename in filenames:
+        print(filename)
 
 if __name__ == "__main__":
-      main()
+    main()

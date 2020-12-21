@@ -40,48 +40,51 @@ import sys
 
 datadir = None
 
+
 class FakeSMTPServer(smtpd.SMTPServer):
-      def process_message(self, peer, mailfrom, rcpttos, data):
-            print('smtpd: %s -> %s' % (mailfrom, ', '.join(rcpttos)))
+    def process_message(self, peer, mailfrom, rcpttos, data):
+        print('smtpd: %s -> %s' % (mailfrom, ', '.join(rcpttos)))
 
-            if os.path.isdir(datadir):
-                  f = open(os.path.join(datadir, str(self.count)), 'w')
-                  f.write('%s -> %s\n' % (mailfrom, ', '.join(rcpttos)))
-                  f.write(data)
-                  f.close
-                  self.count += 1
+        if os.path.isdir(datadir):
+            f = open(os.path.join(datadir, str(self.count)), 'w')
+            f.write('%s -> %s\n' % (mailfrom, ', '.join(rcpttos)))
+            f.write(data)
+            f.close
+            self.count += 1
 
-      def __init__(self, localaddr, remoteaddr):
-            smtpd.SMTPServer.__init__(self, localaddr, remoteaddr)
-            self.count = 0
+    def __init__(self, localaddr, remoteaddr):
+        smtpd.SMTPServer.__init__(self, localaddr, remoteaddr)
+        self.count = 0
+
 
 def run(args):
-      if os.path.isdir(datadir):
-            files = len(os.listdir(datadir))
-            if files > 0:
-                  print('%s directory is not empty: %d' % (datadir, files))
-                  sys.exit(1)
+    if os.path.isdir(datadir):
+        files = len(os.listdir(datadir))
+        if files > 0:
+            print('%s directory is not empty: %d' % (datadir, files))
+            sys.exit(1)
 
-      server = FakeSMTPServer(('127.0.0.1', args.port), None)
-      assert server # shutup pyflakes
+    server = FakeSMTPServer(('127.0.0.1', args.port), None)
+    assert server  # shutup pyflakes
 
-      asyncore.loop()
+    asyncore.loop()
+
 
 def main():
-      global datadir
+    global datadir
 
-      if 'STUB_SMTPD_DATADIR' in os.environ:
-            datadir = os.environ['STUB_SMTPD_DATADIR']
-      else:
-            datadir = '.'
+    if 'STUB_SMTPD_DATADIR' in os.environ:
+        datadir = os.environ['STUB_SMTPD_DATADIR']
+    else:
+        datadir = '.'
 
-      parser = argparse.ArgumentParser(description='smtpd-stub')
+    parser = argparse.ArgumentParser(description='smtpd-stub')
 
-      parser.add_argument('--port', action='store', type=int, default=5872)
+    parser.add_argument('--port', action='store', type=int, default=5872)
 
-      args = parser.parse_args()
+    args = parser.parse_args()
 
-      run(args)
+    run(args)
 
 if __name__ == "__main__":
-      main()
+    main()

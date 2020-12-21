@@ -36,30 +36,31 @@ import sys
 import stubs
 import os
 
+
 def main():
-      # for the help and possible future additions
-      parser = argparse.ArgumentParser(description='builder stub mimicking a compiler')
-      args = parser.parse_args()
-      assert args # to shut up pyflakes
+    # for the help and possible future additions
+    parser = argparse.ArgumentParser(description='builder stub mimicking a compiler')
+    args = parser.parse_args()
+    assert args  # to shut up pyflakes
 
-      builder = stubs.BuilderStub()
+    builder = stubs.BuilderStub()
 
-      # hack to enable automatic flushing so that printouts are not
-      # out of order
-      # https://stackoverflow.com/questions/27067713/why-text-i-o-must-be-buffered-in-python-3
-      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', buffering=1)
+    # hack to enable automatic flushing so that printouts are not
+    # out of order
+    # https://stackoverflow.com/questions/27067713/why-text-i-o-must-be-buffered-in-python-3
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', buffering=1)
 
-      filenames = ['foo.c', 'bar.c', 'aaa.c', 'bbb.c']
-      for filename in filenames:
-            sys.stdout.write('  CC %s\n' % (filename))
-            sys.stdout.flush()
+    filenames = ['foo.c', 'bar.c', 'aaa.c', 'bbb.c']
+    for filename in filenames:
+        sys.stdout.write('  CC %s\n' % (filename))
+        sys.stdout.flush()
 
-      count = builder.get_warning_count()
-      for i in range(min(count, len(filenames))):
-            sys.stderr.write('%s: warning: is suspicious\n' % (filenames[i]))
-            sys.stdout.flush()
+    count = builder.get_warning_count()
+    for i in range(min(count, len(filenames))):
+        sys.stderr.write('%s: warning: is suspicious\n' % (filenames[i]))
+        sys.stdout.flush()
 
-      sys.exit(builder.get_return_value())
+    sys.exit(builder.get_return_value())
 
 if __name__ == "__main__":
-      main()
+    main()

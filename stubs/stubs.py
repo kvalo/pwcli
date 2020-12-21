@@ -45,7 +45,7 @@ logging.basicConfig()
 logger = logging.getLogger('stubs')
 
 # uncomment to get debug logs
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 # the toplevel source directory
 srcdir = os.environ['SRCDIR']
@@ -61,8 +61,9 @@ logger.debug('stubsdir=%r' % (stubsdir))
 
 # separate port numbers compared torun_stub so that it can be run
 # concurrently with tests
-PATCHWORK_PORT=8105
-SMTP_PORT=5870
+PATCHWORK_PORT = 8105
+SMTP_PORT = 5870
+
 
 class BuilderStub():
     STUB_BUILDER_DIR = '.stub-builder'
@@ -126,6 +127,7 @@ class BuilderStub():
 
         return count
 
+
 class StgStub():
     IMPORT_FAIL = 'import-fail'
 
@@ -142,7 +144,7 @@ class StgStub():
             os.mkdir(self.gitdir)
 
         os.mkdir(self.stgdir)
-        
+
         os.environ['STUB_GIT_DATADIR'] = self.gitdir
         os.environ['GIT_DIR'] = 'git'
         os.environ['PATH'] = '%s:%s' % ((stubsdir), os.environ['PATH'])
@@ -181,7 +183,8 @@ class StgStub():
     def set_import_failure(self, val):
         gitrepo = stubslib.GitRepository.load(self.gitdir)
         gitrepo.set_stg_import_failure(val)
-    
+
+
 class GitStub():
     def __init__(self, smtpport=SMTP_PORT):
         self.gitdir = os.path.join(testdatadir, 'git')
@@ -189,7 +192,7 @@ class GitStub():
         logger.debug('GitStub(): gitdir=%r' % (self.gitdir))
 
         os.mkdir(self.gitdir)
-        
+
         # create the config file
         self.config = configparser.RawConfigParser()
         user = 'user'
@@ -204,8 +207,7 @@ class GitStub():
 
         with open(os.path.join(self.gitdir, 'config'), 'w') as configfile:
             self.config.write(configfile)
-        
-        
+
         os.environ['STUB_GIT_DATADIR'] = self.gitdir
 
         os.environ['GIT_DIR'] = 'git'
@@ -241,7 +243,8 @@ class GitStub():
     def get_commits_oneline(self, val):
         gitrepo = stubslib.GitRepository.load(self.gitdir)
         return gitrepo.get_commits_oneline(val)
-        
+
+
 class SmtpdStub():
 
     def __init__(self, port=SMTP_PORT):
@@ -269,7 +272,7 @@ class SmtpdStub():
         # wait some time to make sure that the stub started
         time.sleep(0.2)
 
-        if self.smtpd.poll() != None:
+        if self.smtpd.poll() is not None:
             raise Exception('Failed to start smtpd stub: %d' % self.smtpd.returncode)
 
         self.started = True
@@ -310,12 +313,13 @@ class SmtpdStub():
 
         return result
 
+
 class PatchworkStub():
     def __init__(self, port=PATCHWORK_PORT):
         self.patchesdir = os.path.join(testdatadir, 'patches')
         srcpatchesdir = os.path.join(stubsdir, 'data', 'patches')
 
-        self.port=port
+        self.port = port
 
         # create copy of patches
         shutil.copytree(srcpatchesdir, self.patchesdir)
@@ -335,7 +339,7 @@ class PatchworkStub():
         # wait some time to make sure that the stub started
         time.sleep(2)
 
-        if self.patchwork.poll() != None:
+        if self.patchwork.poll() is not None:
             raise Exception('Failed to start patchwork stub: %d' % self.patchwork.returncode)
 
         self.started = True
@@ -352,6 +356,7 @@ class PatchworkStub():
     def cleanup(self):
         shutil.rmtree(self.patchesdir)
 
+
 class EditorStub():
     def __init__(self):
         # add a fake editor until we have a proper stub
@@ -359,12 +364,13 @@ class EditorStub():
 
     def start(self):
         pass
-    
+
     def stop(self):
         pass
-    
+
     def cleanup(self):
         pass
+
 
 class PwcliWrapper():
     def __init__(self, stgit=False, builder='builder', patchworkport=PATCHWORK_PORT,
@@ -373,7 +379,7 @@ class PwcliWrapper():
 
         self.configpath = os.path.join(testdatadir, 'git/pwcli/config')
         self.dirname = os.path.dirname(self.configpath)
-        
+
         # for some reason ConfigParser reverses the order
         general = 'general'
         self.config.add_section(general)
@@ -408,10 +414,10 @@ class PwcliWrapper():
 
     def wait(self):
         self.pwcli.wait()
-    
+
     def stop(self):
         pass
-    
+
     def cleanup(self):
         shutil.rmtree(self.dirname)
 

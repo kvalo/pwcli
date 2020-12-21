@@ -37,6 +37,7 @@ import email
 import email.mime.text
 import sys
 
+
 def run(args):
     from_address = 'test@example.com'
     to = ['foo@example.com', 'bar@example.com']
@@ -53,14 +54,15 @@ def run(args):
         print('failed to connect to the SMTP server: %s' % e)
         sys.exit(1)
 
+
 def main():
-      parser = argparse.ArgumentParser(description='smtpd-stub')
+    parser = argparse.ArgumentParser(description='smtpd-stub')
 
-      parser.add_argument('--port', action='store', type=int, default=5872)
+    parser.add_argument('--port', action='store', type=int, default=5872)
 
-      args = parser.parse_args()
+    args = parser.parse_args()
 
-      run(args)
+    run(args)
 
 if __name__ == "__main__":
-      main()
+    main()
