@@ -43,7 +43,7 @@ logging.basicConfig()
 logger = logging.getLogger('cmdtestlib')
 
 # uncomment to get debug logs
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 # Note: these prompts are regexps, escape accordingly!
 
@@ -76,9 +76,11 @@ logger.debug('srcdir=%r' % (srcdir))
 logger.debug('testdatadir=%r' % (testdatadir))
 logger.debug('stubsdir=%r' % (stubsdir))
 
+
 def decode_mime_encoded_words(text):
     # Yeah, I know this looks stupid but couldn't figure out a better way
     return str(email.header.make_header(email.header.decode_header(text)))
+
 
 class StubContext():
     def __init__(self, start=False, debug=False, stgit=False, builder='builder'):
@@ -174,6 +176,7 @@ class StubContext():
     def stop_and_cleanup(self):
         self.stop()
         self.cleanup()
+
 
 class PwcliSpawn(pexpect.spawn):
     def __init__(self, debug=False, stgit=False, builder='builder',
