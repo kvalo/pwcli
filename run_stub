@@ -44,7 +44,7 @@ logging.basicConfig()
 logger = logging.getLogger('run_stub')
 
 # uncomment to get debug logs
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 # these below must be initialised before importing stubs module
 srcdir = os.getcwd()
@@ -56,7 +56,7 @@ os.environ['DATADIR'] = datadir
 stubsdir = os.path.join(srcdir, 'stubs')
 sys.path.insert(0, stubsdir)
 
-import stubs
+import stubs  # noqa: E402
 
 logger.debug('srcdir=%r' % (srcdir))
 logger.debug('datadir=%r' % (datadir))
@@ -64,56 +64,57 @@ logger.debug('stubsdir=%r' % (stubsdir))
 
 # separate port numbers for run_stub so that it can be run
 # concurrently with tests
-PATCHWORK_PORT=8106
-SMTP_PORT=5871
+PATCHWORK_PORT = 8106
+SMTP_PORT = 5871
+
 
 def main():
-      parser = argparse.ArgumentParser(description='run_stub')
+    parser = argparse.ArgumentParser(description='run_stub')
 
-      parser.add_argument('--keep', action='store_true',
-                          help='Keep the temporary datadir for debugging')
-      parser.add_argument('--stgit', action='store_true',
-                          help='Enable stgit mode')
+    parser.add_argument('--keep', action='store_true',
+                        help='Keep the temporary datadir for debugging')
+    parser.add_argument('--stgit', action='store_true',
+                        help='Enable stgit mode')
 
-      args = parser.parse_args()
+    args = parser.parse_args()
 
-      print('Using datadir: %s' % (datadir))
+    print('Using datadir: %s' % (datadir))
 
-      git = stubs.GitStub(smtpport=SMTP_PORT)
-      git.start()
+    git = stubs.GitStub(smtpport=SMTP_PORT)
+    git.start()
 
-      if args.stgit:
-            stg = stubs.StgStub()
-            stg.start()
+    if args.stgit:
+        stg = stubs.StgStub()
+        stg.start()
 
-      patchwork = stubs.PatchworkStub(port=PATCHWORK_PORT)
-      patchwork.start()
+    patchwork = stubs.PatchworkStub(port=PATCHWORK_PORT)
+    patchwork.start()
 
-      smtpd = stubs.SmtpdStub(port=5871)
-      smtpd.start()
+    smtpd = stubs.SmtpdStub(port=5871)
+    smtpd.start()
 
-      os.chdir(datadir)
+    os.chdir(datadir)
 
-      pwcli = stubs.PwcliWrapper(stgit=args.stgit,
-                                 patchworkport=PATCHWORK_PORT,
-                                 smtpport=SMTP_PORT,
-                                 censor=False)
-      pwcli.write_config()
-      pwcli.start()
-      pwcli.wait()
+    pwcli = stubs.PwcliWrapper(stgit=args.stgit,
+                               patchworkport=PATCHWORK_PORT,
+                               smtpport=SMTP_PORT,
+                               censor=False)
+    pwcli.write_config()
+    pwcli.start()
+    pwcli.wait()
 
-      patchwork.stop()
-      smtpd.stop()
+    patchwork.stop()
+    smtpd.stop()
 
-      if args.stgit:
-            stg.stop()
+    if args.stgit:
+        stg.stop()
 
-      git.stop()
+    git.stop()
 
-      if not args.keep:
-            shutil.rmtree(datadir)
-      else:
-            print('Keeping temporary datadir: %s' % (datadir))
+    if not args.keep:
+        shutil.rmtree(datadir)
+    else:
+        print('Keeping temporary datadir: %s' % (datadir))
 
 if __name__ == "__main__":
-      main()
+    main()
