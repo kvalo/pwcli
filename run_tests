@@ -45,6 +45,7 @@ ACTUAL_PREFIX = '-actual'
 
 TESTS_INI = 'tests.ini'
 
+
 def update_cmdtest_outputdir(args, directory):
     for filename in os.listdir(directory):
         path = os.path.join(directory, filename)
@@ -61,11 +62,13 @@ def update_cmdtest_outputdir(args, directory):
         print('%s -> %s' % (path, new_name))
         os.rename(path, new_name)
 
+
 def update_cmdtest_outputs(args):
     for directory in CMDTEST_DIRECTORIES:
         update_cmdtest_outputdir(args, directory)
 
     sys.exit(0)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Run all sort of pwcli tests')
@@ -168,4 +171,4 @@ def main():
         print('All tests OK.')
 
 if __name__ == "__main__":
-      main()
+    main()
