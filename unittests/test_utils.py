@@ -37,6 +37,7 @@ import datetime
 
 import pwcli
 
+
 class TestUtils(unittest.TestCase):
     def test_clean(self):
         self.assertEqual(pwcli.clean('\n\t  foo  '), 'foo')

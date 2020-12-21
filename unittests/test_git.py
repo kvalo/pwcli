@@ -42,6 +42,7 @@ import stubslib
 from pwcli import Git
 from pwcli import GitCommit
 
+
 class TestGit(unittest.TestCase):
 
     def dummy_output(self, buf):
@@ -52,7 +53,7 @@ class TestGit(unittest.TestCase):
 
         output = output.strip()
 
-        self.datadir = tempfile.mkdtemp(prefix = 'pwcli-unittest-')
+        self.datadir = tempfile.mkdtemp(prefix='pwcli-unittest-')
 
         os.environ['STUB_GIT_DATADIR'] = self.datadir
 
@@ -87,12 +88,14 @@ foo body
 '''
         # TODO: is sha1sum useless?
         sha1sum = hashlib.sha1(mbox.encode('utf-8')).hexdigest()
+        assert sha1sum  # to shutup pyflakes
 
         git = Git(self.dummy_output)
         git.am(mbox)
 
         gitrepo = stubslib.GitRepository.load(self.datadir)
         self.assertEqual(gitrepo.get_commits()[0].mbox, mbox)
+
 
 class TestGitCommit(unittest.TestCase):
 

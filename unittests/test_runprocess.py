@@ -35,6 +35,7 @@ import unittest
 
 import pwcli
 
+
 class TestRunProcess(unittest.TestCase):
     def test_stdout(self):
         msg = 'This is a test\nLine 2'
@@ -54,7 +55,7 @@ class TestRunProcess(unittest.TestCase):
         self.assertEqual(p.returncode, 0)
         self.assertEqual(p.stdoutdata, '')
         self.assertEqual(p.stderrdata, msg)
-        
+
     def test_nonzero_returncode(self):
         value = 177
         python_cmd = 'import sys; sys.exit(%d)' % (value)
@@ -68,7 +69,9 @@ class TestRunProcess(unittest.TestCase):
     def test_stdout_cb(self):
         msg = 'Line 1\nLine 2\nLine 3'
         cb_output = []
-        cb = lambda line: cb_output.append(line)
+
+        def cb(line):
+            cb_output.append(line)
 
         p = pwcli.RunProcess(['/bin/echo', '-n', msg], stdout_cb=cb)
 
@@ -100,6 +103,6 @@ class TestRunProcess(unittest.TestCase):
 
         self.assertEqual(repr(p),
                          'RunProcess([\'cat\'], None, \'This is a test\')')
-                         
+
 if __name__ == '__main__':
     unittest.main()

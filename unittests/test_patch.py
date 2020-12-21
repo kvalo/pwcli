@@ -45,9 +45,9 @@ FAKE_ATTRIBUTES = {
     'date': '2020-04-23T15:06:27',
     'name': 'nnnn',
     'commit_ref': '12345678',
-    'state' : 'ssss',
+    'state': 'ssss',
     'submitter': {'name': 'Ed Example',
-                   'email': 'ed@example.com'},
+                  'email': 'ed@example.com'},
     'delegate': {'username': 'dddd'},
     'mbox': 'http://www.example.com',
     'series': [],
@@ -55,6 +55,7 @@ FAKE_ATTRIBUTES = {
 }
 
 TEST_MBOX = 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [1/7] foo\nFrom: Dino Dinosaurus <dino@example.com>\nX-Patchwork-Id: 12345\nMessage-Id: <11111@example.com>\nTo: list@example.com\nDate: Thu,  10 Feb 2011 15:23:31 +0300\n\nFoo commit log. Ignore this text\n\nSigned-off-by: Dino Dinosaurus <dino@example.com>\n\n---\nFIXME: add the patch here\n'
+
 
 class TestPatch(unittest.TestCase):
     @mock.patch('pwcli.PWCLI')
@@ -115,7 +116,7 @@ class TestPatch(unittest.TestCase):
         # check that Patchwork-Id is set
         id_line = r'\nPatchwork-Id: %s\n' % (attributes['id'])
         search = re.search(id_line, msg.get_payload())
-        self.assertTrue(search != None)
+        self.assertTrue(search is not None)
 
     def test_clean_subject(self):
         patch = pwcli.Patch(None)
