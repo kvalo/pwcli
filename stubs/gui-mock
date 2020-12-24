@@ -1,0 +1,442 @@
+#!/usr/bin/env python3
+#
+# Copyright (c) 2020, The Linux Foundation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+try:
+    import gi
+    gi.require_version("Gtk", "3.0")
+    gi.require_version('WebKit2', '4.0')
+    from gi.repository import Gtk, WebKit2
+except (ImportError, ValueError) as e:
+    # FIXME: this error handling by setting Gtk to None does not work:
+    # AttributeError: 'NoneType' object has no attribute 'ListStore'
+    gtk_exception = e
+    Gtk = None
+
+SPACING = 6
+
+
+def create_series():
+    result = []
+
+    s = Series('foo: add feature')
+    s.add_patch(Patch('foo: add feature'))
+    result.append(s)
+
+    s = Series('[1/3] bar: add big feature')
+    s.add_patch(Patch('[1/3] bar: add feature 1'))
+    s.add_patch(Patch('[2/3] bar: add feature 2'))
+    s.add_patch(Patch('[3/3] bar: add feature 3'))
+    result.append(s)
+
+    s = Series('[0/5] koo: add really big feature',
+               Cover('[0/5] koo: add really big feature'))
+    s.add_patch(Patch('[1/5] bar: add feature 1'))
+    s.add_patch(Patch('[2/5] bar: add feature 2'))
+    s.add_patch(Patch('[3/5] bar: add feature 3'))
+    s.add_patch(Patch('[4/5] bar: add feature 4'))
+    s.add_patch(Patch('[5/5] bar: add feature 5'))
+    result.append(s)
+
+    return result
+
+
+class Series():
+    def get_name(self):
+        return self._name
+
+    def get_acked_by_count(self):
+        return 0
+
+    def get_reviewed_by_count(self):
+        return 0
+
+    def get_tested_by_count(self):
+        return 0
+
+    def get_comment_count(self):
+        return 0
+
+    def get_age(self):
+        return '1d'
+
+    def get_submitter_name(self):
+        return 'Frank Foo'
+
+    def get_cover(self):
+        return self._cover
+
+    def get_patches(self):
+        return self._patches
+
+    def add_patch(self, patch):
+        self._patches.append(patch)
+
+    def __init__(self, name, cover=None):
+        self._name = name
+        self._cover = cover
+        self._patches = []
+
+
+class Cover():
+    def get_web_url(self):
+        return 'http://www.example.com/'
+
+    def get_name(self):
+        return self._name
+
+    def get_comments(self):
+        return None
+
+    def get_age(self):
+        return '1d'
+
+    def get_acked_by_count(self):
+        return 0
+
+    def get_reviewed_by_count(self):
+        return 0
+
+    def get_tested_by_count(self):
+        return 0
+
+    def get_comment_count(self):
+        return 0
+
+    def get_submitter_name(self):
+        return 'Frank Foo'
+
+    def __init__(self, name):
+        self._name = name
+
+
+class CommentThread():
+    def get_count(self):
+        return 0
+
+    def get_acked_by_count(self):
+        return 0
+
+    def get_reviewed_by_count(self):
+        return 0
+
+    def get_tested_by_count(self):
+        return 0
+
+class Patch():
+    def get_name(self):
+        return self._name
+
+    def get_delegate(self):
+        return 'kvalo'
+
+    def get_submitter(self):
+        return 'Frank Foo <foo@example.com>'
+
+    def get_submitter_name(self):
+        return 'Frank Foo'
+
+    def get_state_name(self):
+        return 'Under Review'
+
+    def get_age(self):
+        return '1d'
+
+    def get_url(self):
+        return self._web_url
+
+    def get_comments(self):
+        return None
+
+    def get_comment_count(self):
+        return 0
+
+    def get_acked_by_count(self):
+        return 0
+
+    def get_reviewed_by_count(self):
+        return 0
+
+    def get_tested_by_count(self):
+        return 0
+
+    def __init__(self, name):
+        self._name = name
+
+
+class PatchesWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="gui-mock patches")
+
+        self.notebook = Gtk.Notebook()
+        self.notebook.set_scrollable(True)
+        self.add(self.notebook)
+
+        webview = WebKit2.WebView()
+        webview.load_uri('https://www.example.com/')
+        self.notebook.append_page(webview, Gtk.Label('Test'))
+
+        self.show_all()
+
+
+class SeriesStore(Gtk.ListStore):
+    def set_series(self, series):
+        self._series = []
+        for s in series:
+            index = len(self._series)
+            self._series.append(s)
+            self.append([index,
+                         s.get_name(),
+                         s.get_acked_by_count(),
+                         s.get_reviewed_by_count(),
+                         s.get_tested_by_count(),
+                         s.get_comment_count(),
+                         s.get_age(),
+                         s.get_submitter_name()])
+
+    def get_series_by_index(self, index):
+        return self._series[index]
+
+    def __init__(self):
+        # types: index Name A R T C Age Submitter
+        Gtk.ListStore.__init__(self, int, str, int, int, int, int, str, str)
+        self._series = []
+
+
+class PatchesStore(Gtk.ListStore):
+    def set_series(self, series):
+        print('PatchesStore.set_series()')
+        self._patches = []
+        self.clear()
+
+        cover = series.get_cover()
+        if cover is not None:
+            index = len(self._patches)
+            print('adding', cover.get_name())
+            self._patches.append(cover)
+            self.append([index,
+                         cover.get_name(),
+                         cover.get_acked_by_count(),
+                         cover.get_reviewed_by_count(),
+                         cover.get_tested_by_count(),
+                         cover.get_comment_count(),
+                         cover.get_age(),
+                         cover.get_submitter_name(),
+                         ''])
+
+        for patch in series.get_patches():
+            index = len(self._patches)
+            print('adding', patch.get_name())
+            self._patches.append(patch)
+            self.append([index,
+                         patch.get_name(),
+                         patch.get_acked_by_count(),
+                         patch.get_reviewed_by_count(),
+                         patch.get_tested_by_count(),
+                         patch.get_comment_count(),
+                         patch.get_age(),
+                         patch.get_submitter_name(),
+                         patch.get_state_name()])
+
+    def get_patch_by_index(self, index):
+        return self._patches[index]
+
+    def __init__(self):
+        # types: index Name A R T C Age Submitter State
+        Gtk.ListStore.__init__(self, int, str, int, int, int, int, str, str, str)
+
+        # includes also the cover letter!
+        self._patches = []
+
+
+class SeriesWindow(Gtk.Window):
+
+    def on_series_selection_changed(self, selection):
+        print('selected')
+        model, treeiter = selection.get_selected()
+        if treeiter is None:
+            return
+
+        index = model[treeiter][0]
+
+        series = self.series_store.get_series_by_index(index)
+
+        print('You selected', series.get_name())
+
+        self.patches_store.set_series(series)
+
+
+    def on_commit_clicked(self, widget):
+        selection = self.patches_tree.get_selection()
+        model, treeiters = selection.get_selected_rows()
+        if len(treeiters) > 0:
+            for treeiter in treeiters:
+                patch = self.patches_store.get_patch_by_index(model[treeiter][0])
+                print('Commit %s' % (patch.get_name()))
+        else:
+            print('Commit all')
+
+
+    def on_quit_clicked(self, widget):
+        print("quit")
+        Gtk.main_quit()
+
+    def on_destroy(self, widget):
+        print("destroy")
+        Gtk.main_quit()
+
+    def __init__(self):
+        Gtk.Window.__init__(self, title="gui-mock")
+
+        self.connect("destroy", self.on_destroy)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=SPACING)
+
+        self.series_store = SeriesStore()
+        self.series_store.set_series(create_series())
+
+        tree = Gtk.TreeView(self.series_store)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Name', renderer, text=1)
+        tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('A', renderer, text=2)
+        tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('R', renderer, text=3)
+        tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('T', renderer, text=4)
+        tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('C', renderer, text=5)
+        tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Age', renderer, text=6)
+        tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Submitter', renderer, text=7)
+        tree.append_column(column)
+
+        select = tree.get_selection()
+        select.connect("changed", self.on_series_selection_changed)
+
+        vbox.pack_start(tree, False, False, SPACING)
+
+        self.patches_store = PatchesStore()
+        self.patches_tree = Gtk.TreeView(self.patches_store)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Name', renderer, text=1)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('A', renderer, text=2)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('R', renderer, text=3)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('T', renderer, text=4)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('C', renderer, text=5)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Age', renderer, text=6)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('Submitter', renderer, text=7)
+        self.patches_tree.append_column(column)
+
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn('State', renderer, text=8)
+        self.patches_tree.append_column(column)
+
+        self.patches_tree.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
+
+        vbox.pack_start(self.patches_tree, True, True, SPACING)
+
+        hbox = Gtk.Box(spacing=SPACING)
+
+        # Commit button
+        button = Gtk.Button(label="Commit All")
+        button.connect("clicked", self.on_commit_clicked)
+        hbox.pack_start(button, False, False, SPACING)
+
+        # Review button
+        button = Gtk.Button(label="Review All")
+        hbox.pack_start(button, False, False, SPACING)
+
+        # Edit button
+        button = Gtk.Button(label="Edit Patch")
+        hbox.pack_start(button, False, False, SPACING)
+
+        # Reply button
+        button = Gtk.Button(label="Reply Patch")
+        hbox.pack_start(button, False, False, SPACING)
+
+        # Quit button
+        button = Gtk.Button(label="Quit")
+        button.connect("clicked", self.on_quit_clicked)
+        hbox.pack_start(button, False, False, SPACING)
+
+        vbox.pack_start(hbox, False, False, SPACING)
+
+        self.add(vbox)
+
+        self.show_all()
+
+def main():
+    if Gtk is None:
+        print('GTK is not supported: %s' % (gtk_exception))
+        return
+
+    SeriesWindow()
+    PatchesWindow()
+
+    Gtk.main()
+
+if __name__ == '__main__':
+    main()
