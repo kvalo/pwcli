@@ -376,5 +376,6 @@ def main():
         print('Failed to start PatchworkStub REST server: %s' % e)
         sys.exit(1)
 
+
 if __name__ == "__main__":
     main()
