@@ -58,7 +58,7 @@ class GitCommit():
         subject = decode_mime_encoded_words(msg['Subject'])
 
         # remove all '[foo]' tags
-        subject = re.sub('\[.*\]', '', subject)
+        subject = re.sub(r'\[.*\]', '', subject)
 
         self.subject = subject.strip()
         self.author = msg['From']
