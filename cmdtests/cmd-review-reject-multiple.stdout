@@ -204,6 +204,7 @@ To: Dino Dinosaurus <dino@example.com>
 Cc: list@example.com
 User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
  Python/<censored>
+Message-ID: 1-2-3-hardcoded@example.com
 
 Dino Dinosaurus <dino@example.com> wrote:
 
@@ -236,6 +237,7 @@ To: Timo Tiger <timo@example.com>
 Cc: list@example.com
 User-Agent: pwcli/<censored> (https://github.com/kvalo/pwcli/)
  Python/<censored>
+Message-ID: 1-2-3-hardcoded@example.com
 
 Timo Tiger <timo@example.com> wrote:
 

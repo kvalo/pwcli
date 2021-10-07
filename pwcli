@@ -2135,11 +2135,21 @@ class PWCLI():
             self.output('No To header found in the message')
             return
 
-        logger.debug('%s.send_email(): %s -> %s %s\n%r' % (self,
-                                                           msg['From'],
-                                                           msg['To'],
-                                                           msg['Cc'],
-                                                           msg.as_string()))
+        if 'PWCLI_HARDCODE_MESSAGE_ID' in os.environ:
+            message_id = os.environ['PWCLI_HARDCODE_MESSAGE_ID']
+        else:
+            fullname, address = email.utils.parseaddr(msg['From'])
+            username, domain = address.split('@')
+            message_id = email.utils.make_msgid(username, domain)
+
+        msg['Message-ID'] = message_id
+
+        logger.debug('%s.send_email(): %s -> %s %s (%s)\n%r' % (self,
+                                                                msg['From'],
+                                                                msg['To'],
+                                                                msg['Cc'],
+                                                                msg['Message-ID'],
+                                                                msg.as_string()))
 
         done = False
 
