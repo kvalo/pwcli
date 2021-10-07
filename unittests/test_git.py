@@ -124,5 +124,6 @@ class TestGitCommit(unittest.TestCase):
         self.assertTrue(commit.log.endswith('Signed-off-by: Ed Example <ed@example.com>'))
         self.assertEqual(commit.patchwork_id, 12345678)
 
+
 if __name__ == '__main__':
     unittest.main()

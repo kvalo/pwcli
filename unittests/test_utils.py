@@ -112,5 +112,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(f(d('2020-01-01T00:00:01')), '0h')
         self.assertEqual(f(d('2020-01-01T00:59:59')), '0h')
 
+
 if __name__ == '__main__':
     unittest.main()

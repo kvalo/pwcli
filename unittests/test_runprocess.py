@@ -104,5 +104,6 @@ class TestRunProcess(unittest.TestCase):
         self.assertEqual(repr(p),
                          'RunProcess([\'cat\'], None, \'This is a test\')')
 
+
 if __name__ == '__main__':
     unittest.main()

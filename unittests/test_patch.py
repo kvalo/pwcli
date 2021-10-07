@@ -172,5 +172,6 @@ class TestPatch(unittest.TestCase):
         m.return_value = '[RFC,7/9] foo: bar'
         self.assertEqual(patch.get_tags(), '[RFC,7/9]')
 
+
 if __name__ == '__main__':
     unittest.main()
