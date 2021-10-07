@@ -369,6 +369,13 @@ def main():
         run_test(args)
         sys.exit(0)
 
+    # disable message 'WARNING: Do not use the development server in a
+    # production environment.' on startup
+    os.environ['FLASK_ENV'] = 'development'
+
+    # disable message 'Serving Flask app' during startup
+    os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+
     try:
         stub = PatchworkStub(datadir, port=args.port)
         stub.run(args.debug)
