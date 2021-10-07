@@ -116,7 +116,7 @@ def main():
             # ignore E501 long line warnings, not really seeing the
             # benefit from trying to make lines with user messages short
             # (just like kernel style works)
-            returncode = subprocess.call(['pep8', '--ignore', 'E501', filename])
+            returncode = subprocess.call(['pep8', '--ignore', 'E501,W503', filename])
             if returncode != 0 and not args.ignore_errors:
                 sys.exit(1)
 
