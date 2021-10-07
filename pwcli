@@ -1986,9 +1986,9 @@ class PWCLI():
         WIDTH_SEPARATORS = 8
 
         # pep8 recommends parentheses for line continuations
-        WIDTH_NAME = (columns - WIDTH_INDEX - WIDTH_ACKED - WIDTH_REVIEWED -
-                      WIDTH_TESTED - WIDTH_COMMENTS - WIDTH_AGE - WIDTH_SUBMITTER -
-                      WIDTH_STATE - WIDTH_SEPARATORS)
+        WIDTH_NAME = (columns - WIDTH_INDEX - WIDTH_ACKED - WIDTH_REVIEWED
+                      - WIDTH_TESTED - WIDTH_COMMENTS - WIDTH_AGE
+                      - WIDTH_SUBMITTER - WIDTH_STATE - WIDTH_SEPARATORS)
 
         if WIDTH_NAME < 3:
             logger.warn('terminal width %d too small, overlapping will happen' %
