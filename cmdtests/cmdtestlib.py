@@ -50,19 +50,19 @@ logger = logging.getLogger('cmdtestlib')
 PROMPT = 'master@data >'
 
 # there's some odd word wrapping happening (pexpect?) so had to cut this
-PROMPT_REVIEW_STATE = 'aPplicable/rFc/aBort\? '
+PROMPT_REVIEW_STATE = r'aPplicable/rFc/aBort\? '
 
-PROMPT_REVIEW_REASON = 'Reason \(RET for no mail\): '
-PROMPT_COMMIT_ALL = 'commit All/aBort\?'
+PROMPT_REVIEW_REASON = r'Reason \(RET for no mail\): '
+PROMPT_COMMIT_ALL = r'commit All/aBort\?'
 
 # there's some odd word wrapping happening (pexpect?) so had to cut this
-PROMPT_COMMIT_ACCEPT = 'aPplicable/rFc/aBort\? '
+PROMPT_COMMIT_ACCEPT = r'aPplicable/rFc/aBort\? '
 
-PROMPT_REPLY = 'Send/Edit/aBort?'
-PROMPT_REPLY_RETRY = 'Retry/aBort?'
-PROMPT_REVIEW_ACCEPT = 'Apply \d+ patches to the pending branch\? \[Apply/Skip/aBort\]'
-PROMPT_ACCEPT_CONFIRM = 'Are you sure want to ACCEPT these patches [y/N]: '
-PROMPT_UNDER_REVIEW_CONFIRM = 'Are you sure want to set these patches to UNDER REVIEW? [y/N]: '
+PROMPT_REPLY = r'Send/Edit/aBort?'
+PROMPT_REPLY_RETRY = r'Retry/aBort?'
+PROMPT_REVIEW_ACCEPT = r'Apply \d+ patches to the pending branch\? \[Apply/Skip/aBort\]'
+PROMPT_ACCEPT_CONFIRM = r'Are you sure want to ACCEPT these patches [y/N]: '
+PROMPT_UNDER_REVIEW_CONFIRM = r'Are you sure want to set these patches to UNDER REVIEW? [y/N]: '
 
 # the toplevel source directory
 srcdir = os.environ['SRCDIR']
