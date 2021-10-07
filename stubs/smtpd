@@ -42,13 +42,14 @@ datadir = None
 
 
 class FakeSMTPServer(smtpd.SMTPServer):
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, peer, mailfrom, rcpttos, data,
+                        mail_options=None, rcpt_options=None):
         print('smtpd: %s -> %s' % (mailfrom, ', '.join(rcpttos)))
 
         if os.path.isdir(datadir):
             f = open(os.path.join(datadir, str(self.count)), 'w')
             f.write('%s -> %s\n' % (mailfrom, ', '.join(rcpttos)))
-            f.write(data)
+            f.write(data.decode('utf-8'))
             f.close
             self.count += 1
 
