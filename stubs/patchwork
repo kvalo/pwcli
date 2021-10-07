@@ -60,7 +60,7 @@ STATE_MAP = {
     'Deferred': 'deferred',
 }
 
-API_PATH = 'api/1.1'
+API_PATH = 'api/1.2'
 
 
 class Patch():

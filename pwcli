@@ -74,7 +74,7 @@ PWCLI_EDIT_FILE = '.pwcli-edit'
 
 DEFAULT_EDITOR = 'nano'
 
-PATCHWORK_API_DIRECTORY = 'api/1.1'
+PATCHWORK_API_DIRECTORY = 'api/1.2'
 
 # global variables
 logger = logging.getLogger('pwcli')
