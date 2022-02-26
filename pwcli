@@ -449,6 +449,30 @@ class Stg():
         if ret != 0:
             raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
 
+    def get_name_for_patch(self, patch_id):
+        for p in self.get_series():
+            commit = self.get_commit(p)
+
+            if patch_id == commit.patchwork_id:
+                return p
+
+        return None
+
+    def delete_patch(self, patch_id):
+        pname = self.get_name_for_patch(patch_id)
+        if pname is None:
+            logger.debug('stg.delete(): %s not found', patch_id)
+            return
+
+        cmd = ['stg', 'delete', pname]
+
+        p = RunProcess(cmd)
+        ret = p.returncode
+        logger.debug('%s returned: %s' % (cmd, ret))
+
+        if ret != 0:
+            raise GitError('%s failed: %s' % (cmd, ret), log=p.stderrdata)
+
     def import_patch(self, mbox):
         cmd = ['stg', 'import', '--mbox', '--sign']
 
@@ -697,6 +721,13 @@ class Patch():
 
     def get_delegate(self):
         return self._delegate_username
+
+    def set_delegate(self, delegate_name):
+        self.pw.update_patch(self.get_id(), delegate=delegate_name)
+
+        self._delegate_username = delegate_name
+
+        logger.debug('%s delegated to %s' % (self.get_id(), delegate_name))
 
     def get_submitter(self):
         return '%s <%s>' % (self._submitter_name, self._submitter_email)
@@ -1461,6 +1492,26 @@ class PatchworkCache():
 
 class Patchwork():
 
+    def get_user_id(self, username):
+        logger.info("%s.get_user_id(username=%s)" % (self, username))
+        url = self._api_url + '/users/?q=' + username
+
+        headers = self._get_auth_headers()
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 404:
+            # series id not found from server
+            return None
+
+        response.raise_for_status()
+
+        for u in response.json():
+            if u['username'] == username:
+                return u['id']
+
+        return None
+
     def _get_patches(self, states=None, delegate=None):
         logger.debug('%s._get_patches(states=%r, delegate=%s)' % (self,
                                                                   states,
@@ -1554,11 +1605,12 @@ class Patchwork():
 
         return self._get_patch(patch_id)
 
-    def update_patch(self, patch_id, state=None, commit_ref=None):
-        logger.info('%s.update_patch(patch_id=%s, state=%s, commit_ref=%s)' % (self,
-                                                                               patch_id,
-                                                                               state,
-                                                                               commit_ref))
+    def update_patch(self, patch_id, state=None, commit_ref=None, delegate=None):
+        logger.info('%s.update_patch(patch_id=%s, state=%s, commit_ref=%s, delegate=%s)' % (self,
+                                                                                            patch_id,
+                                                                                            state,
+                                                                                            commit_ref,
+                                                                                            delegate))
 
         url = self._api_url + '/patches/%s/' % (patch_id)
 
@@ -1572,6 +1624,13 @@ class Patchwork():
 
         if commit_ref is not None:
             json['commit_ref'] = commit_ref
+
+        if delegate is not None:
+            uid = self.get_user_id(delegate)
+            if uid is None:
+                raise PwcliError("Couldn't find UID for user %s" % delegate)
+            json['delegate'] = uid
+
 
         self.timer.start()
 
@@ -2864,6 +2923,31 @@ class PWCLI():
             # FIXME: what to do if we don't find any patches?
             pass
 
+    def cmd_delegate(self, args):
+        logger.debug('cmd_delegate(args=%r)' % args)
+
+        patches = self.get_patches_from_ids(args.ids)
+
+        self.prefetch_patches(patches)
+        # force a newline so that new text starts from it's own line
+        self.output('')
+
+        self.output(self.create_patchlist_as_string(patches,
+                                                    show_indexes=False,
+                                                    open_browser=False))
+
+        self.output(
+            '------------------------------------------------------------')
+
+        delegate = self.input("Username to delegate to: ")
+
+        for i, patch in enumerate(patches, start=1):
+            self.output('\rDelegating patch (%d/%d)' % (i, len(patches)),
+                        newline=False)
+            patch.set_delegate(delegate)
+            if self.config.pending_mode == 'stgit':
+                self.stg.delete_patch(patch.get_id())
+
     # Basic operation:
     #
     # * show list of patches
@@ -3281,6 +3365,13 @@ with # character. Example: #1000,#1005'''
         parser_commit.add_argument('ids', metavar='PATCHIDS',
                                    help=index_help)
         parser_commit.set_defaults(func=self.cmd_commit)
+
+        parser_delegate = subparsers.add_parser('delegate',
+                                              help='delegate patches',
+                                              description='Delegate patches to other users')
+        parser_delegate.add_argument('ids', metavar='PATCHIDS',
+                                   help=index_help)
+        parser_delegate.set_defaults(func=self.cmd_delegate)
 
         parser_pull = subparsers.add_parser('pull',
                                             help='pull a pull request',
