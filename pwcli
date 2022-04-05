@@ -1631,7 +1631,6 @@ class Patchwork():
                 raise PwcliError("Couldn't find UID for user %s" % delegate)
             json['delegate'] = uid
 
-
         self.timer.start()
 
         r = requests.patch(url, json=json, headers=headers)
@@ -3367,10 +3366,10 @@ with # character. Example: #1000,#1005'''
         parser_commit.set_defaults(func=self.cmd_commit)
 
         parser_delegate = subparsers.add_parser('delegate',
-                                              help='delegate patches',
-                                              description='Delegate patches to other users')
+                                                help='delegate patches',
+                                                description='Delegate patches to other users')
         parser_delegate.add_argument('ids', metavar='PATCHIDS',
-                                   help=index_help)
+                                     help=index_help)
         parser_delegate.set_defaults(func=self.cmd_delegate)
 
         parser_pull = subparsers.add_parser('pull',
