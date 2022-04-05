@@ -3196,7 +3196,7 @@ class PWCLI():
 
         if self.config.main_branches is None:
             self.output('not enabled: general.main-branches config option not set')
-        return
+            return
 
         if args.index is None:
             self.output('Main branches:')
