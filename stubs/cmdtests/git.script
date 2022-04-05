@@ -136,9 +136,8 @@ def main():
       subprocess.call([stub_git, 'log', '--oneline', '--max-count=2'])
       print()
 
-      print('test git filter-branch')
-      subprocess.call([stub_git, 'filter-branch', '--force', '--msg-filter',
-                       'sed -e "/foo/d"', 'HEAD^..HEAD'])
+      print('test git commit')
+      subprocess.call([stub_git, 'commit', '--amend', '--file=-'])
       print()
 
       print('test git am conflict')

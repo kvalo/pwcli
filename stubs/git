@@ -141,7 +141,7 @@ def cmd_checkout(args):
     pass
 
 
-def cmd_filter_branch(args):
+def cmd_commit(args):
     # FIXME: just a dummy command for now
     pass
 
@@ -207,10 +207,10 @@ def main():
     parser_checkout.add_argument('branch')
     parser_checkout.set_defaults(func=cmd_checkout)
 
-    parser_filter_branch = subparsers.add_parser('filter-branch')
-    parser_filter_branch.add_argument('--force', action='store_true')
-    parser_filter_branch.add_argument('--msg-filter', nargs=2)
-    parser_filter_branch.set_defaults(func=cmd_filter_branch)
+    parser_filter_branch = subparsers.add_parser('commit')
+    parser_filter_branch.add_argument('--amend', action='store_true')
+    parser_filter_branch.add_argument('--file', nargs=1)
+    parser_filter_branch.set_defaults(func=cmd_commit)
 
     parser_reset_branch = subparsers.add_parser('reset')
     parser_reset_branch.add_argument('--hard', action='store_true')

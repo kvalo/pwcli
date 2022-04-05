@@ -603,27 +603,31 @@ class Git():
 
         return None
 
-    # removes a line matching filter from the commit in HEAD
-    def filter_msg(self, filter_cmd):
-        # --force switch is to work around error "Cannot create a new backup.
-        # --A previous backup already exists in refs/original/"
+    def update_commit_log(self, title, log):
+        full_log = '%s\n\n%s' % (title, log)
+        cmd = ['git', 'commit', '--amend', '--file=-']
 
-        cmd = ['git', 'filter-branch', '--force',
-               '--msg-filter', filter_cmd, 'HEAD^..HEAD']
-
-        p = RunProcess(cmd)
+        p = RunProcess(cmd, input=full_log)
 
         if p.returncode != 0:
-            raise GitError('git filter-branch failed: %d' % (p.returncode),
+            raise GitError('Commit log update failed: %d' % (p.returncode),
                            log=p.stderrdata)
 
     def remove_tag(self, tag):
-        cmd = 'sed -e "/^%s/d"' % (tag)
-        self.filter_msg(cmd)
+        commit = self.get_commit('HEAD')
+        pattern = r'^%s.*\n' % (tag)
+        log = re.sub(pattern, '', commit.log, flags=re.MULTILINE)
+
+        self.update_commit_log(commit.title, log)
 
     def add_tag(self, tag):
-        cmd = 'cat && echo "%s"' % (tag)
-        self.filter_msg(cmd)
+        commit = self.get_commit('HEAD')
+
+        # Newline in the end is important, a commit log should end
+        # with a newline.
+        log = '%s%s\n' % (commit.log, tag)
+
+        self.update_commit_log(commit.title, log)
 
     def cherry_pick(self, commit_id):
         cmd = ['git', 'cherry-pick', commit_id]

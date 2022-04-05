@@ -29,7 +29,7 @@ Commit id fb409caeb2ecda7176f3d6af845e87b1c60f6665 not found.
 bbd3154f2111 foo: test 2
 750f7254ae57 foo: new patch
 
-test git filter-branch
+test git commit
 
 test git am conflict
 Applying: foo: conflict patch
