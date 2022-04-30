@@ -35,7 +35,6 @@ import sys
 import shutil
 import os
 import subprocess
-import time
 import logging
 import configparser
 import stubslib
@@ -269,8 +268,8 @@ class SmtpdStub():
         self.smtpd = subprocess.Popen([os.path.join(stubsdir, 'smtpd'),
                                        '--port=%d' % self.port])
 
-        # wait some time to make sure that the stub started
-        time.sleep(0.2)
+        # make sure that the stub started before continuing
+        stubslib.wait_tcp_port('localhost', self.port)
 
         if self.smtpd.poll() is not None:
             raise Exception('Failed to start smtpd stub: %d' % self.smtpd.returncode)
@@ -336,8 +335,8 @@ class PatchworkStub():
 
         self.patchwork = subprocess.Popen(cmd)
 
-        # wait some time to make sure that the stub started
-        time.sleep(2)
+        # make sure that the stub started before continuing
+        stubslib.wait_tcp_port('localhost', self.port)
 
         if self.patchwork.poll() is not None:
             raise Exception('Failed to start patchwork stub: %d' % self.patchwork.returncode)

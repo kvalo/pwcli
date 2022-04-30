@@ -37,8 +37,22 @@ import re
 import pickle
 import collections
 import email.header
+import contextlib
+import socket
+import time
 
 GIT_DB_NAME = 'db.pickle'
+
+
+def wait_tcp_port(host, port):
+    with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+        for i in range(100):
+            if sock.connect_ex((host, port)) == 0:
+                return
+
+            time.sleep(0.1)
+
+        raise Exception('tcp port %s on %s never opened' % (port, host))
 
 
 def decode_mime_encoded_words(text):
