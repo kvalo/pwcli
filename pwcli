@@ -242,16 +242,16 @@ def shrink(s, width, ellipsis=True):
     return s
 
 
-def now():
+def utcnow():
     if 'PWCLI_HARDCODE_DATE' in os.environ:
         return datetime.datetime.strptime(os.environ['PWCLI_HARDCODE_DATE'],
                                           '%Y-%m-%dT%H:%M:%S')
 
-    return datetime.datetime.now()
+    return datetime.datetime.utcnow()
 
 
 def get_age(date):
-    delta = now() - date
+    delta = utcnow() - date
 
     if delta.days >= 2 * 12 * 30:
         # over 2 years
