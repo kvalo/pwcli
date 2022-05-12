@@ -64,7 +64,7 @@ import threading
 import readline
 assert readline  # to shut up pyflakes
 
-PWCLI_VERSION = '0.1.0-git'
+PWCLI_VERSION = '0.1.1'
 PWCLI_PROJECT_URL = 'https://github.com/kvalo/pwcli/'
 PWCLI_USER_AGENT = 'pwcli/%s (%s) Python/%s' % (PWCLI_VERSION,
                                                 PWCLI_PROJECT_URL,
