@@ -648,7 +648,8 @@ class Git():
                            log=p.stderrdata)
 
     def pull(self, url):
-        cmd = ['git', 'pull', '--no-edit', '--no-ff', '--stat'] + url.split(' ')
+        cmd = ['git', 'pull', '--no-edit', '--no-ff', '--stat', '--cleanup=strip'] + \
+            url.split(' ')
         p = RunProcess(cmd)
         if p.returncode != 0:
             raise GitError('git pull failed: %d' % (p.returncode),
