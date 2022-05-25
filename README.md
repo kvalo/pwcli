@@ -152,6 +152,17 @@ git config sendemail.smtppass 1234567890
 git config sendemail.smtpencryption tls
 ```
 
+## Patch check scripts
+
+pwcli supports having external patch check scripts, for example
+testing Signed-off-by or Fixes tags in commit logs. They are installed
+to .git/pwcli/check.d directory and need to be executable, otherwise
+the script is ignored. pwcli feads the patch to the script via stdin
+in mbox format and the script outputs any warnings either via stdout
+or stderr. pwcli then shows the warnings to the user. If there's no
+output from the script it's assumed there were no warnings. Scripts
+exit value is ignored.
+
 ## Tests
 
 There are various automatic tests for pwcli, use `run_tests` to run

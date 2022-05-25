@@ -2380,6 +2380,39 @@ class PWCLI():
         self.print_header('Deferred', deferred)
         self.print_header('Total', total)
 
+    def run_check_scripts(self, patches):
+        scriptdir = os.path.join(self.pwcli_dir, 'check.d')
+
+        if not os.path.isdir(scriptdir):
+            return
+
+        files = os.listdir(scriptdir)
+        scriptpaths = []
+        for script in files:
+            scriptpath = os.path.join(scriptdir, script)
+
+            if not os.path.isfile(scriptpath):
+                continue
+
+            if not os.access(scriptpath, os.X_OK):
+                # not executable
+                continue
+
+            scriptpaths.append(scriptpath)
+
+        for patch in patches:
+            for scriptpath in scriptpaths:
+                logger.debug('running check script %s for patch %s',
+                             scriptpath, patch)
+
+                p = RunProcess(scriptpath, input=patch.get_mbox())
+
+                if len(p.stderrdata) > 0:
+                    self.output(p.stderrdata.strip())
+
+                if len(p.stdoutdata) > 0:
+                    self.output(p.stdoutdata.strip())
+
     def run_build_script(self):
         cmd = self.config.build_command
 
@@ -2761,6 +2794,8 @@ class PWCLI():
         if self.config.pending_mode == 'stgit':
             self.git.checkout(self.selected_main_branch)
 
+        self.run_check_scripts(patches)
+
         applied = []
         faillog = ''
         builder = None
@@ -2988,6 +3023,8 @@ class PWCLI():
         applied = []
         faillog = ''
         builder = None
+
+        self.run_check_scripts(patches)
 
         if self.config.pending_mode == 'stgit':
             while True:
