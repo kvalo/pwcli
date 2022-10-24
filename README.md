@@ -170,13 +170,14 @@ them all. These are currently run on Ubuntu 16.04 with these packages
 (the list might not be complete):
 
 ```
-ii  cmdtest               0.22-1               blackbox testing of Unix command line programs
-ii  python3-mock          1.3.0-2.1ubuntu1     Mocking and Testing Library (Python3 version)
-ii  python3-pexpect       4.0.1-1              Python 3 module for automating interactive applications
-ii  python3-flask-restful 0.3.4-1              REST API framework for Flask applications
-ii  figlet                2.2.5-2              Make large character ASCII banners out of ordinary text
-ii  pyflakes3             1.1.0-2              all passive checker of Python 2 and 3 programs
-ii  pep8                  1.7.0-2              all Python PEP 8 code style checker
+$ dpkg -l cmdtest figlet pycodestyle pyflakes3 python3-flask-restful python3-mock python3-pexpect
+ii  cmdtest               0.32.14.gcdfe14e-2 all          blackbox testing of Unix command line programs
+ii  figlet                2.2.5-3+b1         amd64        Make large character ASCII banners out of ordinary text
+ii  pycodestyle           2.6.0-1            all          Python style guide checker (formerly called pep8)
+ii  pyflakes3             2.2.0-2            all          passive checker of Python 3 programs
+ii  python3-flask-restful 0.3.8-5            all          REST API framework for Flask applications (Python3 Module)
+ii  python3-mock          4.0.3-1            all          Mocking and Testing Library (Python3 version)
+ii  python3-pexpect       4.8.0-2            all          Python 3 module for automating interactive applications
 ```
 
 ## Contributing patches

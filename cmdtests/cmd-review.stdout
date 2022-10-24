@@ -35,7 +35,7 @@ review 1
 Retrieving patches (1/1)
        foo: new patch                - - - -   3d Timo Tiger   New              
 ------------------------------------------------------------
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? b
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? b
 b
 Aborted.
 master@data > review 1
@@ -43,7 +43,7 @@ review 1
 Retrieving patches (1/1)
        foo: new patch                - - - -   3d Timo Tiger   New              
 ------------------------------------------------------------
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? u
 u
 Setting patch state (1/1)
 Patch set to Under Review

@@ -24,7 +24,7 @@ review 1-2
        [1/7] foo: test 1             - - - -   3d Dino Dinosau Under Review     
        [2/7] foo: test 2             - - - -   3d Timo Tiger   Under Review     
 ------------------------------------------------------------
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? r
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? r
 r
 Setting patch state (1/2)Setting patch state (2/2)
 2 patches set to Rejected
@@ -120,7 +120,7 @@ review 1-19
        [15/15] bar: blah blah bla... - - - -   2d Dino Dinosau New              
        foo: patch with a really l... - - - -  11h Lasse Really New              
 ------------------------------------------------------------
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? c
 c
 Setting patch state (1/19)Setting patch state (2/19)Setting patch state (3/19)Setting patch state (4/19)Setting patch state (5/19)Setting patch state (6/19)Setting patch state (7/19)Setting patch state (8/19)Setting patch state (9/19)Setting patch state (10/19)Setting patch state (11/19)Setting patch state (12/19)Setting patch state (13/19)Setting patch state (14/19)Setting patch state (15/19)Setting patch state (16/19)Setting patch state (17/19)Setting patch state (18/19)Setting patch state (19/19)
 19 patches set to Changes Requested

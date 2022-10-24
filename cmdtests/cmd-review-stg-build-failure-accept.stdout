@@ -41,7 +41,7 @@ a
 Importing patches (1/1)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 
 Build failed: 1
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? u
 u
 Build FAILED!
 Are you sure want to set these patches to UNDER REVIEW? [y/N]: y

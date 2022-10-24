@@ -40,7 +40,7 @@ Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
 a
 Importing patches (1/1)
                                                                    CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? u
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? u
 u
 Setting patch state (1/1)
 Patch set to Under Review
@@ -62,7 +62,7 @@ a
 
 2a2792504786 foo: new patch
 
-Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? a
 a
 Setting patch state (1/1)
 Patch set to Accepted

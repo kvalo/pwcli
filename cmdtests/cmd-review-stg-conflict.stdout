@@ -52,7 +52,7 @@ error: patch failed: drivers/net/wireless/foo/mac.c:6924
 error: drivers/net/wireless/foo/mac.c: patch does not apply
 stg import: Diff does not apply cleanly
 
-Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicabble/rFc/aBort? c
+Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? c
 c
 Setting patch state (1/1)
 Patch set to Changes Requested

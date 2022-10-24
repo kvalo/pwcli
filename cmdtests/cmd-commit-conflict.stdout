@@ -36,7 +36,7 @@ CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
 Failed to merge in the changes.
 Patch failed at 0001 foo: conflict patch
 
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? c
 c
 Setting patch state (1/1)
 Patch set to Changes Requested

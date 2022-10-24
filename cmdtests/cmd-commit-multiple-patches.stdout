@@ -35,7 +35,7 @@ a
 b50b875961e9 foo: test 1
 bbd3154f2111 foo: test 2
 
-Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? a
 a
 Setting patch state (1/2)Setting patch state (2/2)
 2 patches set to Accepted
@@ -72,7 +72,7 @@ a
 df9839f1598b koo: yyy bbb cc 3
 4330b48a225a koo: yyy bbb cc 4
 
-Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? a
 a
 Setting patch state (1/6)Setting patch state (2/6)Setting patch state (3/6)Setting patch state (4/6)Setting patch state (5/6)Setting patch state (6/6)
 6 patches set to Accepted

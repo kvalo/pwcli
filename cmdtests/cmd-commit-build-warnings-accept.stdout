@@ -37,12 +37,12 @@ Build successful with warnings
 
 b50b875961e9 foo: test 1
 
-Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? a
 a
 Build had WARNINGS!
 Are you sure want to ACCEPT these patches [y/N]: n
 n
-Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? a
 a
 Build had WARNINGS!
 Are you sure want to ACCEPT these patches [y/N]: Y

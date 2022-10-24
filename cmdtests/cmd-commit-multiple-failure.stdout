@@ -45,7 +45,7 @@ a
 
 750f7254ae57 foo: new patch
 
-Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaitingg upstream/not aPplicable/rFc/aBort? a
+Accepted/Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? a
 a
 Setting patch state (1/1)
 Patch set to Accepted
@@ -82,7 +82,7 @@ CONFLICT (content): Merge conflict in drivers/net/wireless/ath/foo/core.h
 Failed to merge in the changes.
 Patch failed at 0001 foo: conflict patch
 
-Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstreamm/not aPplicable/rFc/aBort? c
+Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? c
 c
 Setting patch state (1/7)Setting patch state (2/7)Setting patch state (3/7)Setting patch state (4/7)Setting patch state (5/7)Setting patch state (6/7)Setting patch state (7/7)
 7 patches set to Changes Requested
