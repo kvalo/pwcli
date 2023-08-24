@@ -2183,7 +2183,7 @@ class PWCLI():
                                                                   ', '.join(valid)))
 
         # should not be reached
-        assert(False)
+        assert False
 
     def send_email(self, msg):
         logger.debug('%s.send_email(msg=%s)' % (self, repr(msg)))
