@@ -38,6 +38,7 @@ import os.path
 import email
 import pprint
 import flask
+import flask.cli
 import flask_restful
 import flask_restful.reqparse
 import json
@@ -61,6 +62,14 @@ STATE_MAP = {
 }
 
 API_PATH = 'api/1.2'
+
+# Workaround to not print annoying messages during startup:
+#
+# * Serving Flask app 'patchwork'
+# * Debug mode: off
+#
+# https://github.com/cs01/gdbgui/issues/425#issuecomment-1119836533
+flask.cli.show_server_banner = lambda *args: None
 
 
 class Patch():
@@ -368,13 +377,6 @@ def main():
     if args.test:
         run_test(args)
         sys.exit(0)
-
-    # disable message 'WARNING: Do not use the development server in a
-    # production environment.' on startup
-    os.environ['FLASK_ENV'] = 'development'
-
-    # disable message 'Serving Flask app' during startup
-    os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
     try:
         stub = PatchworkStub(datadir, port=args.port)
