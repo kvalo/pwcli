@@ -178,6 +178,7 @@ ii  pyflakes3             2.2.0-2            all          passive checker of Pyt
 ii  python3-flask-restful 0.3.8-5            all          REST API framework for Flask applications (Python3 Module)
 ii  python3-mock          4.0.3-1            all          Mocking and Testing Library (Python3 version)
 ii  python3-pexpect       4.8.0-2            all          Python 3 module for automating interactive applications
+ii  python3-aiosmtpd      1.4.3-1.1          all          Python3 asyncio based SMTP server
 ```
 
 ## Contributing patches
