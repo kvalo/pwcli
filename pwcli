@@ -55,7 +55,6 @@ import socket
 import functools
 import traceback
 import mailbox
-import codecs
 import requests
 import shutil
 import queue
@@ -2294,8 +2293,8 @@ class PWCLI():
                 return msg
             elif answer == ANSWER_EDIT:
                 # Edit
-                buf = self.edit_file(msg.as_string())
-                msg = email.message_from_string(buf)
+                buf = self.edit_file(msg.as_bytes())
+                msg = email.message_from_bytes(buf)
             elif answer == ANSWER_ABORT:
                 # Abort
                 self.output('Aborted send email')
@@ -2304,14 +2303,15 @@ class PWCLI():
         # should not reach this
         return None
 
+    # for proper unicode handling buf must be bytes, not string
     def edit_file(self, buf):
-        f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='w')
+        f = open(PWCLI_EDIT_FILE, mode='wb')
         f.write(buf)
         f.close()
 
         subprocess.call([self.config.editor, PWCLI_EDIT_FILE])
 
-        f = codecs.open(PWCLI_EDIT_FILE, encoding='utf-8', mode='r')
+        f = open(PWCLI_EDIT_FILE, mode='rb')
         new_buf = f.read()
         f.close
 
@@ -3344,7 +3344,7 @@ class PWCLI():
         # [PATCH].
         s = '%s\n\n%s' % (patch.get_name(), original.get_payload())
 
-        s = self.edit_file(s)
+        s = self.edit_file(s.encode()).decode()
 
         lines = s.splitlines()
         subject = lines[0]
