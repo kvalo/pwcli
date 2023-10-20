@@ -40,6 +40,16 @@ def test_utf8(ctxt, pwcli):
    pwcli.sendline('list -f Examplè')
    pwcli.expect_prompt()
 
+   pwcli.sendline('reply 1')
+
+   # Edit mail
+   pwcli.expect(cmdtestlib.PROMPT_REPLY)
+   pwcli.sendline('e')
+
+   # Send mail
+   pwcli.expect(cmdtestlib.PROMPT_REPLY)
+   pwcli.sendline('s')
+
    # download 'foo: utf-8 test' patch
    pwcli.sendline('download 1')
    pwcli.expect_prompt()
