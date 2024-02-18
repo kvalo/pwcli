@@ -51,6 +51,7 @@ def test_utf8(ctxt, pwcli):
    pwcli.sendline('s')
 
    # download 'foo: utf-8 test' patch
+   pwcli.expect_prompt()
    pwcli.sendline('download 1')
    pwcli.expect_prompt()
 
