@@ -1,5 +1,7 @@
+Starting build: /bin/echo this is a build script with spaces
 Connecting to http://localhost:8105/
 Downloading patches from the server
+Build successful
 User          : test
 Project       : stub-test
 Tree          : data

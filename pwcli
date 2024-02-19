@@ -3610,6 +3610,14 @@ with # character. Example: #1000,#1005'''
         if self.config.main_branches is not None:
             self.selected_main_branch = self.config.main_branches[0]
 
+        if self.config.build_command is not None:
+            self.output('Starting build: %s' % (' '.join(self.config.build_command)))
+            # don't care about stdout so direct it to DEVNULL, with stdin use
+            # DEVNULL so that kernel config doesn't wait for input
+            build = subprocess.Popen(self.config.build_command,
+                                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                     stderr=subprocess.PIPE, text=True)
+
         self.output('Connecting to %s' % self.config.server_url)
         self.pw = Patchwork(self.config)
 
@@ -3622,6 +3630,18 @@ with # character. Example: #1000,#1005'''
 
         self.output('Downloading patches from the server')
         self.pw.cache.update_cache()
+
+        if self.config.build_command is not None:
+            # need to use communicate() as wait() can deadlock if there's
+            # plenty of output
+            (stdout, stderr) = build.communicate()
+
+            if build.returncode != 0:
+                self.output('Build failed: %d' % (build.returncode))
+                self.output(stderr)
+                sys.exit(2)
+
+            self.output('Build successful')
 
         self.tree = os.path.basename(os.getcwd())
 
