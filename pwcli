@@ -2426,10 +2426,11 @@ class PWCLI():
             # build command is not specified, skip the build
             return
 
-        empty_line = '                                                                 '
+        limit = self.get_terminal_columns()
+        empty_line = ' ' * limit
 
         def stdout_cb(line):
-            self.output('\r%s\r%s' % (empty_line, line.replace('\n', '')),
+            self.output('\r%s\r%s' % (empty_line, line.replace('\n', '')[:limit]),
                         newline=False)
 
         p = RunProcess(cmd, stdout_cb=stdout_cb)
