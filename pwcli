@@ -2025,16 +2025,21 @@ class PWCLI():
         logger.debug('PWCLI.open_browser_url(url=%r): return code %d' % (url,
                                                                          returncode))
 
+    def get_terminal_columns(self):
+        columns = shutil.get_terminal_size().columns
+
+        if self.config.max_terminal_width is not None:
+            columns = min(columns, self.config.max_terminal_width)
+
+        return columns
+
     def create_patchlist_as_string(self, patches, show_indexes=False,
                                    open_browser=False):
         i = 1
         result = ''
         covers_opened = []
 
-        columns = shutil.get_terminal_size().columns
-
-        if self.config.max_terminal_width is not None:
-            columns = min(columns, self.config.max_terminal_width)
+        columns = self.get_terminal_columns()
 
         WIDTH_INDEX = 6
         WIDTH_ACKED = 1
