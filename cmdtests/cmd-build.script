@@ -41,5 +41,5 @@ def test_build(ctxt, pwcli):
    pwcli.sendline('quit')
 
 if __name__ == "__main__":
-   cmdtestlib.StubContext.run_test(test_build)
+   cmdtestlib.StubContext.run_test(test_build, builder='builder')
 

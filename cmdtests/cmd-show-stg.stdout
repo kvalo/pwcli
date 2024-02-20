@@ -39,7 +39,6 @@ review 1
 Apply 1 patches to the pending branch? [Apply/Skip/aBort] a
 a
 Importing patches (1/1)
-                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 Under review/Changes requested/Rejected/New/Deferred/Superseded/aWaiting upstream/not aPplicable/rFc/aBort? u
 u
 Setting patch state (1/1)

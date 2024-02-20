@@ -40,7 +40,7 @@ def main():
 
       os.chdir(datadir)
 
-      pwcli = stubs.PwcliWrapper()
+      pwcli = stubs.PwcliWrapper(builder='builder')
       pwcli.write_config()
 
       # print the config file

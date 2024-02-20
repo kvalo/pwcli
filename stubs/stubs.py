@@ -372,7 +372,7 @@ class EditorStub():
 
 
 class PwcliWrapper():
-    def __init__(self, stgit=False, builder='builder', patchworkport=PATCHWORK_PORT,
+    def __init__(self, stgit=False, builder=None, patchworkport=PATCHWORK_PORT,
                  smtpport=SMTP_PORT, signature=None, censor=True):
         self.config = configparser.RawConfigParser()
 

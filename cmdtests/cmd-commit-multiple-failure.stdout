@@ -39,7 +39,6 @@ commit 1
 commit All/aBort? a
 a
 Committing patches (1/1)
-                                                                   CC foo.c                                                                   CC bar.c                                                                   CC aaa.c                                                                   CC bbb.c                                                                 Build successful
 ============================================================
 1 patches applied:
 

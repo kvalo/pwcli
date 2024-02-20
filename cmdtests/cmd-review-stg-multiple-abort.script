@@ -58,4 +58,4 @@ def test_stg(ctxt, pwcli):
    pwcli.sendline('quit')
 
 if __name__ == "__main__":
-   cmdtestlib.StubContext.run_test(test_stg, stgit=True)
+   cmdtestlib.StubContext.run_test(test_stg, stgit=True, builder='builder')

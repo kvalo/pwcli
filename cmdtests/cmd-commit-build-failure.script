@@ -59,4 +59,4 @@ def test_commit(ctxt, pwcli):
    print(ctxt.smtpd.get_mails_as_string())
 
 if __name__ == "__main__":
-   cmdtestlib.StubContext.run_test(test_commit)
+   cmdtestlib.StubContext.run_test(test_commit, builder='builder')

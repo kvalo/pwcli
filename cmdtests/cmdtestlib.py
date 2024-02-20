@@ -83,7 +83,7 @@ def decode_mime_encoded_words(text):
 
 
 class StubContext():
-    def __init__(self, start=False, debug=False, stgit=False, builder='builder'):
+    def __init__(self, start=False, debug=False, stgit=False, builder=None):
         self.debug = debug
         self.git = stubs.GitStub()
 
@@ -106,7 +106,7 @@ class StubContext():
             self.start()
 
     @staticmethod
-    def run_test(func, stgit=False, builder='builder'):
+    def run_test(func, stgit=False, builder=None):
         ctxt = StubContext(start=True, stgit=stgit, builder=builder)
         pwcli = ctxt.pwcli
 
@@ -179,7 +179,7 @@ class StubContext():
 
 
 class PwcliSpawn(pexpect.spawn):
-    def __init__(self, debug=False, stgit=False, builder='builder',
+    def __init__(self, debug=False, stgit=False, builder=None,
                  signature='Sent by pwcli\n$URL\n'):
         cmd = 'pwcli'
 

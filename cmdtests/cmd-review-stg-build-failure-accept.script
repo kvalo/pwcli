@@ -60,4 +60,4 @@ def test_review(ctxt, pwcli):
    print(ctxt.smtpd.get_mails_as_string())
 
 if __name__ == "__main__":
-   cmdtestlib.StubContext.run_test(test_review, stgit=True)
+   cmdtestlib.StubContext.run_test(test_review, stgit=True, builder='builder')
