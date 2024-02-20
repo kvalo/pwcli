@@ -50,6 +50,14 @@ def main():
     # https://stackoverflow.com/questions/27067713/why-text-i-o-must-be-buffered-in-python-3
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', buffering=1)
 
+    # print really long line several times
+    s = ''
+    for i in range(20):
+        s += '1234567890'
+
+    for i in range(5):
+        sys.stdout.write(s + '\n')
+
     filenames = ['foo.c', 'bar.c', 'aaa.c', 'bbb.c']
     for filename in filenames:
         sys.stdout.write('  CC %s\n' % (filename))
