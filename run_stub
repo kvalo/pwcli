@@ -98,7 +98,8 @@ def main():
     pwcli = stubs.PwcliWrapper(stgit=args.stgit,
                                patchworkport=PATCHWORK_PORT,
                                smtpport=SMTP_PORT,
-                               censor=False)
+                               censor=False,
+                               builder='builder')
     pwcli.write_config()
     pwcli.start()
     pwcli.wait()
