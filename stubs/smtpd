@@ -36,6 +36,7 @@ import aiosmtpd.controller
 import os
 import os.path
 import sys
+import signal
 
 datadir = None
 
@@ -81,8 +82,9 @@ def run(args):
     # Run the event loop in a separate thread.
     controller.start()
 
-    # Wait for the user to press Return.
-    input()
+    # wait until a signal is received
+    signal.pause()
+
     controller.stop()
 
 

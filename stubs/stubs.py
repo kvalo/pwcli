@@ -408,16 +408,9 @@ class PwcliWrapper():
             os.environ['PWCLI_HARDCODE_MESSAGE_ID'] = '1-2-3-hardcoded@example.com'
 
     def start(self):
-        env = os.environ.copy()
-
-        # Workaround: with readline run_stub doesn't work correctly,
-        # most of the input characters are eaten by something, so
-        # disable readline
-        env['PWCLI_NO_READLINE'] = '1'
-
         self.pwcli = subprocess.Popen([os.path.join(srcdir, 'pwcli'), '--debug'],
                                       stdin=sys.stdin, stdout=sys.stdout,
-                                      stderr=sys.stderr, env=env)
+                                      stderr=sys.stderr)
 
     def wait(self):
         self.pwcli.wait()

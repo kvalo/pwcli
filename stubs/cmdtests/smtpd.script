@@ -51,7 +51,7 @@ def main():
       env['STUB_SMTPD_DATADIR'] = smtpddir
 
       smtpd = subprocess.Popen([os.path.join(stubdir, 'smtpd'), '--port=4321'],
-                               env=env)
+                               stdin=subprocess.DEVNULL, env=env)
 
       time.sleep(1)
 

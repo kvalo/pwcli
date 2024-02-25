@@ -60,9 +60,8 @@ import shutil
 import queue
 import threading
 
-if 'PWCLI_NO_READLINE' not in os.environ:
-    import readline
-    assert readline  # to shut up pyflakes
+import readline
+assert readline  # to shut up pyflakes
 
 PWCLI_VERSION = '0.1.1-git'
 PWCLI_PROJECT_URL = 'https://github.com/kvalo/pwcli/'
