@@ -95,7 +95,7 @@ def main():
         return update_cmdtest_outputs(args)
 
     if not args.suite or args.suite == 'checks':
-        print('* Running code checkers')
+        print('* Running code checkers', flush=True)
 
         python_sources = []
 
@@ -120,10 +120,10 @@ def main():
             if returncode != 0 and not args.ignore_errors:
                 sys.exit(1)
 
-        print()
+        print(flush=True)
 
     if not args.suite or args.suite == 'unittests':
-        print('* Running unit tests')
+        print('* Running unit tests', flush=True)
 
         os.chdir('unittests')
         returncode = subprocess.call(['./run'])
@@ -133,8 +133,8 @@ def main():
             sys.exit(1)
 
     if not args.suite or args.suite == 'stubs':
-        print()
-        print('* Running stub cmdtests')
+        print(flush=True)
+        print('* Running stub cmdtests', flush=True)
 
         cmd = ['cmdtest', 'stubs/cmdtests']
 
@@ -147,8 +147,8 @@ def main():
             sys.exit(1)
 
     if not args.suite or args.suite == 'cmdtests':
-        print()
-        print('* Running pwcli cmdtests')
+        print(flush=True)
+        print('* Running pwcli cmdtests', flush=True)
 
         cmd = ['cmdtest', 'cmdtests']
 
@@ -168,7 +168,7 @@ def main():
         subprocess.check_call(['figlet', '-c', '--', '---- OK ----'])
     except subprocess.CalledProcessError:
         # figlet not found
-        print('All tests OK.')
+        print('All tests OK.', flush=True)
 
 
 if __name__ == "__main__":
