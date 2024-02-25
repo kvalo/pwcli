@@ -55,6 +55,11 @@ def main():
 
       time.sleep(1)
 
+      # check that smtpd is running
+      if smtpd.poll() is not None:
+            print('smtpd failed to start: %d' % (smtpd.returncode))
+            sys.exit(1)
+
       subprocess.call([os.path.join(stubdir, 'smtpclient'), '--port=4321'])
 
       time.sleep(1)
