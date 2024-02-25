@@ -132,11 +132,11 @@ def main():
         if returncode != 0 and not args.ignore_errors:
             sys.exit(1)
 
-    if not args.suite or args.suite == 'cmdtests':
+    if not args.suite or args.suite == 'stubs':
         print()
-        print('* Running pwcli cmdtests')
+        print('* Running stub cmdtests')
 
-        cmd = ['cmdtest', 'cmdtests']
+        cmd = ['cmdtest', 'stubs/cmdtests']
 
         for test in args.test:
             cmd += ['--test', test]
@@ -146,11 +146,11 @@ def main():
         if returncode != 0 and not args.ignore_errors:
             sys.exit(1)
 
-    if not args.suite or args.suite == 'stubs':
+    if not args.suite or args.suite == 'cmdtests':
         print()
-        print('* Running stub cmdtests')
+        print('* Running pwcli cmdtests')
 
-        cmd = ['cmdtest', 'stubs/cmdtests']
+        cmd = ['cmdtest', 'cmdtests']
 
         for test in args.test:
             cmd += ['--test', test]
