@@ -1,12 +1,10 @@
 name: tests-all
 on: [push]
 jobs:
-  run-checks:
+  run-tests:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt update
-      - run: sudo apt install pycodestyle pyflakes3
-      - run: ./run_tests checks
-      - run: sudo apt install python3-mock
-      - run: ./run_tests unittests
+      - run: sudo apt install pycodestyle pyflakes3 cmdtest figlet python3-flask-restful python3-pexpect python3-aiosmtpd python3-mock diffstat
+      - run: ./run_tests
