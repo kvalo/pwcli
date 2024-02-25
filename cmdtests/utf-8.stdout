@@ -11,7 +11,7 @@ Deferred      : 6
 Total         : 32
 master@data > list -f Examplè
 list -f Examplè
- [  1] foo: utf-8 tèst               - - - -   3d Èd Examplè   Deferred         
+ [  1] foo: utf-8 tèst                                                        - - - -   3d Èd Examplè   Deferred         
 master@data > reply 1
 reply 1
 ============================================================
@@ -77,7 +77,7 @@ download 1
 master@data > commit 1
 commit 1
 Retrieving patches (1/1)
-       foo: utf-8 tèst               - - - -   3d Èd Examplè   Deferred         
+       foo: utf-8 tèst                                                        - - - -   3d Èd Examplè   Deferred         
 ------------------------------------------------------------
 1 patches
 commit All/aBort? a

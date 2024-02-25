@@ -13,5 +13,5 @@ Deferred      : 6
 Total         : 32
 master@data > build
 build
-                                                                                this is a build script with spaces                                                                                Build successful
+                                                                                                                         this is a build script with spaces                                                                                                                         Build successful
 master@data > quit

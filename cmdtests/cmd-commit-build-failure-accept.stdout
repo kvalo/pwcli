@@ -13,23 +13,23 @@ Deferred      : 6
 Total         : 32
 master@data > list review
 list review
- [  1] [1/7] foo: test 1             - - - -   3d Dino Dinosau Under Review     
- [  2] [2/7] foo: test 2             - - - -   3d Timo Tiger   Under Review     
- [  3] [3/7] foo: test 3             - - - -   3d Timo Tiger   Under Review     
- [  4] [4/7] foo: test 4             - - - -   3d Timo Tiger   Under Review     
- [  5] [5/7] foo: test 5             - - - -   3d Timo Tiger   Under Review     
- [  6] [6/7] foo: test 6             - - - -   3d Timo Tiger   Under Review     
- [  7] [7/7] foo: test 7             - - - -   3d Timo Tiger   Under Review     
+ [  1] [1/7] foo: test 1                                                      - - - -   3d Dino Dinosau Under Review     
+ [  2] [2/7] foo: test 2                                                      - - - -   3d Timo Tiger   Under Review     
+ [  3] [3/7] foo: test 3                                                      - - - -   3d Timo Tiger   Under Review     
+ [  4] [4/7] foo: test 4                                                      - - - -   3d Timo Tiger   Under Review     
+ [  5] [5/7] foo: test 5                                                      - - - -   3d Timo Tiger   Under Review     
+ [  6] [6/7] foo: test 6                                                      - - - -   3d Timo Tiger   Under Review     
+ [  7] [7/7] foo: test 7                                                      - - - -   3d Timo Tiger   Under Review     
 master@data > commit 1
 commit 1
 Retrieving patches (1/1)
-       [1/7] foo: test 1             - - - -   3d Dino Dinosau Under Review     
+       [1/7] foo: test 1                                                      - - - -   3d Dino Dinosau Under Review     
 ------------------------------------------------------------
 1 patches
 commit All/aBort? a
 a
 Committing patches (1/1)
-                                                                                12345678901234567890123456789012345678901234567890123456789012345678901234567890                                                                                12345678901234567890123456789012345678901234567890123456789012345678901234567890                                                                                12345678901234567890123456789012345678901234567890123456789012345678901234567890                                                                                12345678901234567890123456789012345678901234567890123456789012345678901234567890                                                                                12345678901234567890123456789012345678901234567890123456789012345678901234567890                                                                                  CC foo.c                                                                                  CC bar.c                                                                                  CC aaa.c                                                                                  CC bbb.c                                                                                
+                                                                                                                         1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901                                                                                                                         1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901                                                                                                                         1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901                                                                                                                         1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901                                                                                                                         1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901                                                                                                                           CC foo.c                                                                                                                           CC bar.c                                                                                                                           CC aaa.c                                                                                                                           CC bbb.c                                                                                                                         
 Build failed: 1
 ============================================================
 1 patches applied:

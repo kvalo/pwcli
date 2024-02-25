@@ -194,6 +194,7 @@ class PwcliSpawn(pexpect.spawn):
         super(PwcliSpawn, self).__init__(os.path.join(srcdir, cmd),
                                          timeout=3,
                                          logfile=sys.stdout,
+                                         dimensions=(100, 121),
                                          encoding='utf-8')
 
     def cleanup(self):
